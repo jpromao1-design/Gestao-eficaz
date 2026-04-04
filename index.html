@@ -1,334 +1,49 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#050505" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>SGT 8º BAEP - Gestão de Performance</title>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
-
-    :root {
-      --bg-body: #050505;
-      --primary: #f1f10e; 
-      --accent: #8c6a36; 
-      --danger: #ff4d4d;
-      --success: #00ff6a;
-      --text-main: #e0e0e0;
-      --border: #2a2a2a;
-      --glow: rgba(205, 164, 92, 0.2);
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%);
-      color: var(--text-main);
-      margin: 0;
-      padding-bottom: 50px; 
-    }
-
-    .topbar {
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid var(--accent);
-      padding: 15px 20px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(5px);
-    }
-
-    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
-
-    .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
-
-    .card {
-      background: #111;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px var(--glow);
-    }
-
-    .grid-form {
-      display: grid;
-      gap: 15px;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-
-    label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      background: #000;
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 5px;
-      font-size: 0.85rem; 
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      background-color: var(--primary);
-      padding: 5px;
-      cursor: pointer;
-      border-radius: 3px;
-      filter: invert(0.8);
-    }
-
-    input:disabled, select:disabled { background: #1a1a1a; color: #444; border-color: #333; opacity: 1; cursor: not-allowed; }
-
-    .btn {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 0.85rem;
-    }
-
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; }
-    .btn-green { background: #128C7E; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; padding: 10px 15px; font-size: 0.75rem;}
-    .btn-green:hover { background: #075E54; }
-    
-    .toolbar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    
-    .btn-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; font-weight:bold; }
-    .btn-filter.active { background: var(--accent); color: #000; border-color: var(--primary); }
-    
-    .select-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; border-radius: 3px; cursor: pointer; font-weight:bold; text-transform:uppercase; outline:none; height: 100%; width: auto; }
-    .select-filter:hover { border-color: var(--primary); color: #fff; }
-
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-family: 'Cinzel', serif; font-size: 0.75rem; }
-    td { padding: 8px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top; }
-
-    td input, td select, td textarea { padding: 6px; font-size: 0.8rem; }
-    td textarea { height: 50px; }
-
-    .atrasada { color: var(--danger) !important; font-weight: bold; }
-    .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-right: 5px; margin-bottom: 5px; }
-    .bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
-    .bg-pessoal { background: #1a1a1a; color: #888; border: 1px solid #444; }
-    .bg-sec { background: #333; color: #fff; }
-    
-    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-    .btn-sm { padding: 6px; border: none; border-radius: 3px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-align: center; }
-    .btn-edit { background: #1a3a5a; color: #fff; }
-    .btn-del { background: var(--danger); color: white; }
-    .btn-det { background: #333; color: var(--primary); border: 1px solid var(--primary); }
-    
-    input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
-
-    .mobile-label { display: none; } 
-
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-      display: none; align-items: center; justify-content: center; z-index: 9999; padding: 15px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: #111; border: 1px solid var(--accent); border-radius: 8px;
-      width: 100%; max-width: 600px; padding: 25px; box-shadow: 0 4px 30px rgba(0,0,0,0.8);
-      max-height: 90vh; overflow-y: auto;
-    }
-    .modal-content h2 { margin-top: 0; color: var(--primary); font-family: 'Cinzel', serif; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem;}
-    .modal-body { line-height: 1.6; font-size: 0.95rem; margin-bottom: 20px; }
-    .modal-body strong { color: var(--accent); }
-    .status-pendente { color: var(--danger); }
-    .status-realizado { color: var(--success); }
-
-    @media (max-width: 768px) {
-      .topbar h1 { font-size: 1.2rem; }
-      
-      .toolbar-actions { flex-direction: column; align-items: stretch; }
-      .filter-group { flex-direction: row; width: 100%; justify-content: space-between;}
-      .btn-filter { flex-grow: 1; text-align: center; padding: 10px; }
-      .select-filter { width: 100%; padding: 12px; margin-top: 5px; }
-      .btn-green { width: 100%; padding: 14px; font-size: 0.85rem; margin-top: 5px;}
-
-      table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; } 
-      
-      tr {
-        background: #0a0a0a;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        margin-bottom: 15px;
-        padding: 15px;
-        position: relative;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-      }
-      
-      td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; }
-      td:last-child { border-bottom: none; }
-      
-      td:nth-child(1) { display: inline-block; width: 35px; border: none; padding-bottom: 0; vertical-align: middle; }
-      td:nth-child(2) { display: inline-block; width: calc(100% - 40px); border: none; padding-bottom: 0; vertical-align: middle; }
-      
-      .mobile-label { 
-        display: block; 
-        font-size: 0.65rem; 
-        color: var(--accent); 
-        text-transform: uppercase; 
-        margin-bottom: 5px; 
-        font-weight: 800;
-      }
-
-      input, select, textarea, td input, td select, td textarea {
-        font-size: 16px !important;
-        padding: 12px;
-      }
-      td textarea { height: 80px; }
-      input[type="checkbox"] { width: 22px; height: 22px; }
-
-      .action-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .btn-sm { padding: 12px; font-size: 0.75rem; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="topbar">
-    <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--text-dim)">Híbrido Responsivo v4.5</small>
-  </div>
-
-  <div class="container">
-    <div class="card">
-      <h3 style="margin-top:0; color:var(--primary); font-family:'Cinzel', serif;">Nova Missão</h3>
-      <div class="grid-form">
-        <div>
-          <label>Categoria</label>
-          <select id="task-category" onchange="toggleFields()">
-            <option value="PROFISSIONAL">Profissional / BAEP</option>
-            <option value="PESSOAL">Pessoal / Outros</option>
-          </select>
-        </div>
-        <div>
-          <label>Seção Adm</label>
-          <select id="task-secao">
-            <option value="NENHUMA">NENHUMA</option>
-            <option value="P1">P1</option>
-            <option value="P2">P2</option>
-            <option value="P3">P3</option>
-            <option value="P4">P4</option>
-            <option value="P5">P5</option>
-            <option value="SJD">SJD</option>
-          </select>
-        </div>
-        <div>
-          <label>Atribuída por Sup?</label>
-          <select id="task-tem-superior" onchange="toggleFields()">
-            <option value="NAO">Não</option>
-            <option value="SIM">Sim</option>
-          </select>
-        </div>
-        <div>
-          <label id="label-exige-feedback">Exige Retorno/Feedback?</label>
-          <select id="task-exige-feedback" disabled>
-            <option value="NAO">Não</option>
-            <option value="SIM">Sim, após conclusão</option>
-          </select>
-        </div>
-        
-        <div style="grid-column: 1 / -1;">
-          <label>Missão / Descrição</label>
-          <input type="text" id="task-desc" placeholder="Descreva a missão...">
-        </div>
-        
-        <div>
-          <label>Executor (Responsável)</label>
-          <input type="text" id="task-executor">
-        </div>
-        <div>
-          <label id="label-superior">Nome do Superior</label>
-          <input type="text" id="task-superior" disabled placeholder="N/A">
-        </div>
-        <div>
-          <label>Início</label>
-          <input type="date" id="task-created-at">
-        </div>
-        <div>
-          <label>Prazo Final</label>
-          <input type="date" id="task-deadline">
-        </div>
-      </div>
-      <button class="btn btn-gold" onclick="addTask()">Cadastrar Missão</button>
-    </div>
-
-    <div class="card">
-      <div class="toolbar-actions">
-        <div class="filter-group">
-          <button class="btn btn-filter active" id="f-all" onclick="setFilter('ALL')">TODAS</button>
-          <button class="btn btn-filter" id="f-prof" onclick="setFilter('PROFISSIONAL')">PROFISSIONAL</button>
-          <button class="btn btn-filter" id="f-pessoal" onclick="setFilter('PESSOAL')">PESSOAL</button>
-        </div>
-        <select id="filter-secao" class="select-filter" onchange="setSecaoFilter(this.value)">
-          <option value="ALL">TODAS AS SEÇÕES</option>
-          <option value="P1">P1</option>
-          <option value="P2">P2</option>
-          <option value="P3">P3</option>
-          <option value="P4">P4</option>
-          <option value="P5">P5</option>
-          <option value="SJD">SJD</option>
-          <option value="NENHUMA">NENHUMA</option>
-        </select>
-        <button class="btn-green" onclick="shareSelected()">
-          📱 COMPARTILHAR SELECIONADAS (WA)
-        </button>
-      </div>
-      
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 30px; text-align: center;"><input type="checkbox" id="check-all" onclick="toggleAllChecks()"></th>
-              <th style="width: 120px;">Status</th>
-              <th style="width: 25%;">Missão / Categoria</th>
-              <th style="width: 18%;">Responsáveis / Retorno</th>
-              <th style="width: 120px;">Datas</th>
-              <th style="width: 20%;">Anotações da Missão</th>
-              <th style="width: 140px; text-align: center;">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="task-list"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-detalhes" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Detalhes Estratégicos</h2>
-      <div id="modal-body" class="modal-body"></div>
-      <div style="text-align: right;">
-        <button class="btn btn-gold" style="width: auto; padding: 10px 20px;" onclick="closeModal()">FECHAR</button>
-      </div>
-    </div>
-  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
 
   <script>
-    let tasks = JSON.parse(localStorage.getItem('sgt_baep_v4.1')) || [];
-    
+    // =========================================================
+    // 1. COLE AQUI O SEU FIREBASE CONFIG (Copie do Console)
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY_AQUI",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // =========================================================
+    // 2. LÓGICA DO SISTEMA E VARIÁVEIS GERAIS
+    // =========================================================
+    let tasks = [];
     let currentFilter = 'ALL';
     let currentSecaoFilter = 'ALL';
 
     const hoje = new Date().toISOString().split('T')[0];
     document.getElementById('task-created-at').value = hoje;
-    
     toggleFields(); 
+
+    // Carrega os dados da nuvem em tempo real
+    function loadFromFirebase() {
+      db.collection("tarefas").onSnapshot((snapshot) => {
+        tasks = [];
+        snapshot.forEach((doc) => {
+          let task = doc.data();
+          task.id = doc.id; // O ID agora é gerado pelo Firebase
+          tasks.push(task);
+        });
+        render(); // Atualiza a tela automaticamente
+      });
+    }
+
+    // Inicializa o carregamento ao abrir a página
+    loadFromFirebase();
 
     function toggleFields() {
       const category = document.getElementById('task-category').value;
@@ -340,34 +55,18 @@
       const exigeFbLabel = document.getElementById('label-exige-feedback');
       
       if(category === 'PESSOAL') {
-        secaoInput.value = "NENHUMA";
-        secaoInput.disabled = true;
-        temSupSelect.value = "NAO";
-        temSupSelect.disabled = true;
-        superiorInput.value = '';
-        superiorInput.disabled = true;
-        superiorInput.placeholder = "N/A";
-        superiorLabel.style.opacity = "0.4";
-        exigeFbSelect.value = "NAO";
-        exigeFbSelect.disabled = true;
-        exigeFbLabel.style.opacity = "0.4";
+        secaoInput.value = "NENHUMA"; secaoInput.disabled = true;
+        temSupSelect.value = "NAO"; temSupSelect.disabled = true;
+        superiorInput.value = ''; superiorInput.disabled = true; superiorInput.placeholder = "N/A"; superiorLabel.style.opacity = "0.4";
+        exigeFbSelect.value = "NAO"; exigeFbSelect.disabled = true; exigeFbLabel.style.opacity = "0.4";
       } else {
-        secaoInput.disabled = false;
-        temSupSelect.disabled = false;
+        secaoInput.disabled = false; temSupSelect.disabled = false;
         if(temSupSelect.value === 'SIM') {
-          superiorInput.disabled = false;
-          superiorInput.placeholder = "Ex: Cmt Cia / Cmt BAEP";
-          superiorLabel.style.opacity = "1";
-          exigeFbSelect.disabled = false;
-          exigeFbLabel.style.opacity = "1";
+          superiorInput.disabled = false; superiorInput.placeholder = "Ex: Cmt Cia / Cmt BAEP"; superiorLabel.style.opacity = "1";
+          exigeFbSelect.disabled = false; exigeFbLabel.style.opacity = "1";
         } else {
-          superiorInput.value = '';
-          superiorInput.disabled = true;
-          superiorInput.placeholder = "N/A";
-          superiorLabel.style.opacity = "0.4";
-          exigeFbSelect.value = "NAO";
-          exigeFbSelect.disabled = true;
-          exigeFbLabel.style.opacity = "0.4";
+          superiorInput.value = ''; superiorInput.disabled = true; superiorInput.placeholder = "N/A"; superiorLabel.style.opacity = "0.4";
+          exigeFbSelect.value = "NAO"; exigeFbSelect.disabled = true; exigeFbLabel.style.opacity = "0.4";
         }
       }
     }
@@ -378,13 +77,13 @@
       return `${dia}/${mes}/${ano}`;
     }
 
+    // Adicionar nova missão (Salvando no Firebase)
     function addTask() {
       const category = document.getElementById('task-category').value;
       const temSup = category === 'PESSOAL' ? 'NAO' : document.getElementById('task-tem-superior').value;
       const exigeFb = temSup === 'SIM' ? document.getElementById('task-exige-feedback').value : 'NAO';
       
       const task = {
-        id: Date.now(),
         start: document.getElementById('task-created-at').value,
         end: document.getElementById('task-deadline').value,
         category: category,
@@ -395,16 +94,19 @@
         superior: temSup === 'SIM' ? document.getElementById('task-superior').value : 'N/A',
         exigeFeedbackSup: exigeFb,
         statusFeedbackSup: 'PENDENTE',
-        feedbackSuperior: '', // Mantido vazio apenas para compatibilidade de dados antigos
+        feedbackSuperior: '',
         feedback: '',
         status: 'PENDENTE'
       };
 
       if(!task.end || !task.desc) return alert("Erro: Preencha a Missão e o Calendário de Prazo.");
-      tasks.push(task);
-      save();
-      render();
-      clearForm();
+      
+      // Envia para o banco de dados
+      db.collection("tarefas").add(task).then(() => {
+        clearForm();
+      }).catch((error) => {
+        alert("Erro ao salvar: " + error.message);
+      });
     }
 
     function clearForm() {
@@ -433,11 +135,11 @@
       render();
     }
 
+    // Atualizar uma missão (Enviando pro Firebase)
     function updateTask(id, field, value) {
-      const idx = tasks.findIndex(t => t.id === id);
-      tasks[idx][field] = value;
-      save();
-      if(field === 'status' || field === 'statusFeedbackSup') render(); 
+      db.collection("tarefas").doc(id).update({
+        [field]: value
+      });
     }
 
     function editTaskFocus(id) {
@@ -449,7 +151,6 @@
     function openDetails(id) {
       const t = tasks.find(x => x.id === id);
       if(!t) return;
-      
       const isTemSup = t.temSuperior === 'SIM';
       
       const modalBody = document.getElementById('modal-body');
@@ -479,11 +180,10 @@
       document.getElementById('modal-detalhes').classList.remove('active');
     }
 
+    // Excluir missão (No Firebase)
     function deleteTask(id) {
-      if(confirm("Confirmar a exclusão permanente deste registro?")) {
-        tasks = tasks.filter(t => t.id !== id);
-        save();
-        render();
+      if(confirm("Confirmar a exclusão permanente deste registro na nuvem?")) {
+        db.collection("tarefas").doc(id).delete();
       }
     }
 
@@ -519,10 +219,9 @@
       
       let msg = `🚨 *SGT - GESTÃO ESTRATÉGICA*\n_Resumo de Missões_\n\n`;
       checks.forEach(c => {
-        const t = tasks.find(x => x.id == c.value);
+        const t = tasks.find(x => x.id === c.value);
         if(t) msg += formatTaskForWA(t) + `------------------------\n`;
       });
-      
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
@@ -531,19 +230,13 @@
       document.querySelectorAll('.check-task').forEach(c => c.checked = isChecked);
     }
 
-    function save() { localStorage.setItem('sgt_baep_v4.1', JSON.stringify(tasks)); }
-
+    // Função de Renderização Front-End
     function render() {
       const list = document.getElementById('task-list');
       const now = new Date().toISOString().split('T')[0];
       list.innerHTML = '';
 
       const filteredTasks = tasks.filter(t => {
-        t.temSuperior = t.temSuperior || (t.superior && t.superior !== 'N/A' ? 'SIM' : 'NAO');
-        t.secao = t.secao || 'NENHUMA';
-        t.exigeFeedbackSup = t.exigeFeedbackSup || 'NAO';
-        t.statusFeedbackSup = t.statusFeedbackSup || 'PENDENTE';
-
         const matchCat = currentFilter === 'ALL' || t.category === currentFilter;
         const matchSec = currentSecaoFilter === 'ALL' || t.secao === currentSecaoFilter;
         return matchCat && matchSec;
@@ -557,11 +250,9 @@
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td><input type="checkbox" class="check-task" value="${t.id}"></td>
           <td>
-            <input type="checkbox" class="check-task" value="${t.id}">
-          </td>
-          <td>
-            <select onchange="updateTask(${t.id}, 'status', this.value)" style="border:1px solid var(--border);">
+            <select onchange="updateTask('${t.id}', 'status', this.value)" style="border:1px solid var(--border);">
               <option value="PENDENTE" ${t.status === 'PENDENTE' ? 'selected' : ''}>⏳ Pendente</option>
               <option value="CONCLUIDO" ${t.status === 'CONCLUIDO' ? 'selected' : ''}>✅ Concluído</option>
             </select>
@@ -570,16 +261,16 @@
             <span class="mobile-label">Missão / Categoria</span>
             <span class="badge ${isPessoal ? 'bg-pessoal' : 'bg-prof'}">${t.category}</span>
             ${t.secao && t.secao !== 'NENHUMA' ? `<span class="badge bg-sec">${t.secao}</span>` : ''}
-            <input type="text" id="desc-${t.id}" value="${t.desc}" onchange="updateTask(${t.id}, 'desc', this.value)" style="border:none; background:transparent; width: 100%; color: #fff; padding: 5px 0; margin-top:5px; font-weight:600;">
+            <input type="text" id="desc-${t.id}" value="${t.desc}" onchange="updateTask('${t.id}', 'desc', this.value)" style="border:none; background:transparent; width: 100%; color: #fff; padding: 5px 0; margin-top:5px; font-weight:600;">
           </td>
           <td>
             <span class="mobile-label">Responsáveis / Retorno</span>
-            <input type="text" value="${t.executor}" onchange="updateTask(${t.id}, 'executor', this.value)" title="Executor" style="border:none; background:transparent; color: var(--primary); font-weight:bold; width: 100%; padding:0; margin-bottom: 4px;">
+            <input type="text" value="${t.executor}" onchange="updateTask('${t.id}', 'executor', this.value)" title="Executor" style="border:none; background:transparent; color: var(--primary); font-weight:bold; width: 100%; padding:0; margin-bottom: 4px;">
             ${isTemSup ? `
               <small style="color:#666">Sup: ${t.superior}</small>
               ${isExigeFb ? `
-                <div style="margin-top: 5px; display:flex; flex-direction:column; gap:4px;">
-                  <select onchange="updateTask(${t.id}, 'statusFeedbackSup', this.value)" class="${t.statusFeedbackSup === 'REALIZADO' ? 'status-realizado' : 'status-pendente'}" style="background:transparent; border:none; outline:none; font-weight:bold; padding:0; cursor:pointer; width: 100%; appearance: none;">
+                <div style="margin-top: 5px;">
+                  <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" class="${t.statusFeedbackSup === 'REALIZADO' ? 'status-realizado' : 'status-pendente'}" style="background:transparent; border:none; outline:none; font-weight:bold; padding:0; cursor:pointer; width: 100%; appearance: none;">
                     <option value="PENDENTE" class="status-pendente" ${t.statusFeedbackSup === 'PENDENTE' ? 'selected' : ''}>⏳ RETORNO PENDENTE</option>
                     <option value="REALIZADO" class="status-realizado" ${t.statusFeedbackSup === 'REALIZADO' ? 'selected' : ''}>✅ RETORNO DADO</option>
                   </select>
@@ -589,28 +280,24 @@
           </td>
           <td>
             <span class="mobile-label">Prazos</span>
-            <div style="font-size:0.8rem; color:#888;">De: <input type="date" value="${t.start}" onchange="updateTask(${t.id}, 'start', this.value)" style="border:none; background:transparent; color:#888; padding:2px 0; width:100%;"></div>
-            <div class="${isAtrasada ? 'atrasada' : ''}" style="font-weight:bold; margin-top:5px; font-size:0.85rem;">Até: <input type="date" value="${t.end}" onchange="updateTask(${t.id}, 'end', this.value)" style="border:none; background:transparent; color:inherit; padding:2px 0; width:100%;"></div>
+            <div style="font-size:0.8rem; color:#888;">De: <input type="date" value="${t.start}" onchange="updateTask('${t.id}', 'start', this.value)" style="border:none; background:transparent; color:#888; padding:2px 0; width:100%;"></div>
+            <div class="${isAtrasada ? 'atrasada' : ''}" style="font-weight:bold; margin-top:5px; font-size:0.85rem;">Até: <input type="date" value="${t.end}" onchange="updateTask('${t.id}', 'end', this.value)" style="border:none; background:transparent; color:inherit; padding:2px 0; width:100%;"></div>
           </td>
           <td>
             <span class="mobile-label">Anotações da Missão</span>
-            <textarea onchange="updateTask(${t.id}, 'feedback', this.value)" placeholder="Anotações...">${t.feedback}</textarea>
+            <textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback}</textarea>
           </td>
           <td>
             <span class="mobile-label">Ações</span>
             <div class="action-grid">
-              <button class="btn-sm btn-det" onclick="openDetails(${t.id})">DETALHES</button>
-              <button class="btn-sm btn-edit" onclick="editTaskFocus(${t.id})">EDITAR</button>
-              <button class="btn-sm btn-del" onclick="deleteTask(${t.id})">EXCLUIR</button>
-              <button class="btn-sm btn-green" onclick="shareTask(${t.id})">WA</button>
+              <button class="btn-sm btn-det" onclick="openDetails('${t.id}')">DETALHES</button>
+              <button class="btn-sm btn-edit" onclick="editTaskFocus('${t.id}')">EDITAR</button>
+              <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCLUIR</button>
+              <button class="btn-sm btn-green" onclick="shareTask('${t.id}')">WA</button>
             </div>
           </td>
         `;
         list.appendChild(tr);
       });
     }
-
-    render();
   </script>
-</body>
-</html>
