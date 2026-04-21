@@ -1,106 +1,648 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#050505" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>SGT 8º BAEP - Nuvem</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050505">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SGT 8 BAEP - Nuvem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-body: #050505;
+  --primary: #f1f10e;
+  --accent: #8c6a36;
+  --danger: #ff4d4d;
+  --success: #00ff6a;
+  --text-main: #e0e0e0;
+  --border: #2a2a2a;
+  --glow: rgba(205, 164, 92, 0.2);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%);
+  color: var(--text-main);
+  margin: 0;
+  padding-bottom: 50px;
+}
+.topbar {
+  background: rgba(0,0,0,0.95);
+  border-bottom: 2px solid var(--accent);
+  padding: 15px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(5px);
+}
+.topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
+.container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
+.card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px var(--glow); }
+.grid-form { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+input, select, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.85rem; font-family: 'Montserrat', sans-serif; }
+input[type="date"]::-webkit-calendar-picker-indicator { background-color: var(--primary); padding: 5px; cursor: pointer; border-radius: 3px; filter: invert(0.8); }
+input:disabled, select:disabled { background: #1a1a1a; color: #444; border-color: #333; opacity: 1; cursor: not-allowed; }
+.btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
+.btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; }
+.btn-green { background: #128C7E; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; padding: 10px 15px; font-size: 0.75rem; }
+.btn-green:hover { background: #075E54; }
+.toolbar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+.filter-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; font-weight: bold; }
+.btn-filter.active { background: var(--accent); color: #000; border-color: var(--primary); }
+.select-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; border-radius: 3px; cursor: pointer; font-weight: bold; text-transform: uppercase; outline: none; width: auto; }
+.select-filter:hover { border-color: var(--primary); color: #fff; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-family: 'Cinzel', serif; font-size: 0.75rem; }
+td { padding: 8px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top; }
+td input, td select, td textarea { padding: 6px; font-size: 0.8rem; }
+td textarea { height: 50px; }
+.atrasada { color: var(--danger) !important; font-weight: bold; }
+.badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-right: 5px; margin-bottom: 5px; }
+.bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
+.bg-pessoal { background: #1a1a1a; color: #888; border: 1px solid #444; }
+.bg-sec { background: #333; color: #fff; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.btn-sm { padding: 6px; border: none; border-radius: 3px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-align: center; }
+.btn-edit { background: #1a3a5a; color: #fff; }
+.btn-del { background: var(--danger); color: white; }
+.btn-det { background: #333; color: var(--primary); border: 1px solid var(--primary); }
+input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+.mobile-label { display: none; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 15px; }
+.modal-overlay.active { display: flex; }
+.modal-content { background: #111; border: 1px solid var(--accent); border-radius: 8px; width: 100%; max-width: 600px; padding: 25px; box-shadow: 0 4px 30px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; }
+.modal-content h2 { margin-top: 0; color: var(--primary); font-family: 'Cinzel', serif; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem; }
+.modal-body { line-height: 1.6; font-size: 0.95rem; margin-bottom: 20px; }
+.modal-body strong { color: var(--accent); }
+.status-pendente { color: var(--danger); }
+.status-realizado { color: var(--success); }
+.pri-ALTA { color: var(--danger) !important; text-shadow: 0 0 5px rgba(255,77,77,0.4); }
+.pri-MEDIA { color: var(--primary) !important; }
+.pri-BAIXA { color: var(--success) !important; }
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
+@media (max-width: 768px) {
+  .topbar h1 { font-size: 1.2rem; }
+  .toolbar-actions { flex-direction: column; align-items: stretch; }
+  .filter-group { flex-direction: row; width: 100%; justify-content: space-between; }
+  .btn-filter { flex-grow: 1; text-align: center; padding: 10px; }
+  .select-filter { width: 100%; padding: 12px; margin-top: 5px; }
+  .btn-green { width: 100%; padding: 14px; font-size: 0.85rem; margin-top: 5px; }
+  table { display: block; }
+  thead { display: none; }
+  tbody { display: block; }
+  tr { display: block; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 15px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+  td { display: block; border: none; padding: 8px 0; border-bottom: 1px dashed #222; }
+  td:last-child { border-bottom: none; }
+  td:first-child { display: inline-block; width: 35px; border: none; padding-bottom: 0; vertical-align: middle; }
+  td:nth-child(2) { display: inline-block; width: calc(100% - 40px); border: none; padding-bottom: 0; vertical-align: middle; }
+  .mobile-label { display: block; font-size: 0.65rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; font-weight: 800; }
+  input, select, textarea, td input, td select, td textarea { font-size: 16px !important; padding: 12px; }
+  td textarea { height: 80px; }
+  input[type="checkbox"] { width: 22px; height: 22px; }
+  .action-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-sm { padding: 12px; font-size: 0.75rem; }
+}
+</style>
+</head>
+<body>
 
-    :root {
-      --bg-body: #050505;
-      --primary: #f1f10e;
-      --accent: #8c6a36;
-      --danger: #ff4d4d;
-      --success: #00ff6a;
-      --text-main: #e0e0e0;
-      --border: #2a2a2a;
-      --glow: rgba(205, 164, 92, 0.2);
+<div class="topbar">
+  <h1>SGT - 8&#186; BAEP</h1>
+  <small style="color:var(--success)">Sincronizado na Nuvem &#128994; v5.3</small>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3 style="margin-top:0; color:var(--primary); font-family:'Cinzel',serif;">Nova Missao</h3>
+    <div class="grid-form">
+      <div>
+        <label>Categoria</label>
+        <select id="task-category" onchange="toggleFields()">
+          <option value="PROFISSIONAL">Profissional / BAEP</option>
+          <option value="PESSOAL">Pessoal / Outros</option>
+        </select>
+      </div>
+      <div>
+        <label>Secao Adm</label>
+        <select id="task-secao">
+          <option value="NENHUMA">NENHUMA</option>
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+          <option value="P3">P3</option>
+          <option value="P4">P4</option>
+          <option value="P5">P5</option>
+          <option value="SJD">SJD</option>
+        </select>
+      </div>
+      <div>
+        <label>Prioridade</label>
+        <select id="task-prioridade">
+          <option value="ALTA">Alta - Urgente</option>
+          <option value="MEDIA" selected>Media</option>
+          <option value="BAIXA">Baixa - Rotina</option>
+        </select>
+      </div>
+      <div>
+        <label>Atribuida por Superior?</label>
+        <select id="task-tem-superior" onchange="toggleFields()">
+          <option value="NAO">Nao</option>
+          <option value="SIM">Sim</option>
+        </select>
+      </div>
+      <div>
+        <label id="label-exige-feedback">Exige Retorno?</label>
+        <select id="task-exige-feedback" disabled>
+          <option value="NAO">Nao</option>
+          <option value="SIM">Sim, apos conclusao</option>
+        </select>
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <label>Missao / Descricao</label>
+        <input type="text" id="task-desc" placeholder="Descreva a missao...">
+      </div>
+      <div>
+        <label>Executor (Responsavel)</label>
+        <input type="text" id="task-executor">
+      </div>
+      <div>
+        <label id="label-superior">Nome do Superior</label>
+        <input type="text" id="task-superior" disabled placeholder="N/A">
+      </div>
+      <div>
+        <label>Inicio</label>
+        <input type="date" id="task-created-at">
+      </div>
+      <div>
+        <label>Prazo Final</label>
+        <input type="date" id="task-deadline">
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="addTask()">Cadastrar Missao na Nuvem</button>
+  </div>
+
+  <div class="card">
+    <div class="toolbar-actions">
+      <div class="filter-group">
+        <button class="btn btn-filter active" id="f-all" onclick="setFilter('ALL')">TODAS</button>
+        <button class="btn btn-filter" id="f-prof" onclick="setFilter('PROFISSIONAL')">PROFISSIONAL</button>
+        <button class="btn btn-filter" id="f-pessoal" onclick="setFilter('PESSOAL')">PESSOAL</button>
+      </div>
+      <select id="filter-secao" class="select-filter" onchange="setSecaoFilter(this.value)">
+        <option value="ALL">TODAS AS SECOES</option>
+        <option value="P1">P1</option>
+        <option value="P2">P2</option>
+        <option value="P3">P3</option>
+        <option value="P4">P4</option>
+        <option value="P5">P5</option>
+        <option value="SJD">SJD</option>
+        <option value="NENHUMA">NENHUMA</option>
+      </select>
+      <button class="btn-green" onclick="shareSelected()">COMPARTILHAR SELECIONADAS (WA)</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px;text-align:center;"><input type="checkbox" id="check-all" onclick="toggleAllChecks()"></th>
+            <th style="width:120px;">Status</th>
+            <th style="width:25%;">Missao / Categoria</th>
+            <th style="width:18%;">Responsaveis</th>
+            <th style="width:120px;">Datas</th>
+            <th style="width:20%;">Anotacoes</th>
+            <th style="width:140px;text-align:center;">Acoes</th>
+          </tr>
+        </thead>
+        <tbody id="task-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div id="modal-detalhes" class="modal-overlay">
+  <div class="modal-content">
+    <h2>Detalhes Estrategicos</h2>
+    <div id="modal-body" class="modal-body"></div>
+    <div style="text-align:right;">
+      <button class="btn btn-gold" style="width:auto;padding:10px 20px;" onclick="closeModal()">FECHAR</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyDSTMgiv23oShiOqUkJgvNKU8fOiiZBSR8",
+  authDomain: "gestaotarefas-2ac06.firebaseapp.com",
+  projectId: "gestaotarefas-2ac06",
+  storageBucket: "gestaotarefas-2ac06.firebasestorage.app",
+  messagingSenderId: "296776503860",
+  appId: "1:296776503860:web:464f213cdcce761e2b3061"
+};
+
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+var tasks = [];
+var currentFilter = 'ALL';
+var currentSecaoFilter = 'ALL';
+var unsubscribeListener = null;
+
+function getLocalDate() {
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
+}
+
+var hoje = getLocalDate();
+document.getElementById('task-created-at').value = hoje;
+toggleFields();
+
+function startListener() {
+  if (unsubscribeListener) {
+    unsubscribeListener();
+    unsubscribeListener = null;
+  }
+  unsubscribeListener = db.collection("tarefas")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(function(snapshot) {
+      tasks = [];
+      snapshot.forEach(function(doc) {
+        var t = doc.data();
+        t.id = doc.id;
+        tasks.push(t);
+      });
+      render();
+    }, function(err) {
+      console.warn("Listener ordenado falhou:", err.message);
+      if (unsubscribeListener) { unsubscribeListener(); unsubscribeListener = null; }
+      unsubscribeListener = db.collection("tarefas").onSnapshot(function(snap) {
+        tasks = [];
+        snap.forEach(function(doc) {
+          var t = doc.data();
+          t.id = doc.id;
+          tasks.push(t);
+        });
+        render();
+      });
+    });
+}
+
+startListener();
+
+function escHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function toggleFields() {
+  var cat = document.getElementById('task-category').value;
+  var secao = document.getElementById('task-secao');
+  var temSup = document.getElementById('task-tem-superior');
+  var supInput = document.getElementById('task-superior');
+  var supLabel = document.getElementById('label-superior');
+  var fbSelect = document.getElementById('task-exige-feedback');
+  var fbLabel = document.getElementById('label-exige-feedback');
+
+  if (cat === 'PESSOAL') {
+    secao.value = 'NENHUMA'; secao.disabled = true;
+    temSup.value = 'NAO'; temSup.disabled = true;
+    supInput.value = ''; supInput.disabled = true; supInput.placeholder = 'N/A';
+    supLabel.style.opacity = '0.4';
+    fbSelect.value = 'NAO'; fbSelect.disabled = true;
+    fbLabel.style.opacity = '0.4';
+  } else {
+    secao.disabled = false;
+    temSup.disabled = false;
+    if (temSup.value === 'SIM') {
+      supInput.disabled = false;
+      supInput.placeholder = 'Ex: Cmt Cia / Cmt BAEP';
+      supLabel.style.opacity = '1';
+      fbSelect.disabled = false;
+      fbLabel.style.opacity = '1';
+    } else {
+      supInput.value = ''; supInput.disabled = true; supInput.placeholder = 'N/A';
+      supLabel.style.opacity = '0.4';
+      fbSelect.value = 'NAO'; fbSelect.disabled = true;
+      fbLabel.style.opacity = '0.4';
+    }
+  }
+}
+
+function formatarDataBR(s) {
+  if (!s) return '--/--/----';
+  var p = s.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function addTask() {
+  var cat = document.getElementById('task-category').value;
+  var temSup = cat === 'PESSOAL' ? 'NAO' : document.getElementById('task-tem-superior').value;
+  var exigeFb = temSup === 'SIM' ? document.getElementById('task-exige-feedback').value : 'NAO';
+  var desc = document.getElementById('task-desc').value.trim();
+  var deadline = document.getElementById('task-deadline').value;
+
+  if (!deadline || !desc) {
+    alert('Preencha a Missao e o Prazo Final.');
+    return;
+  }
+
+  var task = {
+    start: document.getElementById('task-created-at').value || hoje,
+    end: deadline,
+    category: cat,
+    secao: cat === 'PESSOAL' ? 'NENHUMA' : document.getElementById('task-secao').value,
+    prioridade: document.getElementById('task-prioridade').value,
+    desc: desc,
+    executor: document.getElementById('task-executor').value.trim(),
+    temSuperior: temSup,
+    superior: temSup === 'SIM' ? document.getElementById('task-superior').value.trim() : 'N/A',
+    exigeFeedbackSup: exigeFb,
+    statusFeedbackSup: 'PENDENTE',
+    feedback: '',
+    status: 'PENDENTE',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  db.collection("tarefas").add(task).then(clearForm).catch(function(e) {
+    console.error(e);
+    alert('Erro ao salvar no Firebase.');
+  });
+}
+
+function clearForm() {
+  document.getElementById('task-desc').value = '';
+  document.getElementById('task-executor').value = '';
+  document.getElementById('task-superior').value = '';
+  document.getElementById('task-category').value = 'PROFISSIONAL';
+  document.getElementById('task-secao').value = 'NENHUMA';
+  document.getElementById('task-prioridade').value = 'MEDIA';
+  document.getElementById('task-tem-superior').value = 'NAO';
+  document.getElementById('task-exige-feedback').value = 'NAO';
+  document.getElementById('task-deadline').value = '';
+  document.getElementById('task-created-at').value = hoje;
+  toggleFields();
+}
+
+var filterIdMap = { 'ALL': 'f-all', 'PROFISSIONAL': 'f-prof', 'PESSOAL': 'f-pessoal' };
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.btn-filter').forEach(function(b) { b.classList.remove('active'); });
+  var el = document.getElementById(filterIdMap[f]);
+  if (el) el.classList.add('active');
+  document.getElementById('check-all').checked = false;
+  render();
+}
+
+function setSecaoFilter(s) {
+  currentSecaoFilter = s;
+  document.getElementById('check-all').checked = false;
+  render();
+}
+
+function updateTask(id, field, value) {
+  var upd = {};
+  upd[field] = value;
+  db.collection("tarefas").doc(id).update(upd).catch(function(e) {
+    console.error('Erro ao atualizar:', e);
+  });
+}
+
+function editTaskFocus(id) {
+  var el = document.getElementById('desc-' + id);
+  if (!el) return;
+  el.focus();
+  el.style.border = '1px solid var(--primary)';
+}
+
+function openDetails(id) {
+  var t = null;
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === id) { t = tasks[i]; break; }
+  }
+  if (!t) return;
+
+  var pri = t.prioridade === 'ALTA' ? 'ALTA' : t.prioridade === 'MEDIA' ? 'MEDIA' : 'BAIXA';
+  var isTemSup = t.temSuperior === 'SIM';
+
+  var html = '<p><strong>Status:</strong> ' + escHtml(t.status) + '</p>';
+  html += '<p><strong>Prioridade:</strong> ' + escHtml(pri) + '</p>';
+  html += '<p><strong>Categoria:</strong> ' + escHtml(t.category);
+  if (t.secao && t.secao !== 'NENHUMA') html += ' | Secao: ' + escHtml(t.secao);
+  html += '</p>';
+  html += '<p><strong>Missao:</strong> ' + escHtml(t.desc) + '</p>';
+  html += '<hr style="border-color:#333;margin:15px 0;">';
+  html += '<p><strong>Executor:</strong> ' + (escHtml(t.executor) || 'Nao definido') + '</p>';
+
+  if (isTemSup) {
+    html += '<p><strong>Superior:</strong> ' + (escHtml(t.superior) || 'Nao informado') + '</p>';
+    if (t.exigeFeedbackSup === 'SIM') {
+      var fbOk = t.statusFeedbackSup === 'REALIZADO';
+      html += '<p><strong>Exigia Retorno?</strong> Sim</p>';
+      html += '<p><strong>Status do Retorno:</strong> ' + (fbOk
+        ? '<span style="color:var(--success)">Realizado</span>'
+        : '<span style="color:var(--danger)">Pendente</span>') + '</p>';
+    } else {
+      html += '<p><strong>Exigia Retorno?</strong> Nao</p>';
+    }
+  } else {
+    html += '<p><strong>Atribuida por Superior:</strong> Nao</p>';
+  }
+
+  html += '<hr style="border-color:#333;margin:15px 0;">';
+  html += '<p><strong>Inicio:</strong> ' + formatarDataBR(t.start) + '</p>';
+  html += '<p><strong>Prazo Final:</strong> ' + formatarDataBR(t.end) + '</p>';
+  html += '<hr style="border-color:#333;margin:15px 0;">';
+  html += '<p><strong>Anotacoes:</strong><br>' + (escHtml(t.feedback) || '<em>Nenhuma anotacao.</em>') + '</p>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-detalhes').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-detalhes').classList.remove('active');
+}
+
+function deleteTask(id) {
+  if (confirm('Confirmar exclusao permanente na NUVEM?')) {
+    db.collection("tarefas").doc(id).delete().catch(function(e) { console.error(e); });
+  }
+}
+
+function formatTaskForWA(t) {
+  var pri = t.prioridade === 'ALTA' ? 'ALTA' : t.prioridade === 'MEDIA' ? 'MEDIA' : 'BAIXA';
+  var msg = '*Ordem de Missao*\n';
+  if (t.category === 'PROFISSIONAL') {
+    msg += '*Setor:* 8 BAEP' + (t.secao !== 'NENHUMA' ? ' - ' + t.secao : '') + '\n';
+  }
+  msg += '*Prioridade:* ' + pri + '\n';
+  msg += '*Missao:* ' + t.desc + '\n';
+  msg += '*Prazo:* ' + formatarDataBR(t.end) + '\n';
+  if (t.executor) msg += '*Executor:* ' + t.executor + '\n';
+  if (t.temSuperior === 'SIM') {
+    msg += '*Superior:* ' + (t.superior || 'N/A') + '\n';
+    if (t.exigeFeedbackSup === 'SIM') {
+      msg += '*Retorno:* ' + (t.statusFeedbackSup === 'REALIZADO' ? 'Realizado' : 'Pendente') + '\n';
+    }
+  }
+  if (t.feedback) msg += '*Anotacoes:* ' + t.feedback + '\n';
+  return msg;
+}
+
+function shareTask(id) {
+  var t = null;
+  for (var i = 0; i < tasks.length; i++) { if (tasks[i].id === id) { t = tasks[i]; break; } }
+  if (!t) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent('*SGT - GESTAO DE TAREFAS*\n\n' + formatTaskForWA(t)), '_blank');
+}
+
+function shareSelected() {
+  var checks = document.querySelectorAll('.check-task:checked');
+  if (checks.length === 0) { alert('Selecione ao menos uma tarefa.'); return; }
+  var msg = '*SGT - GESTAO ESTRATEGICA*\nResumo de Missoes\n\n';
+  checks.forEach(function(c) {
+    for (var i = 0; i < tasks.length; i++) {
+      if (tasks[i].id === c.value) { msg += formatTaskForWA(tasks[i]) + '---\n'; break; }
+    }
+  });
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function toggleAllChecks() {
+  var checked = document.getElementById('check-all').checked;
+  document.querySelectorAll('.check-task').forEach(function(c) { c.checked = checked; });
+}
+
+function render() {
+  var list = document.getElementById('task-list');
+  var now = getLocalDate();
+  list.innerHTML = '';
+
+  var filtered = tasks.filter(function(t) {
+    var matchCat = currentFilter === 'ALL' || t.category === currentFilter;
+    var matchSec = currentSecaoFilter === 'ALL' || t.secao === currentSecaoFilter;
+    return matchCat && matchSec;
+  });
+
+  filtered.sort(function(a, b) {
+    if (!a.end) return 1;
+    if (!b.end) return -1;
+    return a.end < b.end ? -1 : a.end > b.end ? 1 : 0;
+  });
+
+  filtered.forEach(function(t) {
+    var isAtrasada = t.end && t.end < now && t.status !== 'CONCLUIDO';
+    var isPessoal = t.category === 'PESSOAL';
+    var isTemSup = t.temSuperior === 'SIM';
+    var isExigeFb = t.exigeFeedbackSup === 'SIM';
+    t.prioridade = t.prioridade || 'MEDIA';
+
+    var sid    = escHtml(t.id);
+    var sDesc  = escHtml(t.desc);
+    var sExec  = escHtml(t.executor);
+    var sSup   = escHtml(t.superior);
+    var sFb    = escHtml(t.feedback);
+    var sStart = escHtml(t.start || '');
+    var sEnd   = escHtml(t.end   || '');
+    var sCat   = escHtml(t.category);
+    var sSecao = escHtml(t.secao);
+
+    var retornoHtml = '';
+    if (isTemSup) {
+      retornoHtml = '<small style="color:#666">Sup: ' + sSup + '</small>';
+      if (isExigeFb) {
+        var fbClass = t.statusFeedbackSup === 'REALIZADO' ? 'status-realizado' : 'status-pendente';
+        retornoHtml += '<div style="margin-top:5px;">'
+          + '<select onchange="updateTask(\'' + sid + '\',\'statusFeedbackSup\',this.value)" class="' + fbClass + '" '
+          + 'style="background:transparent;border:none;outline:none;font-weight:bold;padding:0;cursor:pointer;width:100%;appearance:none;">'
+          + '<option value="PENDENTE"' + (t.statusFeedbackSup !== 'REALIZADO' ? ' selected' : '') + '>RETORNO PENDENTE</option>'
+          + '<option value="REALIZADO"' + (t.statusFeedbackSup === 'REALIZADO' ? ' selected' : '') + '>RETORNO DADO</option>'
+          + '</select></div>';
+      } else {
+        retornoHtml += '<br><small style="color:#444;font-style:italic;">S/ nec. de retorno</small>';
+      }
+    } else {
+      retornoHtml = '<small style="color:#444;font-style:italic;">Sem Superior</small>';
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    var tr = document.createElement('tr');
+    tr.innerHTML = ''
+      + '<td><input type="checkbox" class="check-task" value="' + sid + '"></td>'
+      + '<td>'
+      +   '<select onchange="updateTask(\'' + sid + '\',\'status\',this.value)" style="border:1px solid var(--border);margin-bottom:5px;">'
+      +     '<option value="PENDENTE"' + (t.status === 'PENDENTE' ? ' selected' : '') + '>Pendente</option>'
+      +     '<option value="CONCLUIDO"' + (t.status === 'CONCLUIDO' ? ' selected' : '') + '>Concluido</option>'
+      +   '</select>'
+      + '</td>'
+      + '<td>'
+      +   '<span class="mobile-label">Missao / Categoria</span>'
+      +   '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;">'
+      +     '<span class="badge ' + (isPessoal ? 'bg-pessoal' : 'bg-prof') + '">' + sCat + '</span>'
+      +     (t.secao && t.secao !== 'NENHUMA' ? '<span class="badge bg-sec">' + sSecao + '</span>' : '')
+      +   '</div>'
+      +   '<select onchange="updateTask(\'' + sid + '\',\'prioridade\',this.value)" class="pri-' + t.prioridade + '" '
+      +   'style="background:transparent;border:none;outline:none;font-weight:bold;padding:0;font-size:0.7rem;cursor:pointer;width:max-content;margin-bottom:5px;">'
+      +     '<option value="BAIXA"' + (t.prioridade === 'BAIXA' ? ' selected' : '') + '>PRI: BAIXA</option>'
+      +     '<option value="MEDIA"' + (t.prioridade === 'MEDIA' ? ' selected' : '') + '>PRI: MEDIA</option>'
+      +     '<option value="ALTA"'  + (t.prioridade === 'ALTA'  ? ' selected' : '') + '>PRI: ALTA</option>'
+      +   '</select>'
+      +   '<input type="text" id="desc-' + sid + '" value="' + sDesc + '" '
+      +   'onchange="updateTask(\'' + sid + '\',\'desc\',this.value)" '
+      +   'style="border:none;background:transparent;width:100%;color:#fff;padding:5px 0;font-weight:600;">'
+      + '</td>'
+      + '<td>'
+      +   '<span class="mobile-label">Responsaveis</span>'
+      +   '<input type="text" value="' + sExec + '" onchange="updateTask(\'' + sid + '\',\'executor\',this.value)" '
+      +   'title="Executor" style="border:none;background:transparent;color:var(--primary);font-weight:bold;width:100%;padding:0;margin-bottom:4px;">'
+      +   retornoHtml
+      + '</td>'
+      + '<td>'
+      +   '<span class="mobile-label">Prazos</span>'
+      +   '<div style="font-size:0.8rem;color:#888;">De: '
+      +     '<input type="date" value="' + sStart + '" onchange="updateTask(\'' + sid + '\',\'start\',this.value)" '
+      +     'style="border:none;background:transparent;color:#888;padding:2px 0;width:100%;">'
+      +   '</div>'
+      +   '<div class="' + (isAtrasada ? 'atrasada' : '') + '" style="font-weight:bold;margin-top:5px;font-size:0.85rem;">Ate: '
+      +     '<input type="date" value="' + sEnd + '" onchange="updateTask(\'' + sid + '\',\'end\',this.value)" '
+      +     'style="border:none;background:transparent;color:inherit;padding:2px 0;width:100%;">'
+      +   '</div>'
+      + '</td>'
+      + '<td>'
+      +   '<span class="mobile-label">Anotacoes</span>'
+      +   '<textarea onchange="updateTask(\'' + sid + '\',\'feedback\',this.value)" placeholder="Anotacoes...">' + sFb + '</textarea>'
+      + '</td>'
+      + '<td>'
+      +   '<span class="mobile-label">Acoes</span>'
+      +   '<div class="action-grid">'
+      +     '<button class="btn-sm btn-det" onclick="openDetails(\'' + sid + '\')">DETALHES</button>'
+      +     '<button class="btn-sm btn-edit" onclick="editTaskFocus(\'' + sid + '\')">EDITAR</button>'
+      +     '<button class="btn-sm btn-del" onclick="deleteTask(\'' + sid + '\')">EXCLUIR</button>'
+      +     '<button class="btn-sm btn-green" onclick="shareTask(\'' + sid + '\')">WA</button>'
+      +   '</div>'
+      + '</td>';
 
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%);
-      color: var(--text-main);
-      margin: 0;
-      padding-bottom: 50px;
-    }
-
-    .topbar {
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid var(--accent);
-      padding: 15px 20px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(5px);
-    }
-
-    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
-
-    .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
-
-    .card {
-      background: #111;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px var(--glow);
-    }
-
-    .grid-form {
-      display: grid;
-      gap: 15px;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-
-    label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      background: #000;
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 5px;
-      font-size: 0.85rem;
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      background-color: var(--primary);
-      padding: 5px;
-      cursor: pointer;
-      border-radius: 3px;
-      filter: invert(0.8);
-    }
-
-    input:disabled, select:disabled { background: #1a1a1a; color: #444; border-color: #333; opacity: 1; cursor: not-allowed; }
-
-    .btn {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 0.85rem;
-    }
-
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; }
-    .btn-green { background: #128C7E; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; padding: 10px 15px; font-size: 0.75rem; }
-    .btn-green:hover { background: #075E54; }
-
+    list.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
     .toolbar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
     .filter-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
