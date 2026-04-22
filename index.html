@@ -146,8 +146,13 @@
     .modal-content h2 { margin-top: 0; color: var(--primary); font-family: 'Cinzel', serif; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem;}
     .modal-body { line-height: 1.6; font-size: 0.95rem; margin-bottom: 20px; }
     .modal-body strong { color: var(--accent); }
+    
+    /* Cores de Prioridade e Status */
     .status-pendente { color: var(--danger); }
     .status-realizado { color: var(--success); }
+    .pri-ALTA { color: var(--danger) !important; text-shadow: 0 0 5px rgba(255, 77, 77, 0.4); }
+    .pri-MEDIA { color: var(--primary) !important; }
+    .pri-BAIXA { color: var(--success) !important; }
 
     @media (max-width: 768px) {
       .topbar h1 { font-size: 1.2rem; }
@@ -202,7 +207,7 @@
 
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Sincronizado na Nuvem 🟢</small>
+    <small style="color:var(--success)">Sincronizado na Nuvem 🟢 v5.2</small>
   </div>
 
   <div class="container">
@@ -226,6 +231,14 @@
             <option value="P4">P4</option>
             <option value="P5">P5</option>
             <option value="SJD">SJD</option>
+          </select>
+        </div>
+        <div>
+          <label>Prioridade</label>
+          <select id="task-prioridade">
+            <option value="ALTA">🔴 Alta (Urgente/Importante)</option>
+            <option value="MEDIA" selected>🟡 Média</option>
+            <option value="BAIXA">🟢 Baixa (Rotina)</option>
           </select>
         </div>
         <div>
@@ -323,7 +336,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // AS SUAS CHAVES DO FIREBASE ATUALIZADAS
+    // CHAVES DO SEU FIREBASE MANTIDAS INTACTAS
     const firebaseConfig = {
       apiKey: "AIzaSyDSTMgiv23oShiOqUkJgvNKU8fOiiZBSR8",
       authDomain: "gestaotarefas-2ac06.firebaseapp.com",
@@ -334,7 +347,6 @@
       measurementId: "G-0NGQSF9F4K"
     };
 
-    // INICIALIZAÇÃO DA NUVEM
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
@@ -347,26 +359,17 @@
     
     toggleFields(); 
 
-    // LISTENER DA NUVEM: Escuta alterações no banco em tempo real
-    db.collection("tarefas").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+    // LISTENER DA NUVEM (Simplificado para evitar erro de índice de consulta)
+    db.collection("tarefas").onSnapshot((snapshot) => {
       tasks = [];
       snapshot.forEach((doc) => {
         let task = doc.data();
-        task.id = doc.id; // O ID agora é a chave única gerada pelo Google
+        task.id = doc.id;
         tasks.push(task);
       });
-      render(); // Atualiza a tela
+      render(); 
     }, (error) => {
-      // Se der erro ao ordenar por createdAt por falta de índice no Firebase, puxa sem ordenar primeiro
-      db.collection("tarefas").onSnapshot((snapFallback) => {
-        tasks = [];
-        snapFallback.forEach((doc) => {
-          let task = doc.data();
-          task.id = doc.id;
-          tasks.push(task);
-        });
-        render();
-      });
+      alert("❌ Erro ao conectar com o banco de dados: " + error.message);
     });
 
     function toggleFields() {
@@ -402,36 +405,44 @@
       return `${dia}/${mes}/${ano}`;
     }
 
-    // GRAVAR NO FIREBASE
     function addTask() {
-      const category = document.getElementById('task-category').value;
-      const temSup = category === 'PESSOAL' ? 'NAO' : document.getElementById('task-tem-superior').value;
-      const exigeFb = temSup === 'SIM' ? document.getElementById('task-exige-feedback').value : 'NAO';
-      
-      const task = {
-        start: document.getElementById('task-created-at').value,
-        end: document.getElementById('task-deadline').value,
-        category: category,
-        secao: category === 'PESSOAL' ? 'NENHUMA' : document.getElementById('task-secao').value,
-        desc: document.getElementById('task-desc').value,
-        executor: document.getElementById('task-executor').value,
-        temSuperior: temSup,
-        superior: temSup === 'SIM' ? document.getElementById('task-superior').value : 'N/A',
-        exigeFeedbackSup: exigeFb,
-        statusFeedbackSup: 'PENDENTE',
-        feedback: '',
-        status: 'PENDENTE',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp() // Guarda a hora exata da nuvem
-      };
+      try {
+        const category = document.getElementById('task-category').value;
+        const temSup = category === 'PESSOAL' ? 'NAO' : document.getElementById('task-tem-superior').value;
+        const exigeFb = temSup === 'SIM' ? document.getElementById('task-exige-feedback').value : 'NAO';
+        const prioridade = document.getElementById('task-prioridade').value;
+        
+        const task = {
+          start: document.getElementById('task-created-at').value,
+          end: document.getElementById('task-deadline').value,
+          category: category,
+          secao: category === 'PESSOAL' ? 'NENHUMA' : document.getElementById('task-secao').value,
+          prioridade: prioridade,
+          desc: document.getElementById('task-desc').value,
+          executor: document.getElementById('task-executor').value,
+          temSuperior: temSup,
+          superior: temSup === 'SIM' ? document.getElementById('task-superior').value : 'N/A',
+          exigeFeedbackSup: exigeFb,
+          statusFeedbackSup: 'PENDENTE',
+          feedback: '',
+          status: 'PENDENTE',
+          createdAt: new Date().toISOString() // Mudado para data JS simples para evitar atraso de serverTimestamp
+        };
 
-      if(!task.end || !task.desc) return alert("Erro: Preencha a Missão e o Calendário de Prazo.");
-      
-      db.collection("tarefas").add(task).then(() => {
-        clearForm();
-      }).catch((error) => {
-        console.error("Erro ao adicionar:", error);
-        alert("Erro na sincronização com o Firebase.");
-      });
+        if(!task.end || !task.desc) {
+          alert("⚠️ Aviso: Preencha o campo 'Missão' e o 'Prazo Final' antes de salvar.");
+          return;
+        }
+        
+        db.collection("tarefas").add(task).then(() => {
+          alert("✅ Sucesso! Missão salva na nuvem do Google Firebase.");
+          clearForm();
+        }).catch((error) => {
+          alert("❌ ERRO FIREBASE: O Google bloqueou o envio. Motivo: " + error.message);
+        });
+      } catch(e) {
+        alert("❌ ERRO JAVASCRIPT: Falha no código do navegador. Motivo: " + e.message);
+      }
     }
 
     function clearForm() {
@@ -439,6 +450,7 @@
       document.getElementById('task-executor').value = '';
       document.getElementById('task-superior').value = '';
       document.getElementById('task-secao').value = 'NENHUMA';
+      document.getElementById('task-prioridade').value = 'MEDIA';
       document.getElementById('task-tem-superior').value = 'NAO';
       document.getElementById('task-exige-feedback').value = 'NAO';
       document.getElementById('task-deadline').value = '';
@@ -460,11 +472,10 @@
       render();
     }
 
-    // ATUALIZAR NO FIREBASE
     function updateTask(id, field, value) {
       db.collection("tarefas").doc(id).update({
         [field]: value
-      }).catch(err => console.error("Erro ao atualizar", err));
+      }).catch(err => alert("❌ Erro ao atualizar campo: " + err.message));
     }
 
     function editTaskFocus(id) {
@@ -478,9 +489,12 @@
       if(!t) return;
       const isTemSup = t.temSuperior === 'SIM';
       
+      let priIcon = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
+
       const modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = `
         <p><strong>Status da Missão:</strong> ${t.status}</p>
+        <p><strong>Prioridade:</strong> ${priIcon}</p>
         <p><strong>Categoria:</strong> ${t.category} ${t.secao !== 'NENHUMA' ? ' | Seção: ' + t.secao : ''}</p>
         <p><strong>Missão:</strong> ${t.desc}</p>
         <hr style="border-color: #333; margin: 15px 0;">
@@ -505,16 +519,18 @@
       document.getElementById('modal-detalhes').classList.remove('active');
     }
 
-    // EXCLUIR NO FIREBASE
     function deleteTask(id) {
       if(confirm("Confirmar a exclusão permanente deste registro na NUVEM?")) {
-        db.collection("tarefas").doc(id).delete().catch(err => console.error(err));
+        db.collection("tarefas").doc(id).delete().catch(err => alert("❌ Erro ao deletar: " + err.message));
       }
     }
 
     function formatTaskForWA(t) {
       let msg = `*Ordem de Missão / Relatório*\n`;
+      let priIcon = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
+      
       if(t.category === 'PROFISSIONAL') msg += `🏢 *Setor:* 8º BAEP${t.secao !== 'NENHUMA' ? ' - ' + t.secao : ''}\n`;
+      msg += `🚨 *Prioridade:* ${priIcon}\n`;
       msg += `📋 *Missão:* ${t.desc}\n`;
       msg += `⏳ *Prazo:* ${formatarDataBR(t.end)}\n`;
       if(t.executor) msg += `👤 *Executor:* ${t.executor}\n`;
@@ -564,65 +580,39 @@
         return matchCat && matchSec;
       });
 
-      // Ordenar por prazo final (os mais urgentes primeiro)
-      filteredTasks.sort((a,b) => new Date(a.end) - new Date(b.end)).forEach(t => {
+      // Ordenação local (mais seguro e rápido)
+      filteredTasks.sort((a,b) => {
+        const dateA = new Date(a.end || "2099-01-01");
+        const dateB = new Date(b.end || "2099-01-01");
+        return dateA - dateB;
+      }).forEach(t => {
         const isAtrasada = t.end < now && t.status !== 'CONCLUIDO';
         const isPessoal = t.category === 'PESSOAL';
         const isTemSup = t.temSuperior === 'SIM';
         const isExigeFb = t.exigeFeedbackSup === 'SIM';
         
+        t.prioridade = t.prioridade || 'MEDIA';
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><input type="checkbox" class="check-task" value="${t.id}"></td>
           <td>
-            <select onchange="updateTask('${t.id}', 'status', this.value)" style="border:1px solid var(--border);">
+            <select onchange="updateTask('${t.id}', 'status', this.value)" style="border:1px solid var(--border); margin-bottom:5px;">
               <option value="PENDENTE" ${t.status === 'PENDENTE' ? 'selected' : ''}>⏳ Pendente</option>
               <option value="CONCLUIDO" ${t.status === 'CONCLUIDO' ? 'selected' : ''}>✅ Concluído</option>
             </select>
           </td>
           <td>
             <span class="mobile-label">Missão / Categoria</span>
-            <span class="badge ${isPessoal ? 'bg-pessoal' : 'bg-prof'}">${t.category}</span>
-            ${t.secao && t.secao !== 'NENHUMA' ? `<span class="badge bg-sec">${t.secao}</span>` : ''}
-            <input type="text" id="desc-${t.id}" value="${t.desc}" onchange="updateTask('${t.id}', 'desc', this.value)" style="border:none; background:transparent; width: 100%; color: #fff; padding: 5px 0; margin-top:5px; font-weight:600;">
-          </td>
-          <td>
-            <span class="mobile-label">Responsáveis / Retorno</span>
-            <input type="text" value="${t.executor}" onchange="updateTask('${t.id}', 'executor', this.value)" title="Executor" style="border:none; background:transparent; color: var(--primary); font-weight:bold; width: 100%; padding:0; margin-bottom: 4px;">
-            ${isTemSup ? `
-              <small style="color:#666">Sup: ${t.superior}</small>
-              ${isExigeFb ? `
-                <div style="margin-top: 5px;">
-                  <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" class="${t.statusFeedbackSup === 'REALIZADO' ? 'status-realizado' : 'status-pendente'}" style="background:transparent; border:none; outline:none; font-weight:bold; padding:0; cursor:pointer; width: 100%; appearance: none;">
-                    <option value="PENDENTE" class="status-pendente" ${t.statusFeedbackSup === 'PENDENTE' ? 'selected' : ''}>⏳ RETORNO PENDENTE</option>
-                    <option value="REALIZADO" class="status-realizado" ${t.statusFeedbackSup === 'REALIZADO' ? 'selected' : ''}>✅ RETORNO DADO</option>
-                  </select>
-                </div>
-              ` : `<br><small style="color:#444; font-style:italic;">S/ nec. de retorno</small>`}
-            ` : `<br><small style="color:#444; font-style:italic;">Sem Superior</small>`}
-          </td>
-          <td>
-            <span class="mobile-label">Prazos</span>
-            <div style="font-size:0.8rem; color:#888;">De: <input type="date" value="${t.start}" onchange="updateTask('${t.id}', 'start', this.value)" style="border:none; background:transparent; color:#888; padding:2px 0; width:100%;"></div>
-            <div class="${isAtrasada ? 'atrasada' : ''}" style="font-weight:bold; margin-top:5px; font-size:0.85rem;">Até: <input type="date" value="${t.end}" onchange="updateTask('${t.id}', 'end', this.value)" style="border:none; background:transparent; color:inherit; padding:2px 0; width:100%;"></div>
-          </td>
-          <td>
-            <span class="mobile-label">Anotações da Missão</span>
-            <textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback}</textarea>
-          </td>
-          <td>
-            <span class="mobile-label">Ações</span>
-            <div class="action-grid">
-              <button class="btn-sm btn-det" onclick="openDetails('${t.id}')">DETALHES</button>
-              <button class="btn-sm btn-edit" onclick="editTaskFocus('${t.id}')">EDITAR</button>
-              <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCLUIR</button>
-              <button class="btn-sm btn-green" onclick="shareTask('${t.id}')">WA</button>
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px;">
+              <span class="badge ${isPessoal ? 'bg-pessoal' : 'bg-prof'}">${t.category}</span>
+              ${t.secao && t.secao !== 'NENHUMA' ? `<span class="badge bg-sec">${t.secao}</span>` : ''}
             </div>
-          </td>
-        `;
-        list.appendChild(tr);
-      });
-    }
-  </script>
-</body>
-</html>
+            
+            <select onchange="updateTask('${t.id}', 'prioridade', this.value)" class="pri-${t.prioridade}" style="background:transparent; border:none; outline:none; font-weight:bold; padding:0; font-size: 0.7rem; cursor:pointer; width: max-content; margin-bottom: 5px;">
+              <option value="BAIXA" style="color:#000" ${t.prioridade === 'BAIXA' ? 'selected' : ''}>🟢 PRI: BAIXA</option>
+              <option value="MEDIA" style="color:#000" ${t.prioridade === 'MEDIA' ? 'selected' : ''}>🟡 PRI: MÉDIA</option>
+              <option value="ALTA" style="color:#000" ${t.prioridade === 'ALTA' ? 'selected' : ''}>🔴 PRI: ALTA</option>
+            </select>
+
+            <input type="text" id="desc-${t.id}" value="${t.desc}" onchange="updateTask('${t
