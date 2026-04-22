@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - v6.7</title>
+  <title>SGT 8º BAEP - v6.8</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -17,57 +17,78 @@
     body { font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%); color: var(--text-main); margin: 0; padding-bottom: 30px; }
     
     #notification-container { position: fixed; top: 15px; right: 15px; z-index: 10001; display: flex; flex-direction: column; gap: 8px; }
-    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 10px 18px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.8rem; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
+    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 12px 20px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: 600; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
     @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1000; }
-    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 1px; font-size: 1.2rem; }
-    .container { max-width: 1600px; margin: 10px auto; padding: 0 10px; }
+    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
+    .container { max-width: 1600px; margin: 15px auto; padding: 0 20px; }
 
     /* DASHBOARD */
-    .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-    .stat-card { background: rgba(20, 20, 20, 0.9); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 10px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .stat-card h4 { margin: 0; font-size: 0.55rem; text-transform: uppercase; color: #888; }
-    .stat-card .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; margin-top: 3px; }
+    .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: rgba(20, 20, 20, 0.9); border: 1px solid var(--border); border-left: 5px solid var(--accent); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
+    .stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .stat-card h4 { margin: 0; font-size: 0.7rem; text-transform: uppercase; color: #888; }
+    .stat-card .value { font-size: 2.2rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; margin-top: 5px; }
 
-    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; }
-    .grid-form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-    label { display: block; font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 3px; }
-    input, select, textarea { width: 100%; padding: 8px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.8rem; }
+    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .grid-form { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.9rem; }
+    
+    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 15px; border-radius: 6px; text-transform: uppercase; font-size: 0.9rem; }
+    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+    .search-box input { background: transparent; border: none; font-size: 1rem; color: #fff; outline: none; width: 100%; }
 
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 10px; font-weight: 800; cursor: pointer; border: none; padding: 12px; border-radius: 4px; text-transform: uppercase; font-size: 0.8rem; }
-    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 8px; border-radius: 6px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
-    .search-box input { background: transparent; border: none; font-size: 0.85rem; color: #fff; outline: none; width: 100%; }
+    /* TABELA ADAPTADA PARA COMPUTADOR */
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th { background: #000; color: var(--accent); padding: 15px 10px; text-align: left; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--accent); }
+    td { padding: 15px 10px; border-bottom: 1px solid #222; font-size: 0.95rem; vertical-align: top; word-wrap: break-word; }
+    tr:hover { background: rgba(255,255,255,0.02); }
 
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #000; color: var(--accent); padding: 8px; text-align: left; font-size: 0.65rem; text-transform: uppercase; border-bottom: 1px solid var(--accent); }
-    td { padding: 10px 8px; border-bottom: 1px solid #222; font-size: 0.75rem; vertical-align: top; }
+    /* LARGURA DAS COLUNAS EM DESKTOP */
+    .col-status { width: 160px; }
+    .col-missao { width: auto; }
+    .col-prazo { width: 120px; }
+    .col-notas { width: 30%; }
+    .col-acoes { width: 150px; }
 
-    .action-row { display: flex; gap: 4px; margin-top: 8px; }
-    .btn-sm { flex: 1; padding: 8px 2px; border: none; border-radius: 3px; font-size: 0.55rem; font-weight: 800; cursor: pointer; text-transform: uppercase; color: white; text-align: center; }
+    .action-row { display: flex; gap: 5px; }
+    .btn-sm { flex: 1; padding: 10px 5px; border: none; border-radius: 4px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-transform: uppercase; color: white; transition: 0.2s; }
     .btn-edit { background: #1a3a5a; }
     .btn-wa { background: #128C7E; }
     .btn-del { background: var(--danger); }
+    .btn-sm:hover { opacity: 0.8; transform: translateY(-1px); }
 
-    .badge { padding: 2px 5px; border-radius: 3px; font-size: 0.55rem; font-weight: 800; display: inline-block; margin-bottom: 3px;}
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; display: inline-block; margin-bottom: 5px;}
     .bg-prof { background: rgba(140, 106, 54, 0.2); color: #d4af37; border: 1px solid #d4af37; }
 
+    /* TEXTAREA DE NOTAS MAIOR EM COMPUTADOR */
+    td textarea { height: 100px; font-size: 0.85rem; border-color: #333; line-height: 1.4; transition: 0.3s; }
+    td textarea:focus { height: 180px; border-color: var(--primary); background: #080808; }
+
     /* QUICK VIEW MODAL */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; padding: 20px; overflow-y: auto; }
-    .modal-content { background: #111; border: 1px solid var(--accent); border-radius: 10px; padding: 15px; max-width: 600px; margin: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; margin-bottom: 10px; }
-    .close-modal { color: var(--danger); font-size: 1.5rem; cursor: pointer; }
-    .modal-item { background: #1a1a1a; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; padding: 40px; overflow-y: auto; }
+    .modal-content { background: #111; border: 1px solid var(--accent); border-radius: 12px; padding: 25px; max-width: 800px; margin: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
+    .close-modal { color: var(--danger); font-size: 2rem; cursor: pointer; }
+    .modal-item { background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--accent); font-size: 1rem; }
 
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
 
-    @media (max-width: 768px) {
-      .dashboard { grid-template-columns: repeat(3, 1fr); }
+    /* AJUSTES PARA CELULAR (PROTOCOLOS MANTIDOS) */
+    @media (max-width: 1024px) {
+      .container { padding: 0 10px; }
+      .dashboard { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-card .value { font-size: 1.4rem; }
       table, thead, tbody, th, td, tr { display: block; }
-      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; padding: 10px; }
-      td { border: none; padding: 5px 0; border-bottom: 1px dashed #222; }
-      .action-row { grid-template-columns: repeat(3, 1fr); display: grid; }
+      th { display: none; }
+      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 12px; }
+      td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; width: 100% !important; }
+      td textarea { height: 70px; }
+      .action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+      .btn-sm { font-size: 0.6rem; padding: 12px 2px; }
     }
   </style>
 </head>
@@ -77,12 +98,12 @@
 
   <div id="quickview-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header"><h2 id="modal-title" style="margin:0; font-family:'Cinzel'; color:var(--primary); font-size:1.1rem;"></h2><span class="close-modal" onclick="closeQuickView()">&times;</span></div>
+      <div class="modal-header"><h2 id="modal-title" style="margin:0; font-family:'Cinzel'; color:var(--primary); font-size:1.5rem;"></h2><span class="close-modal" onclick="closeQuickView()">&times;</span></div>
       <div id="modal-body"></div>
     </div>
   </div>
 
-  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Gestão por Exceção 🟢 v6.7</small></div>
+  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Painel Estratégico 🟢 v6.8</small></div>
 
   <div class="container">
     <div class="dashboard">
@@ -92,26 +113,34 @@
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 10px 0; color:var(--primary); font-family:'Cinzel', serif; font-size: 1rem;">Nova Ordem</h3>
+      <h3 style="margin:0 0 15px 0; color:var(--primary); font-family:'Cinzel', serif; font-size: 1.2rem;">Lançar Ordem de Missão</h3>
       <div class="grid-form">
         <div><label>Categoria</label><select id="task-category" onchange="toggleFields()"><option value="PROFISSIONAL">BAEP</option><option value="PESSOAL">PESSOAL</option></select></div>
         <div><label>Seção</label><select id="task-secao"><option value="NENHUMA">---</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="SJD">SJD</option></select></div>
         <div><label>Prioridade</label><select id="task-prioridade"><option value="ALTA">🔴 ALTA</option><option value="MEDIA" selected>🟡 MÉDIA</option><option value="BAIXA">🟢 BAIXA</option></select></div>
         <div><label>Superior?</label><select id="task-tem-superior" onchange="toggleFields()"><option value="NAO">Não</option><option value="SIM">Sim</option></select></div>
-        <div style="grid-column: 1 / -1;"><label>Missão</label><input type="text" id="task-desc" placeholder="Descrição da missão..."></div>
+        <div style="grid-column: 1 / -1;"><label>Missão</label><input type="text" id="task-desc" placeholder="Descreva a missão operacional com clareza..."></div>
         <div><label>Executor</label><input type="text" id="task-executor"></div>
-        <div><label>Prazo</label><input type="date" id="task-deadline"></div>
+        <div><label>Prazo Final</label><input type="date" id="task-deadline"></div>
         <div id="div-feedback" style="display:none"><label>Exige Retorno?</label><select id="task-exige-feedback"><option value="NAO">Não</option><option value="SIM">Sim</option></select></div>
-        <div id="div-superior" style="display:none"><label>Superior</label><input type="text" id="task-superior"></div>
+        <div id="div-superior" style="display:none"><label>Superior Responsável</label><input type="text" id="task-superior"></div>
       </div>
-      <button class="btn-gold" onclick="addTask()">Cadastrar na Nuvem</button>
+      <button class="btn-gold" onclick="addTask()">Sincronizar Missão na Nuvem</button>
     </div>
 
     <div class="card">
-      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Filtrar por responsável ou missão..." onkeyup="render()"></div>
+      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Filtrar por qualquer termo da missão ou executor..." onkeyup="render()"></div>
       <div style="overflow-x: auto;">
         <table>
-          <thead><tr><th style="width: 130px;">Status/PRI</th><th>Missão/Detalhes</th><th style="width: 85px;">Prazo</th><th style="width: 120px;">Ações</th></tr></thead>
+          <thead>
+            <tr>
+              <th class="col-status">Status/PRI</th>
+              <th class="col-missao">Missão / Detalhes Operacionais</th>
+              <th class="col-prazo">Prazo</th>
+              <th class="col-notas">Anotações / Observações</th>
+              <th class="col-acoes">Comandos</th>
+            </tr>
+          </thead>
           <tbody id="task-list"></tbody>
         </table>
       </div>
@@ -172,9 +201,9 @@
       if(filter==='ATRASADA') { filtered = tasks.filter(t=>t.end < now); title = "⚠️ Missões Atrasadas"; }
       if(filter==='FEEDBACK') { filtered = tasks.filter(t=>t.exigeFeedbackSup==='SIM' && t.statusFeedbackSup==='NAO'); title = "Aguardando Feedback"; }
       document.getElementById('modal-title').innerText = title;
-      const body = document.getElementById('modal-body'); body.innerHTML = filtered.length ? '' : '<p style="text-align:center;color:#666;">Nenhuma missão ativa.</p>';
+      const body = document.getElementById('modal-body'); body.innerHTML = filtered.length ? '' : '<p style="text-align:center;color:#666;">Nenhuma missão ativa no momento.</p>';
       filtered.sort((a,b)=> new Date(a.end) - new Date(b.end)).forEach(t => {
-        body.innerHTML += `<div class="modal-item"><div style="font-weight:800;color:var(--primary)">${t.desc}</div><div style="font-size:0.7rem;margin-top:5px;">👤 Responsável: ${t.executor} | 📅 Prazo: ${formatDataBR(t.end)}</div></div>`;
+        body.innerHTML += `<div class="modal-item"><div style="font-weight:800;color:var(--primary);font-size:1.1rem;">${t.desc}</div><div style="font-size:0.8rem;margin-top:8px;">👤 Responsável: ${t.executor} | 🏢 Seção: ${t.secao} | 📅 Prazo: ${formatDataBR(t.end)}</div></div>`;
       });
       document.getElementById('quickview-modal').style.display = 'block';
     }
@@ -184,7 +213,7 @@
     function addTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
-      if(!desc || !end) return showNotify("Descrição e Prazo obrigatórios!", "error");
+      if(!desc || !end) return showNotify("Missão e Prazo são obrigatórios!", "error");
       const newTask = {
         category: document.getElementById('task-category').value,
         secao: document.getElementById('task-secao').value,
@@ -196,21 +225,21 @@
         start: new Date().toISOString().split('T')[0], end,
         status: 'PENDENTE', statusFeedbackSup: 'NAO', feedback: '', createdAt: new Date().toISOString()
       };
-      db.collection("tarefas").add(newTask).then(() => { showNotify("Missão Sincronizada!"); document.getElementById('task-desc').value = ''; });
+      db.collection("tarefas").add(newTask).then(() => { showNotify("Missão Lançada e Sincronizada!"); document.getElementById('task-desc').value = ''; });
     }
 
     function updateTask(id, field, value) {
       if(field === 'status' && value === 'CONCLUIDO') {
         db.collection("tarefas").doc(id).delete().then(() => showNotify("Missão Concluída e Removida!"));
       } else {
-        db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado"));
+        db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado com a Nuvem"));
       }
     }
 
     function sendWA(id) {
       const t = tasks.find(x => x.id === id);
       const prio = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
-      const msg = encodeURIComponent(`🚨 *SGT-8º BAEP*\n\n📋 *Missão:* ${t.desc}\n👤 *Executor:* ${t.executor}\n📅 *Prazo:* ${formatDataBR(t.end)}\n⚡ *PRI:* ${prio}`);
+      const msg = encodeURIComponent(`🚨 *SGT-8º BAEP | BRIEFING*\n------------------------------------\n\n📋 *Missão:* ${t.desc}\n👤 *Executor:* ${t.executor}\n📅 *Prazo:* ${formatDataBR(t.end)}\n⚡ *PRI:* ${prio}`);
       window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
 
@@ -228,21 +257,21 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
-            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:3px;"><option value="PENDENTE" selected>⏳ PENDENTE</option><option value="CONCLUIDO">✅ CONCLUÍDO</option></select>
+            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:5px;"><option value="PENDENTE" selected>⏳ PENDENTE</option><option value="CONCLUIDO">✅ CONCLUÍDO</option></select>
             <select onchange="updateTask('${t.id}', 'prioridade', this.value)" class="pri-${t.prioridade}"><option value="ALTA" ${t.prioridade==='ALTA'?'selected':''}>🔴 ALTA</option><option value="MEDIA" ${t.prioridade==='MEDIA'?'selected':''}>🟡 MÉDIA</option><option value="BAIXA" ${t.prioridade==='BAIXA'?'selected':''}>🟢 BAIXA</option></select>
           </td>
           <td>
             <span class="badge bg-prof">${t.secao}</span>
-            <div style="font-weight:800;color:#fff;margin:3px 0;">${t.desc}</div>
-            <div style="font-size:0.65rem;color:var(--primary);">Responsável: ${t.executor}</div>
+            <div style="font-weight:800;color:#fff;margin:4px 0; font-size:1.1rem;">${t.desc}</div>
+            <div style="font-size:0.75rem;color:var(--primary); font-weight:600;">Responsável: ${t.executor}</div>
             ${t.exigeFeedbackSup==='SIM'?`
-              <div style="margin-top:5px;font-size:0.6rem;">Feedback? 
-              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto;height:20px;padding:0;color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
+              <div style="margin-top:8px;font-size:0.7rem;">FEEDBACK DADO? 
+              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto;height:24px;padding:0 5px;color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
                 <option value="NAO" ${t.statusFeedbackSup==='NAO'?'selected':''}>NÃO</option><option value="SIM" ${t.statusFeedbackSup==='SIM'?'selected':''}>SIM</option>
               </select></div>`:''}
           </td>
-          <td style="color:${isAtrasada?'var(--danger)':'#fff'};font-weight:800;">${formatDataBR(t.end)}</td>
-          <td><textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback || ''}</textarea></td>
+          <td style="color:${isAtrasada?'var(--danger)':'#fff'};font-weight:800; font-size: 1.1rem;">${formatDataBR(t.end)}</td>
+          <td><textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Insira aqui as notas, andamentos ou atualizações da missão...">${t.feedback || ''}</textarea></td>
           <td><div class="action-row">
             <button class="btn-sm btn-edit" onclick="document.getElementById('task-desc').value='${t.desc}';document.getElementById('task-executor').value='${t.executor}';window.scrollTo(0,0);">EDIT</button>
             <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WA</button>
