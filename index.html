@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - Gestão Operacional v6.2</title>
+  <title>SGT 8º BAEP - Gestão Operacional v6.3</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -20,160 +20,60 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%);
-      color: var(--text-main);
-      margin: 0;
-      padding-bottom: 50px; 
-    }
-
-    .topbar {
-      background: rgba(0, 0, 0, 0.95);
-      border-bottom: 2px solid var(--accent);
-      padding: 15px 20px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(5px);
-    }
-
+    body { font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%); color: var(--text-main); margin: 0; padding-bottom: 50px; }
+    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 15px 20px; text-align: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(5px); }
     .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
-
     .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
 
-    /* SISTEMA DE NOTIFICAÇÕES (NOVO) */
-    #notification-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .notification {
-      background: rgba(15, 15, 15, 0.95);
-      border: 1px solid var(--accent);
-      color: #fff;
-      padding: 15px 25px;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      min-width: 280px;
-      animation: slideIn 0.4s ease forwards;
-      backdrop-filter: blur(10px);
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
+    /* NOTIFICAÇÕES */
+    #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 15px 25px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 600; animation: slideIn 0.4s ease forwards; backdrop-filter: blur(10px); }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     .notification.error { border-color: var(--danger); }
-    .notification.success { border-color: var(--success); }
 
     /* DASHBOARD */
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .stat-card {
-      background: rgba(17, 17, 17, 0.8);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--accent);
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-card { background: rgba(17, 17, 17, 0.8); border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 15px; border-radius: 8px; text-align: center; }
     .stat-card h4 { margin: 0; font-size: 0.65rem; text-transform: uppercase; color: #888; }
     .stat-card .value { font-size: 1.8rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; }
-    .stat-card.alert { border-left-color: var(--danger); }
-    .stat-card.alert .value { color: var(--danger); }
 
-    .card {
-      background: #111;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .grid-form {
-      display: grid;
-      gap: 15px;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-
+    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .grid-form { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
     label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.85rem; }
 
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      background: #000;
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 5px;
-      font-size: 0.85rem; 
-    }
-
-    .search-box {
-      background: #1a1a1a;
-      border: 1px solid var(--accent);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .search-box input { background: transparent; border: none; font-size: 1rem; outline: none; }
+    /* BUSCA */
+    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
+    .search-box input { background: transparent; border: none; font-size: 1rem; color: #fff; outline: none; width: 100%; }
 
     .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 15px; border-radius: 5px; text-transform: uppercase;}
-    .btn-green { background: #128C7E; color: #fff; padding: 10px 15px; font-size: 0.75rem; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
-    
-    .toolbar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    
-    .btn-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; font-weight: bold; }
-    .btn-filter.active { background: var(--accent); color: #000; border-color: var(--primary); }
     
     table { width: 100%; border-collapse: collapse; }
-    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-family: 'Cinzel', serif; font-size: 0.75rem; }
+    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-size: 0.75rem; }
     td { padding: 12px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top;}
 
-    .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-right: 5px; }
+    .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-bottom: 5px; }
     .bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
     .bg-pessoal { background: #1a1a1a; color: #888; border: 1px solid #444; }
-    .bg-sec { background: #333; color: #fff; }
-    
-    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-    .btn-sm { padding: 8px; border: none; border-radius: 3px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+
+    /* AÇÕES */
+    .action-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
+    .btn-sm { padding: 8px; border: none; border-radius: 4px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+    .btn-edit { background: #1a3a5a; color: #fff; }
     .btn-del { background: var(--danger); color: white; }
-    
+    .btn-wa { background: #128C7E; color: white; }
+    .btn-sm:active { transform: scale(0.95); }
+
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
     .pri-BAIXA { color: var(--success) !important; font-weight: 800; }
 
     @media (max-width: 768px) {
-      #notification-container { top: auto; bottom: 80px; right: 10px; left: 10px; }
       .dashboard { grid-template-columns: 1fr 1fr; }
       table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; } 
-      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 15px; }
+      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 12px; }
       td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; position: relative; }
+      .action-grid { grid-template-columns: 1fr 1fr 1fr; }
     }
   </style>
 </head>
@@ -183,28 +83,16 @@
 
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Interface Premium Ativa 🟢 v6.2</small>
+    <small style="color:var(--success)">Gestão Operacional 🟢 v6.3</small>
   </div>
 
   <div class="container">
     
     <div class="dashboard">
-      <div class="stat-card">
-        <h4>Total</h4>
-        <div class="value" id="stat-total">0</div>
-      </div>
-      <div class="stat-card">
-        <h4>Pendentes</h4>
-        <div class="value" id="stat-pendente">0</div>
-      </div>
-      <div class="stat-card alert">
-        <h4>Atrasadas</h4>
-        <div class="value" id="stat-atrasada">0</div>
-      </div>
-      <div class="stat-card">
-        <h4>Feedbacks</h4>
-        <div class="value" id="stat-feedback" style="color: #00c3ff">0</div>
-      </div>
+      <div class="stat-card"><h4>Total</h4><div class="value" id="stat-total">0</div></div>
+      <div class="stat-card"><h4>Pendentes</h4><div class="value" id="stat-pendente">0</div></div>
+      <div class="stat-card alert"><h4>Atrasadas</h4><div class="value" id="stat-atrasada">0</div></div>
+      <div class="stat-card"><h4>Feedbacks</h4><div class="value" id="stat-feedback" style="color: #00c3ff">0</div></div>
     </div>
 
     <div class="card">
@@ -238,7 +126,7 @@
           </select>
         </div>
         <div>
-          <label>Atribuída por Sup?</label>
+          <label>Superior Direto?</label>
           <select id="task-tem-superior" onchange="toggleFields()">
             <option value="NAO">Não</option>
             <option value="SIM">Sim</option>
@@ -248,72 +136,37 @@
           <label id="label-exige-feedback" style="opacity: 0.4;">Exige Retorno?</label>
           <select id="task-exige-feedback" disabled>
             <option value="NAO">Não</option>
-            <option value="SIM">Sim, após conclusão</option>
+            <option value="SIM">Sim</option>
           </select>
         </div>
         <div style="grid-column: 1 / -1;">
           <label>Missão / Descrição</label>
-          <input type="text" id="task-desc" placeholder="O que precisa ser feito?">
+          <input type="text" id="task-desc" placeholder="Detalhes da missão...">
         </div>
-        <div>
-          <label>Executor</label>
-          <input type="text" id="task-executor" placeholder="Nome do responsável">
-        </div>
-        <div>
-          <label id="label-superior" style="opacity: 0.4;">Nome do Superior</label>
-          <input type="text" id="task-superior" disabled>
-        </div>
-        <div>
-          <label>Início</label>
-          <input type="date" id="task-created-at">
-        </div>
-        <div>
-          <label>Prazo Final</label>
-          <input type="date" id="task-deadline">
-        </div>
+        <div><label>Executor</label><input type="text" id="task-executor"></div>
+        <div><label id="label-superior" style="opacity:0.4">Superior</label><input type="text" id="task-superior" disabled></div>
+        <div><label>Início</label><input type="date" id="task-created-at"></div>
+        <div><label>Prazo Final</label><input type="date" id="task-deadline"></div>
       </div>
-      <button class="btn-gold" onclick="addTask()">Cadastrar Missão na Nuvem</button>
+      <button class="btn-gold" onclick="addTask()">Cadastrar Missão</button>
     </div>
 
     <div class="card">
-      <div class="search-box">
-        <span style="color:var(--accent)">🔍</span>
-        <input type="text" id="search-input" placeholder="Buscar missão ou executor..." onkeyup="render()">
+      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Buscar missão ou executor..." onkeyup="render()"></div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 140px;">Status / PRI</th>
+              <th>Missão / Detalhes</th>
+              <th style="width: 100px;">Prazo</th>
+              <th>Notas</th>
+              <th style="width: 100px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="task-list"></tbody>
+        </table>
       </div>
-
-      <div class="toolbar-actions">
-        <div class="filter-group">
-          <button class="btn btn-filter active" id="f-all" onclick="setFilter('ALL')">TODAS</button>
-          <button class="btn btn-filter" id="f-prof" onclick="setFilter('PROFISSIONAL')">PROFISSIONAL</button>
-          <button class="btn btn-filter" id="f-pessoal" onclick="setFilter('PESSOAL')">PESSOAL</button>
-        </div>
-        <select id="filter-secao" style="width: auto;" onchange="setSecaoFilter(this.value)">
-          <option value="ALL">TODAS AS SEÇÕES</option>
-          <option value="P1">P1</option>
-          <option value="P2">P2</option>
-          <option value="P3">P3</option>
-          <option value="P4">P4</option>
-          <option value="P5">P5</option>
-          <option value="SJD">SJD</option>
-        </select>
-      </div>
-      
-      <tbody id="task-list-container">
-        <div style="overflow-x: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 120px;">Status / PRI</th>
-                <th>Missão / Detalhes</th>
-                <th>Prazos</th>
-                <th>Anotações</th>
-                <th style="width: 120px;">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="task-list"></tbody>
-          </table>
-        </div>
-      </tbody>
     </div>
   </div>
 
@@ -332,36 +185,26 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     let tasks = [];
-    let currentFilter = 'ALL';
-    let currentSecaoFilter = 'ALL';
-    const hoje = new Date().toISOString().split('T')[0];
-    document.getElementById('task-created-at').value = hoje;
 
-    // FUNÇÃO DE NOTIFICAÇÃO PREMIUM
     function showNotify(msg, type = 'success') {
       const container = document.getElementById('notification-container');
       const toast = document.createElement('div');
       toast.className = `notification ${type}`;
-      const icon = type === 'success' ? '✅' : '⚠️';
-      toast.innerHTML = `<span>${icon}</span> ${msg}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> ${msg}`;
       container.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = '0.5s';
-        setTimeout(() => toast.remove(), 500);
-      }, 3000);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+    }
+
+    function formatDataBR(dataISO) {
+      if(!dataISO) return "---";
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
     }
 
     db.collection("tarefas").onSnapshot((snapshot) => {
       tasks = [];
-      snapshot.forEach((doc) => {
-        let t = doc.data();
-        t.id = doc.id;
-        tasks.push(t);
-      });
+      snapshot.forEach((doc) => { let t = doc.data(); t.id = doc.id; tasks.push(t); });
       updateStats();
       render();
     });
@@ -371,30 +214,21 @@
       document.getElementById('stat-total').innerText = tasks.length;
       document.getElementById('stat-pendente').innerText = tasks.filter(t => t.status === 'PENDENTE').length;
       document.getElementById('stat-atrasada').innerText = tasks.filter(t => t.end < now && t.status !== 'CONCLUIDO').length;
-      document.getElementById('stat-feedback').innerText = tasks.filter(t => t.exigeFeedbackSup === 'SIM' && t.statusFeedbackSup === 'PENDENTE').length;
+      document.getElementById('stat-feedback').innerText = tasks.filter(t => t.exigeFeedbackSup === 'SIM' && t.statusFeedbackSup === 'NAO').length;
     }
 
     function toggleFields() {
-      const category = document.getElementById('task-category').value;
-      const temSup = document.getElementById('task-tem-superior').value;
-      document.getElementById('task-secao').disabled = (category === 'PESSOAL');
-      const supIn = document.getElementById('task-superior');
-      const fbSel = document.getElementById('task-exige-feedback');
-      if(temSup === 'SIM') {
-        supIn.disabled = false; fbSel.disabled = false;
-        document.getElementById('label-superior').style.opacity = "1";
-        document.getElementById('label-exige-feedback').style.opacity = "1";
-      } else {
-        supIn.disabled = true; fbSel.disabled = true;
-        document.getElementById('label-superior').style.opacity = "0.4";
-        document.getElementById('label-exige-feedback').style.opacity = "0.4";
-      }
+      const temSup = document.getElementById('task-tem-superior').value === 'SIM';
+      document.getElementById('task-superior').disabled = !temSup;
+      document.getElementById('task-exige-feedback').disabled = !temSup;
+      document.getElementById('label-superior').style.opacity = temSup ? "1" : "0.4";
+      document.getElementById('label-exige-feedback').style.opacity = temSup ? "1" : "0.4";
     }
 
     function addTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
-      if(!desc || !end) return showNotify("Preencha Descrição e Prazo!", "error");
+      if(!desc || !end) return showNotify("Missão e Prazo são obrigatórios!", "error");
 
       const newTask = {
         category: document.getElementById('task-category').value,
@@ -404,41 +238,47 @@
         superior: document.getElementById('task-superior').value || 'N/A',
         exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
         desc: desc,
-        executor: document.getElementById('task-executor').value || 'N/A',
+        executor: document.getElementById('task-executor').value || 'Não inf.',
         start: document.getElementById('task-created-at').value,
         end: end,
         status: 'PENDENTE',
-        statusFeedbackSup: 'PENDENTE',
+        statusFeedbackSup: 'NAO',
         feedback: '',
         createdAt: new Date().toISOString()
       };
 
       db.collection("tarefas").add(newTask).then(() => {
-        showNotify("Missão Cadastrada na Nuvem!");
+        showNotify("Missão Lançada!");
         document.getElementById('task-desc').value = '';
-      }).catch(err => showNotify("Erro ao Salvar: " + err.message, "error"));
+      });
     }
 
     function updateTask(id, field, value) {
-      db.collection("tarefas").doc(id).update({ [field]: value })
-        .then(() => showNotify("Registro Atualizado"))
-        .catch(err => showNotify("Erro na atualização", "error"));
+      db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado"));
     }
 
     function deleteTask(id) {
-      if(confirm("Excluir missão definitivamente?")) {
-        db.collection("tarefas").doc(id).delete().then(() => showNotify("Missão Removida"));
-      }
+      if(confirm("Deseja EXCLUIR permanentemente?")) db.collection("tarefas").doc(id).delete();
     }
 
-    function setFilter(f) {
-      currentFilter = f;
-      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-      document.getElementById('f-' + (f==='PROFISSIONAL'?'prof':f.toLowerCase())).classList.add('active');
-      render();
+    function sendWA(id) {
+      const t = tasks.find(x => x.id === id);
+      const pri = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
+      const status = t.status === 'CONCLUIDO' ? '✅ CONCLUÍDO' : '⏳ PENDENTE';
+      
+      const msg = encodeURIComponent(
+        `🚨 *SGT - 8º BAEP | ORDEM DE MISSÃO*\n\n` +
+        `🏢 *Setor:* ${t.category} | Seção: ${t.secao}\n` +
+        `⚡ *Prioridade:* ${pri}\n\n` +
+        `📋 *Missão:* ${t.desc}\n` +
+        `👤 *Executor:* ${t.executor}\n` +
+        `📅 *Prazo:* ${formatDataBR(t.end)}\n\n` +
+        `📊 *Status:* ${status}\n` +
+        `${t.exigeFeedbackSup === 'SIM' ? `🗣️ *Retorno Superior:* ${t.statusFeedbackSup === 'SIM' ? '✅ SIM' : '❌ NÃO'}\n` : ''}` +
+        `${t.feedback ? `📝 *Notas:* ${t.feedback}` : ''}`
+      );
+      window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
-
-    function setSecaoFilter(s) { currentSecaoFilter = s; render(); }
 
     function render() {
       const list = document.getElementById('task-list');
@@ -447,10 +287,8 @@
       list.innerHTML = '';
 
       tasks.filter(t => {
-        const mCat = currentFilter === 'ALL' || t.category === currentFilter;
-        const mSec = currentSecaoFilter === 'ALL' || t.secao === currentSecaoFilter;
         const mSearch = t.desc.toLowerCase().includes(searchTerm) || t.executor.toLowerCase().includes(searchTerm);
-        return mCat && mSec && mSearch;
+        return mSearch;
       }).sort((a,b) => new Date(a.end) - new Date(b.end)).forEach(t => {
         const isAtrasada = t.end < now && t.status !== 'CONCLUIDO';
         const tr = document.createElement('tr');
@@ -467,27 +305,26 @@
             </select>
           </td>
           <td>
-            <span class="badge ${t.category==='PESSOAL'?'bg-pessoal':'bg-prof'}">${t.category}</span>
-            <span class="badge bg-sec">${t.secao}</span>
-            <div style="font-weight:800; margin-top:5px; color:#fff;">${t.desc}</div>
-            <div style="font-size:0.75rem; color:var(--primary); margin-top:3px;">Executor: ${t.executor}</div>
+            <span class="badge ${t.category==='PESSOAL'?'bg-pessoal':'bg-prof'}">${t.category} | ${t.secao}</span>
+            <div style="font-weight:800; color:#fff; margin: 4px 0;">${t.desc}</div>
+            <div style="font-size:0.75rem; color:var(--primary);">Executor: ${t.executor}</div>
             ${t.exigeFeedbackSup === 'SIM' ? `
-              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="margin-top:8px; font-size:0.65rem; width:auto; color:${t.statusFeedbackSup==='REALIZADO'?'var(--success)':'var(--danger)'}">
-                <option value="PENDENTE" ${t.statusFeedbackSup==='PENDENTE'?'selected':''}>⏳ RETORNO PENDENTE</option>
-                <option value="REALIZADO" ${t.statusFeedbackSup==='REALIZADO'?'selected':''}>✅ RETORNO DADO</option>
-              </select>
+              <div style="margin-top:8px;">
+                <label style="font-size:0.6rem; color:#888;">FEEDBACK DADO?</label>
+                <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto; font-size:0.7rem; height:28px; padding:0 5px; color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
+                  <option value="NAO" ${t.statusFeedbackSup==='NAO'?'selected':''}>❌ NÃO</option>
+                  <option value="SIM" ${t.statusFeedbackSup==='SIM'?'selected':''}>✅ SIM</option>
+                </select>
+              </div>
             ` : ''}
           </td>
-          <td style="${isAtrasada ? 'color:var(--danger); font-weight:800;' : 'color:#fff;'}">
-            ${t.end}
-          </td>
-          <td>
-            <textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Notas...">${t.feedback || ''}</textarea>
-          </td>
+          <td style="color:${isAtrasada?'var(--danger)':'#fff'}; font-weight:800;">${formatDataBR(t.end)}</td>
+          <td><textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback || ''}</textarea></td>
           <td>
             <div class="action-grid">
+              <button class="btn-sm btn-edit" onclick="document.getElementById('search-input').value='${t.desc}'; render(); showNotify('Foco na missão selecionada')">EDIT</button>
+              <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WHATS</button>
               <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCL</button>
-              <button class="btn-sm btn-green" onclick="window.open('https://wa.me/?text=${encodeURIComponent('*SGT BAEP:* ' + t.desc + ' | Prazo: ' + t.end)}', '_blank')">WA</button>
             </div>
           </td>
         `;
