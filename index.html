@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - Gestão Operacional v6.3</title>
+  <title>SGT 8º BAEP - Gestão Operacional v6.4</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -21,48 +21,47 @@
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%); color: var(--text-main); margin: 0; padding-bottom: 50px; }
-    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 15px 20px; text-align: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(5px); }
-    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
-    .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
-
-    /* NOTIFICAÇÕES */
+    
+    /* TOAST NOTIFICATIONS */
     #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 15px 25px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-weight: 600; animation: slideIn 0.4s ease forwards; backdrop-filter: blur(10px); }
+    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 12px 20px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.85rem; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
     @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    .notification.error { border-color: var(--danger); }
+
+    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(5px); }
+    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.4rem; }
+    .container { max-width: 1600px; margin: 15px auto; padding: 0 10px; }
 
     /* DASHBOARD */
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .stat-card { background: rgba(17, 17, 17, 0.8); border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 15px; border-radius: 8px; text-align: center; }
-    .stat-card h4 { margin: 0; font-size: 0.65rem; text-transform: uppercase; color: #888; }
-    .stat-card .value { font-size: 1.8rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; }
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: rgba(17, 17, 17, 0.8); border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 12px; border-radius: 8px; text-align: center; }
+    .stat-card h4 { margin: 0; font-size: 0.6rem; text-transform: uppercase; color: #888; }
+    .stat-card .value { font-size: 1.6rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; margin-top: 5px; }
 
-    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-    .grid-form { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-    label { display: block; font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-    input, select, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.85rem; }
+    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .grid-form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    label { display: block; font-size: 0.65rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+    input, select, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.8rem; }
 
-    /* BUSCA */
-    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; }
-    .search-box input { background: transparent; border: none; font-size: 1rem; color: #fff; outline: none; width: 100%; }
-
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 15px; border-radius: 5px; text-transform: uppercase;}
+    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 14px; border-radius: 5px; text-transform: uppercase; font-size: 0.85rem;}
     
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-size: 0.75rem; }
-    td { padding: 12px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top;}
+    /* BUSCA */
+    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 10px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
+    .search-box input { background: transparent; border: none; font-size: 0.9rem; color: #fff; outline: none; width: 100%; }
 
-    .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-bottom: 5px; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-size: 0.7rem; }
+    td { padding: 10px; border-bottom: 1px solid #222; font-size: 0.8rem; vertical-align: top;}
+
+    .badge { padding: 3px 6px; border-radius: 3px; font-size: 0.6rem; font-weight: 800; display: inline-block; margin-bottom: 4px; }
     .bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
     .bg-pessoal { background: #1a1a1a; color: #888; border: 1px solid #444; }
 
     /* AÇÕES */
-    .action-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
-    .btn-sm { padding: 8px; border: none; border-radius: 4px; font-size: 0.65rem; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+    .action-grid { display: grid; grid-template-columns: 1fr; gap: 4px; }
+    .btn-sm { padding: 7px; border: none; border-radius: 4px; font-size: 0.6rem; font-weight: 800; cursor: pointer; text-transform: uppercase; text-align: center; }
     .btn-edit { background: #1a3a5a; color: #fff; }
     .btn-del { background: var(--danger); color: white; }
     .btn-wa { background: #128C7E; color: white; }
-    .btn-sm:active { transform: scale(0.95); }
 
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
@@ -72,8 +71,9 @@
       .dashboard { grid-template-columns: 1fr 1fr; }
       table, thead, tbody, th, td, tr { display: block; }
       tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 12px; }
-      td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; position: relative; }
-      .action-grid { grid-template-columns: 1fr 1fr 1fr; }
+      td { border: none; padding: 6px 0; border-bottom: 1px dashed #222; position: relative; }
+      .action-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+      input, select, textarea { font-size: 16px !important; }
     }
   </style>
 </head>
@@ -83,7 +83,7 @@
 
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Gestão Operacional 🟢 v6.3</small>
+    <small style="color:var(--success)">Sistema Operacional 🟢 v6.4</small>
   </div>
 
   <div class="container">
@@ -91,12 +91,12 @@
     <div class="dashboard">
       <div class="stat-card"><h4>Total</h4><div class="value" id="stat-total">0</div></div>
       <div class="stat-card"><h4>Pendentes</h4><div class="value" id="stat-pendente">0</div></div>
-      <div class="stat-card alert"><h4>Atrasadas</h4><div class="value" id="stat-atrasada">0</div></div>
+      <div class="stat-card" style="border-left-color: var(--danger);"><h4 style="color:var(--danger)">Atrasadas</h4><div class="value" id="stat-atrasada" style="color:var(--danger)">0</div></div>
       <div class="stat-card"><h4>Feedbacks</h4><div class="value" id="stat-feedback" style="color: #00c3ff">0</div></div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 15px 0; color:var(--primary); font-family:'Cinzel', serif;">Nova Missão</h3>
+      <h3 style="margin:0 0 15px 0; color:var(--primary); font-family:'Cinzel', serif; font-size: 1.1rem;">Cadastrar Missão</h3>
       <div class="grid-form">
         <div>
           <label>Categoria</label>
@@ -141,18 +141,18 @@
         </div>
         <div style="grid-column: 1 / -1;">
           <label>Missão / Descrição</label>
-          <input type="text" id="task-desc" placeholder="Detalhes da missão...">
+          <input type="text" id="task-desc" placeholder="Detalhes da missão operacional...">
         </div>
         <div><label>Executor</label><input type="text" id="task-executor"></div>
         <div><label id="label-superior" style="opacity:0.4">Superior</label><input type="text" id="task-superior" disabled></div>
         <div><label>Início</label><input type="date" id="task-created-at"></div>
         <div><label>Prazo Final</label><input type="date" id="task-deadline"></div>
       </div>
-      <button class="btn-gold" onclick="addTask()">Cadastrar Missão</button>
+      <button class="btn-gold" onclick="addTask()">Cadastrar Missão na Nuvem</button>
     </div>
 
     <div class="card">
-      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Buscar missão ou executor..." onkeyup="render()"></div>
+      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Filtrar por missão ou responsável..." onkeyup="render()"></div>
       <div style="overflow-x: auto;">
         <table>
           <thead>
@@ -160,7 +160,7 @@
               <th style="width: 140px;">Status / PRI</th>
               <th>Missão / Detalhes</th>
               <th style="width: 100px;">Prazo</th>
-              <th>Notas</th>
+              <th>Anotações</th>
               <th style="width: 100px;">Ações</th>
             </tr>
           </thead>
@@ -223,6 +223,7 @@
       document.getElementById('task-exige-feedback').disabled = !temSup;
       document.getElementById('label-superior').style.opacity = temSup ? "1" : "0.4";
       document.getElementById('label-exige-feedback').style.opacity = temSup ? "1" : "0.4";
+      document.getElementById('task-secao').disabled = (document.getElementById('task-category').value === 'PESSOAL');
     }
 
     function addTask() {
@@ -238,7 +239,7 @@
         superior: document.getElementById('task-superior').value || 'N/A',
         exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
         desc: desc,
-        executor: document.getElementById('task-executor').value || 'Não inf.',
+        executor: document.getElementById('task-executor').value || 'Não informado',
         start: document.getElementById('task-created-at').value,
         end: end,
         status: 'PENDENTE',
@@ -248,34 +249,37 @@
       };
 
       db.collection("tarefas").add(newTask).then(() => {
-        showNotify("Missão Lançada!");
+        showNotify("Missão Sincronizada com Sucesso!");
         document.getElementById('task-desc').value = '';
-      });
+      }).catch(err => showNotify("Erro ao salvar: " + err.message, "error"));
     }
 
     function updateTask(id, field, value) {
-      db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado"));
+      db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Dado Atualizado"));
     }
 
     function deleteTask(id) {
-      if(confirm("Deseja EXCLUIR permanentemente?")) db.collection("tarefas").doc(id).delete();
+      if(confirm("Confirmar EXCLUSÃO definitiva na nuvem?")) {
+        db.collection("tarefas").doc(id).delete().then(() => showNotify("Registro Removido"));
+      }
     }
 
     function sendWA(id) {
       const t = tasks.find(x => x.id === id);
-      const pri = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
-      const status = t.status === 'CONCLUIDO' ? '✅ CONCLUÍDO' : '⏳ PENDENTE';
+      const prioEmoji = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
+      const statusEmoji = t.status === 'CONCLUIDO' ? '✅ CONCLUÍDO' : '⏳ PENDENTE';
       
       const msg = encodeURIComponent(
-        `🚨 *SGT - 8º BAEP | ORDEM DE MISSÃO*\n\n` +
-        `🏢 *Setor:* ${t.category} | Seção: ${t.secao}\n` +
-        `⚡ *Prioridade:* ${pri}\n\n` +
+        `🚨 *BRIEFING OPERACIONAL | SGT-8º BAEP*\n` +
+        `------------------------------------\n\n` +
+        `🏢 *Setor:* ${t.category} | ${t.secao}\n` +
+        `⚡ *Prioridade:* ${prioEmoji}\n\n` +
         `📋 *Missão:* ${t.desc}\n` +
-        `👤 *Executor:* ${t.executor}\n` +
+        `👤 *Responsável:* ${t.executor}\n` +
         `📅 *Prazo:* ${formatDataBR(t.end)}\n\n` +
-        `📊 *Status:* ${status}\n` +
-        `${t.exigeFeedbackSup === 'SIM' ? `🗣️ *Retorno Superior:* ${t.statusFeedbackSup === 'SIM' ? '✅ SIM' : '❌ NÃO'}\n` : ''}` +
-        `${t.feedback ? `📝 *Notas:* ${t.feedback}` : ''}`
+        `📊 *Status:* ${statusEmoji}\n` +
+        `${t.exigeFeedbackSup === 'SIM' ? `🗣️ *Feedback Dado:* ${t.statusFeedbackSup === 'SIM' ? '✅ SIM' : '❌ NÃO'}\n` : ''}` +
+        `${t.feedback ? `\n📝 *Notas:* ${t.feedback}` : ''}`
       );
       window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
@@ -287,14 +291,14 @@
       list.innerHTML = '';
 
       tasks.filter(t => {
-        const mSearch = t.desc.toLowerCase().includes(searchTerm) || t.executor.toLowerCase().includes(searchTerm);
-        return mSearch;
+        const match = t.desc.toLowerCase().includes(searchTerm) || t.executor.toLowerCase().includes(searchTerm);
+        return match;
       }).sort((a,b) => new Date(a.end) - new Date(b.end)).forEach(t => {
         const isAtrasada = t.end < now && t.status !== 'CONCLUIDO';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
-            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:5px;">
+            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:4px;">
               <option value="PENDENTE" ${t.status==='PENDENTE'?'selected':''}>⏳ PENDENTE</option>
               <option value="CONCLUIDO" ${t.status==='CONCLUIDO'?'selected':''}>✅ CONCLUÍDO</option>
             </select>
@@ -307,11 +311,11 @@
           <td>
             <span class="badge ${t.category==='PESSOAL'?'bg-pessoal':'bg-prof'}">${t.category} | ${t.secao}</span>
             <div style="font-weight:800; color:#fff; margin: 4px 0;">${t.desc}</div>
-            <div style="font-size:0.75rem; color:var(--primary);">Executor: ${t.executor}</div>
+            <div style="font-size:0.7rem; color:var(--primary);">Executor: ${t.executor}</div>
             ${t.exigeFeedbackSup === 'SIM' ? `
-              <div style="margin-top:8px;">
+              <div style="margin-top:6px;">
                 <label style="font-size:0.6rem; color:#888;">FEEDBACK DADO?</label>
-                <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto; font-size:0.7rem; height:28px; padding:0 5px; color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
+                <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto; height:26px; padding:0 5px; color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
                   <option value="NAO" ${t.statusFeedbackSup==='NAO'?'selected':''}>❌ NÃO</option>
                   <option value="SIM" ${t.statusFeedbackSup==='SIM'?'selected':''}>✅ SIM</option>
                 </select>
@@ -322,7 +326,7 @@
           <td><textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback || ''}</textarea></td>
           <td>
             <div class="action-grid">
-              <button class="btn-sm btn-edit" onclick="document.getElementById('search-input').value='${t.desc}'; render(); showNotify('Foco na missão selecionada')">EDIT</button>
+              <button class="btn-sm btn-edit" onclick="document.getElementById('task-desc').value='${t.desc}'; document.getElementById('task-executor').value='${t.executor}'; window.scrollTo(0,0); showNotify('Dados carregados no formulário')">EDIT</button>
               <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WHATS</button>
               <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCL</button>
             </div>
