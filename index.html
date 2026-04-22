@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - Gestão Operacional v6.0</title>
+  <title>SGT 8º BAEP - Gestão Operacional v6.1</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -44,7 +44,7 @@
 
     .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
 
-    /* DASHBOARD STYLES */
+    /* DASHBOARD */
     .dashboard {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -59,12 +59,10 @@
       padding: 15px;
       border-radius: 8px;
       text-align: center;
-      transition: 0.3s;
     }
 
-    .stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
-    .stat-card h4 { margin: 0; font-size: 0.65rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
-    .stat-card .value { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin: 5px 0; font-family: 'Cinzel', serif; }
+    .stat-card h4 { margin: 0; font-size: 0.65rem; text-transform: uppercase; color: #888; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; }
     .stat-card.alert { border-left-color: var(--danger); }
     .stat-card.alert .value { color: var(--danger); }
 
@@ -86,7 +84,7 @@
 
     input, select, textarea {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background: #000;
       border: 1px solid var(--border);
       color: #fff;
@@ -94,28 +92,37 @@
       font-size: 0.85rem; 
     }
 
-    .btn {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: 0.3s;
+    /* BARRA DE BUSCA */
+    .search-box {
+      background: #1a1a1a;
+      border: 1px solid var(--accent);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; }
-    .btn-green { background: #128C7E; color: #fff; padding: 10px 15px; font-size: 0.75rem; border-radius: 4px; }
+    .search-box input {
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 15px; border-radius: 5px; text-transform: uppercase;}
+    .btn-green { background: #128C7E; color: #fff; padding: 10px 15px; font-size: 0.75rem; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
     
     .toolbar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
     .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
     
-    .btn-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; }
+    .btn-filter { background: #222; color: #888; border: 1px solid #444; padding: 8px 15px; font-size: 0.7rem; cursor: pointer; border-radius: 3px; font-weight: bold; }
     .btn-filter.active { background: var(--accent); color: #000; border-color: var(--primary); }
     
     table { width: 100%; border-collapse: collapse; }
     th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-family: 'Cinzel', serif; font-size: 0.75rem; }
-    td { padding: 8px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; }
+    td { padding: 12px 10px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top;}
 
     .badge { padding: 4px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; display: inline-block; margin-right: 5px; }
     .bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
@@ -125,7 +132,6 @@
     .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     .btn-sm { padding: 8px; border: none; border-radius: 3px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
     .btn-del { background: var(--danger); color: white; }
-    .btn-det { background: #333; color: var(--primary); border: 1px solid var(--primary); }
     
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
@@ -137,6 +143,7 @@
       thead { display: none; } 
       tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 15px; }
       td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; position: relative; }
+      input, select, textarea { font-size: 16px !important; }
     }
   </style>
 </head>
@@ -144,32 +151,32 @@
 
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Painel de Indicadores Ativo 🟢 v6.0</small>
+    <small style="color:var(--success)">Gestão em Tempo Real 🟢 v6.1</small>
   </div>
 
   <div class="container">
     
     <div class="dashboard">
       <div class="stat-card">
-        <h4>Total Missões</h4>
+        <h4>Total</h4>
         <div class="value" id="stat-total">0</div>
       </div>
       <div class="stat-card">
         <h4>Pendentes</h4>
-        <div class="value" id="stat-pendente" style="color: var(--primary)">0</div>
+        <div class="value" id="stat-pendente">0</div>
       </div>
       <div class="stat-card alert">
         <h4>Atrasadas</h4>
         <div class="value" id="stat-atrasada">0</div>
       </div>
       <div class="stat-card">
-        <h4>Feedback Sup.</h4>
+        <h4>Feedbacks</h4>
         <div class="value" id="stat-feedback" style="color: #00c3ff">0</div>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="margin-top:0; color:var(--primary); font-family:'Cinzel', serif;">Nova Missão</h3>
+      <h3 style="margin:0 0 15px 0; color:var(--primary); font-family:'Cinzel', serif;">Nova Missão</h3>
       <div class="grid-form">
         <div>
           <label>Categoria</label>
@@ -206,7 +213,7 @@
           </select>
         </div>
         <div>
-          <label id="label-exige-feedback" style="opacity: 0.4;">Exige Retorno/Feedback?</label>
+          <label id="label-exige-feedback" style="opacity: 0.4;">Exige Retorno?</label>
           <select id="task-exige-feedback" disabled>
             <option value="NAO">Não</option>
             <option value="SIM">Sim, após conclusão</option>
@@ -214,11 +221,11 @@
         </div>
         <div style="grid-column: 1 / -1;">
           <label>Missão / Descrição</label>
-          <input type="text" id="task-desc" placeholder="Descreva a missão...">
+          <input type="text" id="task-desc" placeholder="O que precisa ser feito?">
         </div>
         <div>
           <label>Executor</label>
-          <input type="text" id="task-executor">
+          <input type="text" id="task-executor" placeholder="Nome do responsável">
         </div>
         <div>
           <label id="label-superior" style="opacity: 0.4;">Nome do Superior</label>
@@ -233,10 +240,15 @@
           <input type="date" id="task-deadline">
         </div>
       </div>
-      <button class="btn btn-gold" onclick="addTask()">Cadastrar Missão na Nuvem</button>
+      <button class="btn-gold" onclick="addTask()">Cadastrar Missão na Nuvem</button>
     </div>
 
     <div class="card">
+      <div class="search-box">
+        <span style="color:var(--accent)">🔍</span>
+        <input type="text" id="search-input" placeholder="Buscar por missão ou executor..." onkeyup="render()">
+      </div>
+
       <div class="toolbar-actions">
         <div class="filter-group">
           <button class="btn btn-filter active" id="f-all" onclick="setFilter('ALL')">TODAS</button>
@@ -315,20 +327,17 @@
     function toggleFields() {
       const category = document.getElementById('task-category').value;
       const temSup = document.getElementById('task-tem-superior').value;
-      
-      const superiorInput = document.getElementById('task-superior');
-      const exigeFbSelect = document.getElementById('task-exige-feedback');
-
       document.getElementById('task-secao').disabled = (category === 'PESSOAL');
       
+      const supIn = document.getElementById('task-superior');
+      const fbSel = document.getElementById('task-exige-feedback');
+      
       if(temSup === 'SIM') {
-        superiorInput.disabled = false;
-        exigeFbSelect.disabled = false;
+        supIn.disabled = false; fbSel.disabled = false;
         document.getElementById('label-superior').style.opacity = "1";
         document.getElementById('label-exige-feedback').style.opacity = "1";
       } else {
-        superiorInput.disabled = true;
-        exigeFbSelect.disabled = true;
+        supIn.disabled = true; fbSel.disabled = true;
         document.getElementById('label-superior').style.opacity = "0.4";
         document.getElementById('label-exige-feedback').style.opacity = "0.4";
       }
@@ -337,7 +346,7 @@
     function addTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
-      if(!desc || !end) return alert("⚠️ Preencha os campos obrigatórios.");
+      if(!desc || !end) return alert("⚠️ Descrição e Prazo são obrigatórios.");
 
       const newTask = {
         category: document.getElementById('task-category').value,
@@ -357,7 +366,7 @@
       };
 
       db.collection("tarefas").add(newTask).then(() => {
-        alert("✅ Missão Cadastrada!");
+        alert("✅ Salvo!");
         document.getElementById('task-desc').value = '';
       }).catch(err => alert("❌ Erro: " + err.message));
     }
@@ -367,7 +376,7 @@
     }
 
     function deleteTask(id) {
-      if(confirm("Excluir missão?")) db.collection("tarefas").doc(id).delete();
+      if(confirm("Excluir definitivamente?")) db.collection("tarefas").doc(id).delete();
     }
 
     function setFilter(f) {
@@ -381,13 +390,15 @@
 
     function render() {
       const list = document.getElementById('task-list');
-      list.innerHTML = '';
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
       const now = new Date().toISOString().split('T')[0];
+      list.innerHTML = '';
 
       tasks.filter(t => {
         const mCat = currentFilter === 'ALL' || t.category === currentFilter;
         const mSec = currentSecaoFilter === 'ALL' || t.secao === currentSecaoFilter;
-        return mCat && mSec;
+        const mSearch = t.desc.toLowerCase().includes(searchTerm) || t.executor.toLowerCase().includes(searchTerm);
+        return mCat && mSec && mSearch;
       }).sort((a,b) => new Date(a.end) - new Date(b.end)).forEach(t => {
         const isAtrasada = t.end < now && t.status !== 'CONCLUIDO';
         const tr = document.createElement('tr');
@@ -406,25 +417,25 @@
           <td>
             <span class="badge ${t.category==='PESSOAL'?'bg-pessoal':'bg-prof'}">${t.category}</span>
             <span class="badge bg-sec">${t.secao}</span>
-            <div style="font-weight:bold; margin-top:5px;">${t.desc}</div>
-            <div style="font-size:0.7rem; color:#888;">Executor: ${t.executor}</div>
+            <div style="font-weight:800; margin-top:5px; color:#fff;">${t.desc}</div>
+            <div style="font-size:0.75rem; color:var(--primary); margin-top:3px;">Executor: ${t.executor}</div>
             ${t.exigeFeedbackSup === 'SIM' ? `
-              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="margin-top:5px; font-size:0.65rem; width:auto; color:${t.statusFeedbackSup==='REALIZADO'?'var(--success)':'var(--danger)'}">
+              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="margin-top:8px; font-size:0.65rem; width:auto; color:${t.statusFeedbackSup==='REALIZADO'?'var(--success)':'var(--danger)'}">
                 <option value="PENDENTE" ${t.statusFeedbackSup==='PENDENTE'?'selected':''}>⏳ RETORNO PENDENTE</option>
                 <option value="REALIZADO" ${t.statusFeedbackSup==='REALIZADO'?'selected':''}>✅ RETORNO DADO</option>
               </select>
             ` : ''}
           </td>
-          <td style="${isAtrasada ? 'color:var(--danger); font-weight:bold;' : ''}">
+          <td style="${isAtrasada ? 'color:var(--danger); font-weight:800;' : 'color:#fff;'}">
             ${t.end}
           </td>
           <td>
-            <textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback || ''}</textarea>
+            <textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Notas...">${t.feedback || ''}</textarea>
           </td>
           <td>
             <div class="action-grid">
               <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCL</button>
-              <button class="btn-sm btn-green" onclick="window.open('https://wa.me/?text=${encodeURIComponent('*SGT BAEP:* ' + t.desc + ' | Prazo: ' + t.end)}', '_blank')">WA</button>
+              <button class="btn-sm btn-green" onclick="window.open('https://wa.me/?text=${encodeURIComponent('*SGT BAEP:* ' + t.desc + ' | Executor: ' + t.executor + ' | Prazo: ' + t.end)}', '_blank')">WA</button>
             </div>
           </td>
         `;
