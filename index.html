@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - Gestão Operacional v6.1</title>
+  <title>SGT 8º BAEP - Gestão Operacional v6.2</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -43,6 +43,42 @@
     .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.5rem; }
 
     .container { max-width: 1600px; margin: 20px auto; padding: 0 15px; }
+
+    /* SISTEMA DE NOTIFICAÇÕES (NOVO) */
+    #notification-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .notification {
+      background: rgba(15, 15, 15, 0.95);
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      min-width: 280px;
+      animation: slideIn 0.4s ease forwards;
+      backdrop-filter: blur(10px);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .notification.error { border-color: var(--danger); }
+    .notification.success { border-color: var(--success); }
 
     /* DASHBOARD */
     .dashboard {
@@ -92,7 +128,6 @@
       font-size: 0.85rem; 
     }
 
-    /* BARRA DE BUSCA */
     .search-box {
       background: #1a1a1a;
       border: 1px solid var(--accent);
@@ -104,12 +139,7 @@
       align-items: center;
     }
 
-    .search-box input {
-      background: transparent;
-      border: none;
-      font-size: 1rem;
-      outline: none;
-    }
+    .search-box input { background: transparent; border: none; font-size: 1rem; outline: none; }
 
     .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 15px; border-radius: 5px; text-transform: uppercase;}
     .btn-green { background: #128C7E; color: #fff; padding: 10px 15px; font-size: 0.75rem; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
@@ -138,20 +168,22 @@
     .pri-BAIXA { color: var(--success) !important; font-weight: 800; }
 
     @media (max-width: 768px) {
+      #notification-container { top: auto; bottom: 80px; right: 10px; left: 10px; }
       .dashboard { grid-template-columns: 1fr 1fr; }
       table, thead, tbody, th, td, tr { display: block; }
       thead { display: none; } 
       tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 15px; }
       td { border: none; padding: 8px 0; border-bottom: 1px dashed #222; position: relative; }
-      input, select, textarea { font-size: 16px !important; }
     }
   </style>
 </head>
 <body>
 
+  <div id="notification-container"></div>
+
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Gestão em Tempo Real 🟢 v6.1</small>
+    <small style="color:var(--success)">Interface Premium Ativa 🟢 v6.2</small>
   </div>
 
   <div class="container">
@@ -246,7 +278,7 @@
     <div class="card">
       <div class="search-box">
         <span style="color:var(--accent)">🔍</span>
-        <input type="text" id="search-input" placeholder="Buscar por missão ou executor..." onkeyup="render()">
+        <input type="text" id="search-input" placeholder="Buscar missão ou executor..." onkeyup="render()">
       </div>
 
       <div class="toolbar-actions">
@@ -266,20 +298,22 @@
         </select>
       </div>
       
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 120px;">Status / PRI</th>
-              <th>Missão / Detalhes</th>
-              <th>Prazos</th>
-              <th>Anotações</th>
-              <th style="width: 120px;">Ações</th>
-            </tr>
-          </thead>
-          <tbody id="task-list"></tbody>
-        </table>
-      </div>
+      <tbody id="task-list-container">
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 120px;">Status / PRI</th>
+                <th>Missão / Detalhes</th>
+                <th>Prazos</th>
+                <th>Anotações</th>
+                <th style="width: 120px;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="task-list"></tbody>
+          </table>
+        </div>
+      </tbody>
     </div>
   </div>
 
@@ -305,6 +339,22 @@
     const hoje = new Date().toISOString().split('T')[0];
     document.getElementById('task-created-at').value = hoje;
 
+    // FUNÇÃO DE NOTIFICAÇÃO PREMIUM
+    function showNotify(msg, type = 'success') {
+      const container = document.getElementById('notification-container');
+      const toast = document.createElement('div');
+      toast.className = `notification ${type}`;
+      const icon = type === 'success' ? '✅' : '⚠️';
+      toast.innerHTML = `<span>${icon}</span> ${msg}`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = '0.5s';
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+
     db.collection("tarefas").onSnapshot((snapshot) => {
       tasks = [];
       snapshot.forEach((doc) => {
@@ -328,10 +378,8 @@
       const category = document.getElementById('task-category').value;
       const temSup = document.getElementById('task-tem-superior').value;
       document.getElementById('task-secao').disabled = (category === 'PESSOAL');
-      
       const supIn = document.getElementById('task-superior');
       const fbSel = document.getElementById('task-exige-feedback');
-      
       if(temSup === 'SIM') {
         supIn.disabled = false; fbSel.disabled = false;
         document.getElementById('label-superior').style.opacity = "1";
@@ -346,7 +394,7 @@
     function addTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
-      if(!desc || !end) return alert("⚠️ Descrição e Prazo são obrigatórios.");
+      if(!desc || !end) return showNotify("Preencha Descrição e Prazo!", "error");
 
       const newTask = {
         category: document.getElementById('task-category').value,
@@ -366,17 +414,21 @@
       };
 
       db.collection("tarefas").add(newTask).then(() => {
-        alert("✅ Salvo!");
+        showNotify("Missão Cadastrada na Nuvem!");
         document.getElementById('task-desc').value = '';
-      }).catch(err => alert("❌ Erro: " + err.message));
+      }).catch(err => showNotify("Erro ao Salvar: " + err.message, "error"));
     }
 
     function updateTask(id, field, value) {
-      db.collection("tarefas").doc(id).update({ [field]: value });
+      db.collection("tarefas").doc(id).update({ [field]: value })
+        .then(() => showNotify("Registro Atualizado"))
+        .catch(err => showNotify("Erro na atualização", "error"));
     }
 
     function deleteTask(id) {
-      if(confirm("Excluir definitivamente?")) db.collection("tarefas").doc(id).delete();
+      if(confirm("Excluir missão definitivamente?")) {
+        db.collection("tarefas").doc(id).delete().then(() => showNotify("Missão Removida"));
+      }
     }
 
     function setFilter(f) {
@@ -435,7 +487,7 @@
           <td>
             <div class="action-grid">
               <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCL</button>
-              <button class="btn-sm btn-green" onclick="window.open('https://wa.me/?text=${encodeURIComponent('*SGT BAEP:* ' + t.desc + ' | Executor: ' + t.executor + ' | Prazo: ' + t.end)}', '_blank')">WA</button>
+              <button class="btn-sm btn-green" onclick="window.open('https://wa.me/?text=${encodeURIComponent('*SGT BAEP:* ' + t.desc + ' | Prazo: ' + t.end)}', '_blank')">WA</button>
             </div>
           </td>
         `;
