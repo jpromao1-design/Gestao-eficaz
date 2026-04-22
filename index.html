@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - v6.5</title>
+  <title>SGT 8º BAEP - v6.6</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -20,60 +20,66 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%); color: var(--text-main); margin: 0; padding-bottom: 50px; }
+    body { font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%); color: var(--text-main); margin: 0; padding-bottom: 30px; }
     
-    #notification-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 12px 20px; border-radius: 8px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.85rem; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
+    /* NOTIFICAÇÕES */
+    #notification-container { position: fixed; top: 15px; right: 15px; z-index: 10001; display: flex; flex-direction: column; gap: 8px; }
+    .notification { background: rgba(15, 15, 15, 0.95); border: 1px solid var(--accent); color: #fff; padding: 10px 18px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.8rem; animation: slideIn 0.3s ease forwards; backdrop-filter: blur(10px); }
     @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(5px); }
-    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 2px; font-size: 1.4rem; }
-    .container { max-width: 1600px; margin: 15px auto; padding: 0 10px; }
+    .topbar { background: rgba(0, 0, 0, 0.95); border-bottom: 2px solid var(--accent); padding: 12px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+    .topbar h1 { font-family: 'Cinzel', serif; margin: 0; color: var(--primary); letter-spacing: 1px; font-size: 1.2rem; }
+    .container { max-width: 1600px; margin: 10px auto; padding: 0 10px; }
 
-    /* DASHBOARD INTERATIVO */
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .stat-card { background: rgba(17, 17, 17, 0.8); border: 1px solid var(--border); border-left: 4px solid var(--accent); padding: 12px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .stat-card:active { transform: scale(0.95); }
-    .stat-card.active-filter { border: 1px solid var(--primary); border-left: 4px solid var(--primary); background: rgba(241, 241, 14, 0.05); }
-    .stat-card h4 { margin: 0; font-size: 0.6rem; text-transform: uppercase; color: #888; }
-    .stat-card .value { font-size: 1.6rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; margin-top: 5px; }
+    /* DASHBOARD */
+    .dashboard { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+    .stat-card { background: rgba(20, 20, 20, 0.9); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 10px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.2s; }
+    .stat-card:active { transform: scale(0.96); background: #1a1a1a; }
+    .stat-card h4 { margin: 0; font-size: 0.55rem; text-transform: uppercase; color: #888; }
+    .stat-card .value { font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Cinzel', serif; margin-top: 3px; }
 
-    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-    .grid-form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
-    label { display: block; font-size: 0.65rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-    input, select, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 5px; font-size: 0.8rem; }
+    .card { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+    .grid-form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    label { display: block; font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 3px; }
+    input, select, textarea { width: 100%; padding: 8px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.8rem; }
 
-    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 15px; font-weight: 800; cursor: pointer; border: none; padding: 14px; border-radius: 5px; text-transform: uppercase; }
+    .btn-gold { background: linear-gradient(45deg, var(--accent), #d4af37); color: #000; width: 100%; margin-top: 10px; font-weight: 800; cursor: pointer; border: none; padding: 12px; border-radius: 4px; text-transform: uppercase; font-size: 0.8rem; }
     
-    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 10px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center; }
-    .search-box input { background: transparent; border: none; font-size: 0.9rem; color: #fff; outline: none; width: 100%; }
+    .search-box { background: #1a1a1a; border: 1px solid var(--accent); padding: 8px; border-radius: 6px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+    .search-box input { background: transparent; border: none; font-size: 0.85rem; color: #fff; outline: none; width: 100%; }
 
-    table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th { background: #000; color: var(--accent); padding: 10px; text-align: left; border-bottom: 2px solid var(--accent); font-size: 0.7rem; text-transform: uppercase; }
-    td { padding: 12px 10px; border-bottom: 1px solid #222; font-size: 0.8rem; vertical-align: top;}
+    /* TABELA E AÇÕES */
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #000; color: var(--accent); padding: 8px; text-align: left; font-size: 0.65rem; text-transform: uppercase; border-bottom: 1px solid var(--accent); }
+    td { padding: 10px 8px; border-bottom: 1px solid #222; font-size: 0.75rem; vertical-align: top; }
 
-    .badge { padding: 3px 6px; border-radius: 3px; font-size: 0.6rem; font-weight: 800; display: inline-block; margin-bottom: 4px; }
-    .bg-prof { background: #b08d5733; color: #d4af37; border: 1px solid #d4af37; }
-    .bg-pessoal { background: #1a1a1a; color: #888; border: 1px solid #444; }
-
-    /* BOTÕES DE AÇÃO LADO A LADO */
-    .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; min-width: 120px; }
-    .btn-sm { padding: 8px 4px; border: none; border-radius: 4px; font-size: 0.55rem; font-weight: 800; cursor: pointer; text-transform: uppercase; text-align: center; transition: 0.2s; color: white; }
+    .action-row { display: flex; gap: 4px; margin-top: 8px; }
+    .btn-sm { flex: 1; padding: 8px 2px; border: none; border-radius: 3px; font-size: 0.55rem; font-weight: 800; cursor: pointer; text-transform: uppercase; color: white; text-align: center; }
     .btn-edit { background: #1a3a5a; }
     .btn-wa { background: #128C7E; }
     .btn-del { background: var(--danger); }
 
+    .badge { padding: 2px 5px; border-radius: 3px; font-size: 0.55rem; font-weight: 800; display: inline-block; }
+    .bg-prof { background: rgba(140, 106, 54, 0.2); color: #d4af37; border: 1px solid #d4af37; }
+    
+    /* MODAL TÁTICO (QUICK VIEW) */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; padding: 20px; overflow-y: auto; }
+    .modal-content { background: #111; border: 1px solid var(--accent); border-radius: 10px; padding: 15px; max-width: 600px; margin: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; }
+    .close-modal { color: var(--danger); font-size: 1.5rem; cursor: pointer; font-weight: bold; }
+    .modal-item { background: #1a1a1a; padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
+
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
-    .pri-BAIXA { color: var(--success) !important; font-weight: 800; }
 
     @media (max-width: 768px) {
-      .dashboard { grid-template-columns: 1fr 1fr; }
+      .grid-form { grid-template-columns: 1fr 1fr; }
+      .full-width { grid-column: 1 / -1; }
       table, thead, tbody, th, td, tr { display: block; }
-      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 12px; }
-      td { border: none; padding: 6px 0; border-bottom: 1px dashed #222; position: relative; }
-      .action-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; width: 100%; }
-      .btn-sm { font-size: 0.65rem; padding: 10px 5px; }
+      tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; padding: 10px; }
+      td { border: none; padding: 5px 0; border-bottom: 1px dashed #222; position: relative; }
+      td:last-child { border-bottom: none; }
+      input, select, textarea { font-size: 16px !important; } /* Evita zoom no iPhone */
     }
   </style>
 </head>
@@ -81,80 +87,56 @@
 
   <div id="notification-container"></div>
 
+  <div id="quickview-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title" style="margin:0; font-family:'Cinzel'; color:var(--primary); font-size:1.1rem;">Lista Tática</h2>
+        <span class="close-modal" onclick="closeQuickView()">&times;</span>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
   <div class="topbar">
     <h1>SGT - 8º BAEP</h1>
-    <small style="color:var(--success)">Centro de Comando 🟢 v6.5</small>
+    <small style="color:var(--success)">Sincronizado 🟢 v6.6</small>
   </div>
 
   <div class="container">
     
     <div class="dashboard">
-      <div class="stat-card" id="card-total" onclick="setDashFilter('ALL')">
-        <h4>Total</h4><div class="value" id="stat-total">0</div>
-      </div>
-      <div class="stat-card" id="card-pendente" onclick="setDashFilter('PENDENTE')">
-        <h4>Pendentes</h4><div class="value" id="stat-pendente">0</div>
-      </div>
-      <div class="stat-card" id="card-atrasada" onclick="setDashFilter('ATRASADA')">
-        <h4 style="color:var(--danger)">Atrasadas</h4><div class="value" id="stat-atrasada" style="color:var(--danger)">0</div>
-      </div>
-      <div class="stat-card" id="card-feedback" onclick="setDashFilter('FEEDBACK')">
-        <h4>Feedbacks</h4><div class="value" id="stat-feedback" style="color: #00c3ff">0</div>
-      </div>
+      <div class="stat-card" onclick="openQuickView('ALL')"><h4>Total</h4><div class="value" id="stat-total">0</div></div>
+      <div class="stat-card" onclick="openQuickView('PENDENTE')"><h4>Pendentes</h4><div class="value" id="stat-pendente">0</div></div>
+      <div class="stat-card" style="border-left-color:var(--danger)" onclick="openQuickView('ATRASADA')"><h4 style="color:var(--danger)">Atrasadas</h4><div class="value" id="stat-atrasada" style="color:var(--danger)">0</div></div>
+      <div class="stat-card" onclick="openQuickView('FEEDBACK')"><h4>Feedbacks</h4><div class="value" id="stat-feedback" style="color: #00c3ff">0</div></div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 15px 0; color:var(--primary); font-family:'Cinzel', serif; font-size: 1.1rem;">Lançar Ordem de Missão</h3>
+      <h3 style="margin:0 0 10px 0; color:var(--primary); font-family:'Cinzel', serif; font-size: 1rem;">Nova Ordem</h3>
       <div class="grid-form">
-        <div><label>Categoria</label>
-          <select id="task-category" onchange="toggleFields()">
-            <option value="PROFISSIONAL">Profissional / BAEP</option>
-            <option value="PESSOAL">Pessoal / Outros</option>
-          </select>
-        </div>
-        <div><label>Seção Adm</label>
-          <select id="task-secao">
-            <option value="NENHUMA">NENHUMA</option>
-            <option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="SJD">SJD</option>
-          </select>
-        </div>
-        <div><label>Prioridade</label>
-          <select id="task-prioridade">
-            <option value="ALTA">🔴 Alta (Urgente)</option>
-            <option value="MEDIA" selected>🟡 Média</option>
-            <option value="BAIXA">🟢 Baixa (Rotina)</option>
-          </select>
-        </div>
-        <div><label>Superior Direto?</label>
-          <select id="task-tem-superior" onchange="toggleFields()">
-            <option value="NAO">Não</option><option value="SIM">Sim</option>
-          </select>
-        </div>
-        <div><label id="label-exige-feedback" style="opacity: 0.4;">Exige Retorno?</label>
-          <select id="task-exige-feedback" disabled>
-            <option value="NAO">Não</option><option value="SIM">Sim</option>
-          </select>
-        </div>
-        <div style="grid-column: 1 / -1;"><label>Missão / Descrição</label><input type="text" id="task-desc" placeholder="Detalhes da missão operacional..."></div>
+        <div><label>Categoria</label><select id="task-category" onchange="toggleFields()"><option value="PROFISSIONAL">BAEP</option><option value="PESSOAL">PESSOAL</option></select></div>
+        <div><label>Seção</label><select id="task-secao"><option value="NENHUMA">---</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="SJD">SJD</option></select></div>
+        <div><label>Prioridade</label><select id="task-prioridade"><option value="ALTA">🔴 ALTA</option><option value="MEDIA" selected>🟡 MÉDIA</option><option value="BAIXA">🟢 BAIXA</option></select></div>
+        <div><label>Superior?</label><select id="task-tem-superior" onchange="toggleFields()"><option value="NAO">Não</option><option value="SIM">Sim</option></select></div>
+        <div class="full-width"><label>Missão</label><input type="text" id="task-desc" placeholder="Descrição da missão..."></div>
         <div><label>Executor</label><input type="text" id="task-executor"></div>
-        <div><label id="label-superior" style="opacity:0.4">Superior</label><input type="text" id="task-superior" disabled></div>
-        <div><label>Início</label><input type="date" id="task-created-at"></div>
-        <div><label>Prazo Final</label><input type="date" id="task-deadline"></div>
+        <div><label>Prazo</label><input type="date" id="task-deadline"></div>
+        <div id="div-feedback" style="display:none"><label>Exige Retorno?</label><select id="task-exige-feedback"><option value="NAO">Não</option><option value="SIM">Sim</option></select></div>
+        <div id="div-superior" style="display:none"><label>Quem mandou?</label><input type="text" id="task-superior"></div>
       </div>
-      <button class="btn-gold" onclick="addTask()">Sincronizar Missão</button>
+      <button class="btn-gold" onclick="addTask()">Cadastrar na Nuvem</button>
     </div>
 
     <div class="card">
-      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Filtrar por missão ou responsável..." onkeyup="render()"></div>
+      <div class="search-box"><span>🔍</span><input type="text" id="search-input" placeholder="Filtrar responsável ou missão..." onkeyup="render()"></div>
       <div style="overflow-x: auto;">
         <table>
           <thead>
             <tr>
-              <th style="width: 140px;">Status / PRI</th>
-              <th>Missão / Detalhes</th>
-              <th style="width: 100px;">Prazo</th>
-              <th>Anotações</th>
-              <th style="width: 140px;">Comandos</th>
+              <th style="width: 130px;">Status/PRI</th>
+              <th>Missão/Executor</th>
+              <th style="width: 85px;">Prazo</th>
+              <th style="width: 120px;">Ações</th>
             </tr>
           </thead>
           <tbody id="task-list"></tbody>
@@ -179,26 +161,21 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let tasks = [];
-    let currentDashFilter = 'ALL';
 
-    function showNotify(msg, type = 'success') {
+    function showNotify(msg, type='success') {
       const container = document.getElementById('notification-container');
       const toast = document.createElement('div');
       toast.className = `notification ${type}`;
-      toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> ${msg}`;
+      toast.innerHTML = `<span>${type==='success'?'✅':'⚠️'}</span> ${msg}`;
       container.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+      setTimeout(() => { toast.style.opacity='0'; setTimeout(()=>toast.remove(), 500); }, 3000);
     }
 
-    function formatDataBR(dataISO) {
-      if(!dataISO) return "---";
-      const [ano, mes, dia] = dataISO.split('-');
-      return `${dia}/${mes}/${ano}`;
-    }
+    function formatDataBR(iso) { if(!iso) return "---"; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 
-    db.collection("tarefas").onSnapshot((snapshot) => {
+    db.collection("tarefas").onSnapshot((snap) => {
       tasks = [];
-      snapshot.forEach((doc) => { let t = doc.data(); t.id = doc.id; tasks.push(t); });
+      snap.forEach(doc => { let t = doc.data(); t.id = doc.id; tasks.push(t); });
       updateStats();
       render();
     });
@@ -206,32 +183,47 @@
     function updateStats() {
       const now = new Date().toISOString().split('T')[0];
       document.getElementById('stat-total').innerText = tasks.length;
-      document.getElementById('stat-pendente').innerText = tasks.filter(t => t.status === 'PENDENTE').length;
-      document.getElementById('stat-atrasada').innerText = tasks.filter(t => t.end < now && t.status !== 'CONCLUIDO').length;
-      document.getElementById('stat-feedback').innerText = tasks.filter(t => t.exigeFeedbackSup === 'SIM' && t.statusFeedbackSup === 'NAO').length;
-    }
-
-    function setDashFilter(filter) {
-      currentDashFilter = filter;
-      document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
-      document.getElementById('card-' + filter.toLowerCase()).classList.add('active-filter');
-      showNotify("Filtro do Painel: " + filter);
-      render();
+      document.getElementById('stat-pendente').innerText = tasks.filter(t=>t.status==='PENDENTE').length;
+      document.getElementById('stat-atrasada').innerText = tasks.filter(t=>t.end < now && t.status !== 'CONCLUIDO').length;
+      document.getElementById('stat-feedback').innerText = tasks.filter(t=>t.exigeFeedbackSup==='SIM' && t.statusFeedbackSup==='NAO').length;
     }
 
     function toggleFields() {
-      const temSup = document.getElementById('task-tem-superior').value === 'SIM';
-      document.getElementById('task-superior').disabled = !temSup;
-      document.getElementById('task-exige-feedback').disabled = !temSup;
-      document.getElementById('label-superior').style.opacity = temSup ? "1" : "0.4";
-      document.getElementById('label-exige-feedback').style.opacity = temSup ? "1" : "0.4";
+      const isSup = document.getElementById('task-tem-superior').value === 'SIM';
+      document.getElementById('div-feedback').style.display = isSup ? 'block' : 'none';
+      document.getElementById('div-superior').style.display = isSup ? 'block' : 'none';
       document.getElementById('task-secao').disabled = (document.getElementById('task-category').value === 'PESSOAL');
     }
+
+    function openQuickView(filter) {
+      const now = new Date().toISOString().split('T')[0];
+      let filtered = tasks;
+      let title = "Todas as Missões";
+      
+      if(filter==='PENDENTE') { filtered = tasks.filter(t=>t.status==='PENDENTE'); title = "Missões Pendentes"; }
+      if(filter==='ATRASADA') { filtered = tasks.filter(t=>t.end < now && t.status !== 'CONCLUIDO'); title = "⚠️ Missões Atrasadas"; }
+      if(filter==='FEEDBACK') { filtered = tasks.filter(t=>t.exigeFeedbackSup==='SIM' && t.statusFeedbackSup==='NAO'); title = "Aguardando Feedback"; }
+
+      document.getElementById('modal-title').innerText = title;
+      const body = document.getElementById('modal-body');
+      body.innerHTML = filtered.length ? '' : '<p style="text-align:center;color:#666;">Nenhuma missão encontrada.</p>';
+      
+      filtered.sort((a,b)=> new Date(a.end) - new Date(b.end)).forEach(t => {
+        body.innerHTML += `
+          <div class="modal-item">
+            <div style="font-weight:800;color:var(--primary)">${t.desc}</div>
+            <div style="font-size:0.7rem;margin-top:5px;">👤 Executor: ${t.executor} | 📅 Prazo: ${formatDataBR(t.end)}</div>
+          </div>`;
+      });
+      document.getElementById('quickview-modal').style.display = 'block';
+    }
+
+    function closeQuickView() { document.getElementById('quickview-modal').style.display = 'none'; }
 
     function addTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
-      if(!desc || !end) return showNotify("Missão e Prazo são obrigatórios!", "error");
+      if(!desc || !end) return showNotify("Descrição e Prazo obrigatórios!", "error");
 
       const newTask = {
         category: document.getElementById('task-category').value,
@@ -240,14 +232,14 @@
         temSuperior: document.getElementById('task-tem-superior').value,
         superior: document.getElementById('task-superior').value || 'N/A',
         exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
-        desc: desc, executor: document.getElementById('task-executor').value || 'Não informado',
-        start: document.getElementById('task-created-at').value, end: end,
+        desc, executor: document.getElementById('task-executor').value || 'Cap Romão',
+        start: new Date().toISOString().split('T')[0], end,
         status: 'PENDENTE', statusFeedbackSup: 'NAO', feedback: '',
         createdAt: new Date().toISOString()
       };
 
       db.collection("tarefas").add(newTask).then(() => {
-        showNotify("Missão Sincronizada!");
+        showNotify("Missão Lançada!");
         document.getElementById('task-desc').value = '';
       });
     }
@@ -256,44 +248,26 @@
       db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado"));
     }
 
-    function deleteTask(id) {
-      if(confirm("Excluir definitivamente?")) db.collection("tarefas").doc(id).delete();
-    }
-
     function sendWA(id) {
       const t = tasks.find(x => x.id === id);
-      const prioEmoji = t.prioridade === 'ALTA' ? '🔴 ALTA' : t.prioridade === 'MEDIA' ? '🟡 MÉDIA' : '🟢 BAIXA';
       const msg = encodeURIComponent(
-        `🚨 *SGT-8º BAEP | ORDEM DE MISSÃO*\n------------------------------------\n\n` +
-        `🏢 *Setor:* ${t.category} | ${t.secao}\n⚡ *Prioridade:* ${prioEmoji}\n\n` +
-        `📋 *Missão:* ${t.desc}\n👤 *Responsável:* ${t.executor}\n📅 *Prazo:* ${formatDataBR(t.end)}\n\n` +
-        `📊 *Status:* ${t.status === 'CONCLUIDO' ? '✅ CONCLUÍDO' : '⏳ PENDENTE'}\n` +
-        `${t.exigeFeedbackSup === 'SIM' ? `🗣️ *Feedback Dado:* ${t.statusFeedbackSup === 'SIM' ? '✅ SIM' : '❌ NÃO'}\n` : ''}`
+        `🚨 *SGT-8º BAEP*\n\n📋 *Missão:* ${t.desc}\n👤 *Executor:* ${t.executor}\n📅 *Prazo:* ${formatDataBR(t.end)}\n⚡ *PRI:* ${t.prioridade}`
       );
       window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
 
     function render() {
       const list = document.getElementById('task-list');
-      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const search = document.getElementById('search-input').value.toLowerCase();
       const now = new Date().toISOString().split('T')[0];
       list.innerHTML = '';
 
-      // LOGICA DE FILTRAGEM COMBINADA
-      let filtered = tasks.filter(t => {
-        const matchSearch = t.desc.toLowerCase().includes(searchTerm) || t.executor.toLowerCase().includes(searchTerm);
-        let matchDash = true;
-        if(currentDashFilter === 'PENDENTE') matchDash = t.status === 'PENDENTE';
-        if(currentDashFilter === 'ATRASADA') matchDash = (t.end < now && t.status !== 'CONCLUIDO');
-        if(currentDashFilter === 'FEEDBACK') matchDash = (t.exigeFeedbackSup === 'SIM' && t.statusFeedbackSup === 'NAO');
-        return matchSearch && matchDash;
-      });
+      let filtered = tasks.filter(t => t.desc.toLowerCase().includes(search) || t.executor.toLowerCase().includes(search));
 
-      // ORDENAÇÃO INTELIGENTE (STATUS > PRIORIDADE > DATA)
       filtered.sort((a,b) => {
         if (a.status !== b.status) return a.status === 'PENDENTE' ? -1 : 1;
-        const prioMap = { 'ALTA': 3, 'MEDIA': 2, 'BAIXA': 1 };
-        if (a.prioridade !== b.prioridade) return prioMap[b.prioridade] - prioMap[a.prioridade];
+        const pMap = { 'ALTA': 3, 'MEDIA': 2, 'BAIXA': 1 };
+        if (a.prioridade !== b.prioridade) return pMap[b.prioridade] - pMap[a.prioridade];
         return new Date(a.end) - new Date(b.end);
       });
 
@@ -302,7 +276,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
-            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:4px;">
+            <select onchange="updateTask('${t.id}', 'status', this.value)" style="margin-bottom:3px;">
               <option value="PENDENTE" ${t.status==='PENDENTE'?'selected':''}>⏳ PENDENTE</option>
               <option value="CONCLUIDO" ${t.status==='CONCLUIDO'?'selected':''}>✅ CONCLUÍDO</option>
             </select>
@@ -313,26 +287,22 @@
             </select>
           </td>
           <td>
-            <span class="badge ${t.category==='PESSOAL'?'bg-pessoal':'bg-prof'}">${t.category} | ${t.secao}</span>
-            <div style="font-weight:800; color:#fff; margin: 4px 0;">${t.desc}</div>
-            <div style="font-size:0.7rem; color:var(--primary);">Executor: ${t.executor}</div>
-            ${t.exigeFeedbackSup === 'SIM' ? `
-              <div style="margin-top:6px;">
-                <label style="font-size:0.55rem; color:#888;">FEEDBACK DADO?</label>
-                <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto; height:24px; padding:0 5px; color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
-                  <option value="NAO" ${t.statusFeedbackSup==='NAO'?'selected':''}>❌ NÃO</option>
-                  <option value="SIM" ${t.statusFeedbackSup==='SIM'?'selected':''}>✅ SIM</option>
-                </select>
-              </div>
-            ` : ''}
+            <span class="badge bg-prof">${t.secao}</span>
+            <div style="font-weight:800;color:#fff;margin:3px 0;">${t.desc}</div>
+            <div style="font-size:0.65rem;color:var(--primary);">Executor: ${t.executor}</div>
+            ${t.exigeFeedbackSup==='SIM'?`
+              <div style="margin-top:5px;font-size:0.6rem;">Feedback? 
+              <select onchange="updateTask('${t.id}', 'statusFeedbackSup', this.value)" style="width:auto;height:20px;padding:0;color:${t.statusFeedbackSup==='SIM'?'var(--success)':'var(--danger)'}">
+                <option value="NAO" ${t.statusFeedbackSup==='NAO'?'selected':''}>NÃO</option>
+                <option value="SIM" ${t.statusFeedbackSup==='SIM'?'selected':''}>SIM</option>
+              </select></div>`:''}
           </td>
-          <td style="color:${isAtrasada?'var(--danger)':'#fff'}; font-weight:800;">${formatDataBR(t.end)}</td>
-          <td><textarea onchange="updateTask('${t.id}', 'feedback', this.value)" placeholder="Anotações...">${t.feedback || ''}</textarea></td>
+          <td style="color:${isAtrasada?'var(--danger)':'#fff'};font-weight:800;">${formatDataBR(t.end)}</td>
           <td>
-            <div class="action-grid">
-              <button class="btn-sm btn-edit" onclick="document.getElementById('task-desc').value='${t.desc}'; document.getElementById('task-executor').value='${t.executor}'; window.scrollTo(0,0); showNotify('Edição habilitada')">EDIT</button>
-              <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WA</button>
-              <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">EXCL</button>
+            <div class="action-row">
+              <button class="btn-sm btn-edit" onclick="document.getElementById('task-desc').value='${t.desc}';document.getElementById('task-executor').value='${t.executor}';window.scrollTo(0,0);">EDIT</button>
+              <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WHATS</button>
+              <button class="btn-sm btn-del" onclick="if(confirm('Excluir?'))db.collection('tarefas').doc('${t.id}').delete()">DEL</button>
             </div>
           </td>
         `;
