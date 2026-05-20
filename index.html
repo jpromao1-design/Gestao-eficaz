@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - v7.1</title>
+  <title>SGT 8º BAEP - v7.2 (Supabase)</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -71,11 +71,11 @@
     .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
     .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
 
-    /* LAYOUT EXCLUSIVO COMPUTADOR (DESKTOP) */
+    /* LAYOUT RESPONSIVO */
     @media (min-width: 1025px) {
       .card { padding: 30px; }
       .grid-form { display: grid; gap: 15px; grid-template-columns: repeat(4, 1fr); }
-      .missao-full { grid-column: span 2; } /* Ocupa 2 colunas, não estica tudo */
+      .missao-full { grid-column: span 2; }
       th { background: #000; color: var(--accent); padding: 15px 10px; text-align: left; font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid var(--accent); font-family: 'Cinzel', serif; letter-spacing: 1px;}
       tr:hover td { background: rgba(241, 241, 14, 0.03); }
       .col-status { width: 260px; }
@@ -85,14 +85,12 @@
       .col-acoes { width: 160px; }
       .btn-sm:hover { filter: brightness(1.2); transform: translateY(-1px); }
     }
-
-    /* LAYOUT EXCLUSIVO CELULAR (MOBILE) */
     @media (max-width: 1024px) {
       .container { padding: 0 10px; }
       .dashboard { grid-template-columns: repeat(3, 1fr); gap: 6px; }
       .stat-card .value { font-size: 1.3rem; }
       .grid-form { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-      .missao-full { grid-column: 1 / -1; } /* Volta a ocupar a tela toda no celular */
+      .missao-full { grid-column: 1 / -1; }
       table, thead, tbody, th, td, tr { display: block; }
       th { display: none; }
       tr { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; padding: 12px; }
@@ -100,7 +98,7 @@
       .status-pri-group { flex-direction: row; justify-content: space-between; gap: 5px; }
       .status-pri-group select { font-size: 0.7rem; padding: 10px 2px; }
       .action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-      input, select, textarea { font-size: 16px !important; } /* Previne zoom no iPhone/Android */
+      input, select, textarea { font-size: 16px !important; }
     }
   </style>
 </head>
@@ -115,7 +113,7 @@
     </div>
   </div>
 
-  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Sincronização Ativa 🟢 v7.1</small></div>
+  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Sincronização Supabase Ativa 🟢 v7.2</small></div>
 
   <div class="container">
     <div class="dashboard">
@@ -159,23 +157,16 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDSTMgiv23oShiOqUkJgvNKU8fOiiZBSR8",
-      authDomain: "gestaotarefas-2ac06.firebaseapp.com",
-      projectId: "gestaotarefas-2ac06",
-      storageBucket: "gestaotarefas-2ac06.firebasestorage.app",
-      messagingSenderId: "296776503860",
-      appId: "1:296776503860:web:464f213cdcce761e2b3061"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // 1. CONFIGURAÇÃO DO SUPABASE (COLE SUAS CHAVES AQUI)
+    const supabaseUrl = 'SUA_URL_DO_SUPABASE'; // Ex: https://xyz.supabase.co
+    const supabaseKey = 'SUA_CHAVE_ANONIMA_DO_SUPABASE';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     
     let tasks = [];
-    let currentEditId = null; // Variável Global para rastrear a Edição
+    let currentEditId = null; 
 
     function showNotify(msg, type='success') {
       const container = document.getElementById('notification-container');
@@ -188,12 +179,29 @@
 
     function formatDataBR(iso) { if(!iso) return "---"; const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
 
-    db.collection("tarefas").onSnapshot((snap) => {
-      tasks = [];
-      snap.forEach(doc => { let t = doc.data(); t.id = doc.id; tasks.push(t); });
+    // 2. BUSCAR DADOS DO SUPABASE
+    async function fetchTasks() {
+      const { data, error } = await supabase.from('tarefas').select('*');
+      if (error) {
+        console.error("Erro ao buscar tarefas:", error);
+        showNotify("Erro ao conectar ao servidor", "error");
+        return;
+      }
+      tasks = data || [];
       updateStats();
       render();
-    });
+    }
+
+    // 3. SINCRONIZAÇÃO EM TEMPO REAL
+    supabase.channel('custom-all-channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tarefas' }, (payload) => {
+        // Toda vez que houver mudança na tabela, atualiza o SGT
+        fetchTasks();
+      })
+      .subscribe();
+
+    // Inicia a primeira busca ao abrir a página
+    fetchTasks();
 
     function updateStats() {
       const now = new Date().toISOString().split('T')[0];
@@ -224,7 +232,6 @@
 
     function closeQuickView() { document.getElementById('quickview-modal').style.display = 'none'; }
 
-    // NOVA FUNÇÃO DE EDIÇÃO REAL
     function prepareEdit(id) {
       const t = tasks.find(x => x.id === id);
       if(!t) return;
@@ -243,8 +250,7 @@
       }
       
       toggleFields();
-      
-      currentEditId = id; // Trava o ID para atualização
+      currentEditId = id; 
       const btn = document.getElementById('btn-main-action');
       btn.innerText = "💾 SALVAR ALTERAÇÕES";
       btn.classList.add('editing-mode');
@@ -253,7 +259,7 @@
       showNotify("Modo de Edição Ativado", "success");
     }
 
-    function addOrUpdateTask() {
+    async function addOrUpdateTask() {
       const desc = document.getElementById('task-desc').value;
       const end = document.getElementById('task-deadline').value;
       if(!desc || !end) return showNotify("Missão e Prazo obrigatórios!", "error");
@@ -265,27 +271,25 @@
         temSuperior: document.getElementById('task-tem-superior').value,
         superior: document.getElementById('task-superior').value || 'N/A',
         exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
-        desc, executor: document.getElementById('task-executor').value || 'Cap Romão',
+        desc: desc, 
+        executor: document.getElementById('task-executor').value || 'Cap Romão',
         end: end,
         statusFeedbackSup: 'NAO'
       };
 
       if(currentEditId) {
-        // ATUALIZAR MISSÃO EXISTENTE
-        db.collection("tarefas").doc(currentEditId).update(payload).then(() => { 
-          showNotify("Alterações Salvas!"); 
-          resetForm();
-        });
+        // ATUALIZAR
+        const { error } = await supabase.from('tarefas').update(payload).eq('id', currentEditId);
+        if(!error) { showNotify("Alterações Salvas!"); resetForm(); }
       } else {
-        // CRIAR NOVA MISSÃO
+        // CRIAR (Insert)
         payload.start = new Date().toISOString().split('T')[0];
         payload.status = 'PENDENTE';
         payload.feedback = '';
         payload.createdAt = new Date().toISOString();
-        db.collection("tarefas").add(payload).then(() => { 
-          showNotify("Missão Sincronizada!"); 
-          resetForm();
-        });
+        
+        const { error } = await supabase.from('tarefas').insert([payload]);
+        if(!error) { showNotify("Missão Sincronizada!"); resetForm(); }
       }
     }
 
@@ -297,11 +301,20 @@
       btn.classList.remove('editing-mode');
     }
 
-    function updateTaskField(id, field, value) {
+    async function updateTaskField(id, field, value) {
       if(field === 'status' && value === 'CONCLUIDO') {
-        db.collection("tarefas").doc(id).delete().then(() => showNotify("Concluída e Removida!"));
+        const { error } = await supabase.from("tarefas").delete().eq('id', id);
+        if(!error) showNotify("Concluída e Removida!");
       } else {
-        db.collection("tarefas").doc(id).update({ [field]: value }).then(() => showNotify("Sincronizado"));
+        const { error } = await supabase.from("tarefas").update({ [field]: value }).eq('id', id);
+        if(!error) showNotify("Sincronizado");
+      }
+    }
+
+    async function deleteTask(id) {
+      if(confirm('Excluir Definitivamente?')) {
+        const { error } = await supabase.from('tarefas').delete().eq('id', id);
+        if(!error) showNotify("Missão Excluída", "success");
       }
     }
 
@@ -364,7 +377,7 @@
           <td><div class="action-row">
             <button class="btn-sm btn-edit" onclick="prepareEdit('${t.id}')">EDIT</button>
             <button class="btn-sm btn-wa" onclick="sendWA('${t.id}')">WA</button>
-            <button class="btn-sm btn-del" onclick="if(confirm('Excluir Definitivamente?'))db.collection('tarefas').doc('${t.id}').delete()">DEL</button>
+            <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">DEL</button>
           </div></td>`;
         list.appendChild(tr);
       });
