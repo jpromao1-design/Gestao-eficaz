@@ -280,7 +280,13 @@
       if(currentEditId) {
         // ATUALIZAR
         const { error } = await supabase.from('tarefas').update(payload).eq('id', currentEditId);
-        if(!error) { showNotify("Alterações Salvas!"); resetForm(); }
+        if(error) {
+          console.error(error);
+          showNotify("Erro ao salvar: " + error.message, "error");
+        } else { 
+          showNotify("Alterações Salvas!"); 
+          resetForm(); 
+        }
       } else {
         // CRIAR (Insert)
         payload.start = new Date().toISOString().split('T')[0];
@@ -289,7 +295,13 @@
         payload.createdAt = new Date().toISOString();
         
         const { error } = await supabase.from('tarefas').insert([payload]);
-        if(!error) { showNotify("Missão Sincronizada!"); resetForm(); }
+        if(error) {
+          console.error(error);
+          showNotify("Erro ao inserir: " + error.message, "error");
+        } else { 
+          showNotify("Missão Sincronizada!"); 
+          resetForm(); 
+        }
       }
     }
 
