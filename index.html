@@ -209,10 +209,21 @@
     }
 
     function toggleFields() {
-      const isSup = document.getElementById('task-tem-superior').value === 'SIM';
-      document.getElementById('div-feedback').style.display = isSup ? 'block' : 'none';
-      document.getElementById('div-superior').style.display = isSup ? 'block' : 'none';
-      document.getElementById('task-secao').disabled = (document.getElementById('task-category').value === 'PESSOAL');
+      const selectSup = document.getElementById('task-tem-superior');
+      if (!selectSup) return;
+      const isSup = selectSup.value === 'SIM';
+      
+      const divFeedback = document.getElementById('div-feedback');
+      const divSuperior = document.getElementById('div-superior');
+      
+      if (divFeedback) divFeedback.style.display = isSup ? 'block' : 'none';
+      if (divSuperior) divSuperior.style.display = isSup ? 'block' : 'none';
+      
+      const taskSecao = document.getElementById('task-secao');
+      const taskCategory = document.getElementById('task-category');
+      if (taskSecao && taskCategory) {
+        taskSecao.disabled = (taskCategory.value === 'PESSOAL');
+      }
     }
 
     function openQuickView(filter) {
@@ -286,7 +297,11 @@
           resetForm(); 
         }
       } else {
-        // CRIAR (Insert)
+        // CRIAR (Insert) com geração garantida de UUID no Frontend
+        payload.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
         payload.start = new Date().toISOString().split('T')[0];
         payload.status = 'PENDENTE';
         payload.feedback = '';
@@ -309,6 +324,7 @@
       const btn = document.getElementById('btn-main-action');
       btn.innerText = "Sincronizar Missão na Nuvem";
       btn.classList.remove('editing-mode');
+      toggleFields();
     }
 
     async function updateTaskField(id, field, value) {
@@ -392,6 +408,11 @@
         list.appendChild(tr);
       });
     }
+
+    // Inicialização segura dos campos ocultos no carregamento da página
+    window.addEventListener('DOMContentLoaded', () => {
+      toggleFields();
+    });
   </script>
 </body>
 </html>
