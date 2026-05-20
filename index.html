@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - v7.2 (Supabase)</title>
+  <title>SGT 8º BAEP - v7.3 (Supabase)</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Sincronização Supabase Ativa 🟢 v7.2</small></div>
+  <div class="topbar"><h1>SGT - 8º BAEP</h1><small style="color:var(--success)">Sincronização Supabase Ativa 🟢 v7.3</small></div>
 
   <div class="container">
     <div class="dashboard">
@@ -208,21 +208,21 @@
       document.getElementById('stat-feedback').innerText = tasks.filter(t=>t.exigeFeedbackSup==='SIM' && t.statusFeedbackSup==='NAO').length;
     }
 
+    // REFATORAÇÃO DEFINITIVA DA EXIBIÇÃO DE CAMPOS
     function toggleFields() {
-      const selectSup = document.getElementById('task-tem-superior');
-      if (!selectSup) return;
-      const isSup = selectSup.value === 'SIM';
+      var cat = document.getElementById('task-category').value;
+      document.getElementById('task-secao').disabled = (cat === 'PESSOAL');
       
-      const divFeedback = document.getElementById('div-feedback');
-      const divSuperior = document.getElementById('div-superior');
+      var sup = document.getElementById('task-tem-superior').value;
+      var divF = document.getElementById('div-feedback');
+      var divS = document.getElementById('div-superior');
       
-      if (divFeedback) divFeedback.style.display = isSup ? 'block' : 'none';
-      if (divSuperior) divSuperior.style.display = isSup ? 'block' : 'none';
-      
-      const taskSecao = document.getElementById('task-secao');
-      const taskCategory = document.getElementById('task-category');
-      if (taskSecao && taskCategory) {
-        taskSecao.disabled = (taskCategory.value === 'PESSOAL');
+      if (sup === 'SIM') {
+        divF.style.display = 'block';
+        divS.style.display = 'block';
+      } else {
+        divF.style.display = 'none';
+        divS.style.display = 'none';
       }
     }
 
@@ -254,8 +254,8 @@
       document.getElementById('task-deadline').value = t.end;
       
       if(t.temSuperior === 'SIM') {
-        document.getElementById('task-exige-feedback').value = t.exigeFeedbackSup;
-        document.getElementById('task-superior').value = t.superior;
+        document.getElementById('task-exige-feedback').value = t.exigeFeedbackSup || 'NAO';
+        document.getElementById('task-superior').value = t.superior || '';
       }
       
       toggleFields();
@@ -297,7 +297,7 @@
           resetForm(); 
         }
       } else {
-        // CRIAR (Insert) com geração garantida de UUID no Frontend
+        // CRIAR (Insert)
         payload.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
           var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
           return v.toString(16);
@@ -320,6 +320,8 @@
 
     function resetForm() {
       document.getElementById('task-desc').value = '';
+      document.getElementById('task-superior').value = '';
+      document.getElementById('task-tem-superior').value = 'NAO';
       currentEditId = null;
       const btn = document.getElementById('btn-main-action');
       btn.innerText = "Sincronizar Missão na Nuvem";
@@ -409,10 +411,7 @@
       });
     }
 
-    // Inicialização segura dos campos ocultos no carregamento da página
-    window.addEventListener('DOMContentLoaded', () => {
-      toggleFields();
-    });
+    window.addEventListener('DOMContentLoaded', toggleFields);
   </script>
 </body>
 </html>
