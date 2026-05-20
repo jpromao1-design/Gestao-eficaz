@@ -160,9 +160,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // 1. CONFIGURAÇÃO DO SUPABASE (COLE SUAS CHAVES AQUI)
-    const supabaseUrl = 'SUA_URL_DO_SUPABASE'; // Ex: https://xyz.supabase.co
-    const supabaseKey = 'SUA_CHAVE_ANONIMA_DO_SUPABASE';
+    // 1. CONFIGURAÇÃO DO SUPABASE
+    const supabaseUrl = 'https://oxwnbjmjpxvjtfvzkdju.supabase.co'; 
+    const supabaseKey = 'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     
     let tasks = [];
@@ -195,12 +195,10 @@
     // 3. SINCRONIZAÇÃO EM TEMPO REAL
     supabase.channel('custom-all-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tarefas' }, (payload) => {
-        // Toda vez que houver mudança na tabela, atualiza o SGT
         fetchTasks();
       })
       .subscribe();
 
-    // Inicia a primeira busca ao abrir a página
     fetchTasks();
 
     function updateStats() {
