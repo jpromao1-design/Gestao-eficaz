@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   <meta name="theme-color" content="#050505" />
-  <title>SGT 8º BAEP - v7.4 (Supabase)</title>
+
+  <title>SGT 8º BAEP - v8.0</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
@@ -25,46 +29,11 @@
     }
 
     body {
+      margin: 0;
       font-family: 'Montserrat', sans-serif;
       background: radial-gradient(circle at top center, #1a1a1a 0%, var(--bg-body) 100%);
       color: var(--text-main);
-      margin: 0;
       padding-bottom: 30px;
-    }
-
-    #notification-container {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 10001;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .notification {
-      background: rgba(15, 15, 15, 0.95);
-      border: 1px solid var(--accent);
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      animation: slideIn 0.3s ease forwards;
-      backdrop-filter: blur(10px);
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateX(120%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
     }
 
     .topbar {
@@ -78,8 +47,8 @@
     }
 
     .topbar h1 {
-      font-family: 'Cinzel', serif;
       margin: 0;
+      font-family: 'Cinzel', serif;
       color: var(--primary);
       letter-spacing: 2px;
       font-size: 1.5rem;
@@ -105,13 +74,6 @@
       padding: 15px;
       border-radius: 8px;
       text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--primary);
     }
 
     .stat-card h4 {
@@ -125,8 +87,8 @@
       font-size: 2.2rem;
       font-weight: 800;
       color: var(--primary);
-      font-family: 'Cinzel', serif;
       margin-top: 5px;
+      font-family: 'Cinzel', serif;
     }
 
     .card {
@@ -135,7 +97,6 @@
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
 
     label {
@@ -147,7 +108,9 @@
       margin-bottom: 5px;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       padding: 12px;
       background: #000;
@@ -155,6 +118,11 @@
       color: #fff;
       border-radius: 5px;
       font-size: 0.9rem;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
     }
 
     .btn-gold {
@@ -169,13 +137,6 @@
       border-radius: 6px;
       text-transform: uppercase;
       font-size: 0.9rem;
-      transition: 0.3s;
-    }
-
-    .btn-gold.editing-mode {
-      background: linear-gradient(45deg, #1a3a5a, #2a5a8a);
-      color: #fff;
-      border: 1px solid #4a8ada;
     }
 
     .search-box {
@@ -192,10 +153,19 @@
     .search-box input {
       background: transparent;
       border: none;
-      font-size: 1rem;
-      color: #fff;
       outline: none;
+      color: #fff;
       width: 100%;
+    }
+
+    .grid-form {
+      display: grid;
+      gap: 15px;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .missao-full {
+      grid-column: span 2;
     }
 
     table {
@@ -204,26 +174,32 @@
       table-layout: fixed;
     }
 
+    th {
+      background: #000;
+      color: var(--accent);
+      padding: 15px 10px;
+      text-align: left;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--accent);
+    }
+
     td {
       padding: 15px 10px;
       border-bottom: 1px solid #222;
-      font-size: 0.95rem;
       vertical-align: top;
-      word-wrap: break-word;
-      transition: 0.2s;
     }
 
-    .status-pri-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      width: 100%;
-    }
-
-    .status-pri-group select {
-      padding: 8px 4px;
-      font-size: 0.75rem;
-      flex: 1;
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      display: inline-block;
+      margin-bottom: 5px;
+      background: rgba(140, 106, 54, 0.2);
+      color: #d4af37;
+      border: 1px solid #d4af37;
     }
 
     .action-row {
@@ -239,70 +215,62 @@
       font-size: 0.65rem;
       font-weight: 800;
       cursor: pointer;
-      text-transform: uppercase;
       color: white;
-      transition: 0.2s;
     }
 
-    .btn-edit { background: #1a3a5a; }
-    .btn-wa { background: #128C7E; }
-    .btn-del { background: var(--danger); }
-
-    .badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      font-weight: 800;
-      display: inline-block;
-      margin-bottom: 5px;
+    .btn-edit {
+      background: #1a3a5a;
     }
 
-    .bg-prof {
-      background: rgba(140, 106, 54, 0.2);
-      color: #d4af37;
-      border: 1px solid #d4af37;
+    .btn-del {
+      background: var(--danger);
     }
 
-    textarea {
-      height: 100px;
+    .btn-wa {
+      background: #128C7E;
     }
 
-    .pri-ALTA { color: var(--danger) !important; font-weight: 800; }
-    .pri-MEDIA { color: var(--primary) !important; font-weight: 800; }
-
-    .grid-form {
-      display: grid;
-      gap: 15px;
-      grid-template-columns: repeat(4, 1fr);
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #111;
+      border: 1px solid var(--accent);
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 99999;
+      font-weight: 700;
     }
 
-    .missao-full {
-      grid-column: span 2;
-    }
+    @media(max-width:1024px) {
 
-    @media(max-width:1024px){
-      .grid-form{
-        grid-template-columns:1fr 1fr;
+      .grid-form {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .missao-full{
-        grid-column:1/-1;
+      .missao-full {
+        grid-column: 1/-1;
       }
 
-      table, thead, tbody, th, td, tr{
-        display:block;
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
       }
 
-      th{
-        display:none;
+      th {
+        display: none;
       }
 
-      tr{
-        background:#0a0a0a;
-        border:1px solid var(--border);
-        border-radius:10px;
-        margin-bottom:15px;
-        padding:12px;
+      tr {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 15px;
+        padding: 12px;
       }
     }
   </style>
@@ -310,532 +278,657 @@
 
 <body>
 
-<div id="notification-container"></div>
-
-<div class="topbar">
-  <h1>SGT - 8º BAEP</h1>
-  <small style="color:var(--success)">Sincronização Supabase Ativa 🟢 v7.4</small>
-</div>
-
-<div class="container">
-
-  <div class="dashboard">
-    <div class="stat-card">
-      <h4>Total</h4>
-      <div class="value" id="stat-total">0</div>
-    </div>
-
-    <div class="stat-card" style="border-left-color:var(--danger)">
-      <h4 style="color:var(--danger)">Atrasadas</h4>
-      <div class="value" id="stat-atrasada" style="color:var(--danger)">0</div>
-    </div>
-
-    <div class="stat-card">
-      <h4>Feedback</h4>
-      <div class="value" id="stat-feedback" style="color:#00c3ff">0</div>
-    </div>
+  <div class="topbar">
+    <h1>SGT - 8º BAEP</h1>
+    <small style="color:var(--success)">
+      SUPABASE ONLINE 🟢 v8.0
+    </small>
   </div>
 
-  <div class="card">
+  <div class="container">
 
-    <h3 style="margin:0 0 15px 0;color:var(--primary);font-family:'Cinzel';">
-      Lançar Ordem de Missão
-    </h3>
+    <div class="dashboard">
 
-    <div class="grid-form">
-
-      <div>
-        <label>Categoria</label>
-        <select id="task-category" onchange="toggleFields()">
-          <option value="PROFISSIONAL">BAEP</option>
-          <option value="PESSOAL">PESSOAL</option>
-        </select>
+      <div class="stat-card">
+        <h4>Total</h4>
+        <div class="value" id="stat-total">0</div>
       </div>
 
-      <div>
-        <label>Seção</label>
-        <select id="task-secao">
-          <option value="NENHUMA">---</option>
-          <option value="P1">P1</option>
-          <option value="P2">P2</option>
-          <option value="P3">P3</option>
-          <option value="P4">P4</option>
-          <option value="P5">P5</option>
-          <option value="SJD">SJD</option>
-        </select>
+      <div class="stat-card" style="border-left-color:var(--danger)">
+        <h4 style="color:var(--danger)">Atrasadas</h4>
+        <div class="value" id="stat-atrasada" style="color:var(--danger)">0</div>
       </div>
 
-      <div>
-        <label>Prioridade</label>
-        <select id="task-prioridade">
-          <option value="ALTA">🔴 ALTA</option>
-          <option value="MEDIA" selected>🟡 MÉDIA</option>
-          <option value="BAIXA">🟢 BAIXA</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Demanda passada por superior?</label>
-        <select id="task-tem-superior" onchange="toggleFields()">
-          <option value="NAO">Não</option>
-          <option value="SIM">Sim</option>
-        </select>
-      </div>
-
-      <div id="div-superior" style="display:none">
-        <label>Nome do Superior</label>
-        <input type="text" id="task-superior" placeholder="Ex: Ten Cel PM Senise">
-      </div>
-
-      <div class="missao-full">
-        <label>Missão</label>
-        <input type="text" id="task-desc" placeholder="Descreva a missão operacional...">
-      </div>
-
-      <div>
-        <label>Executor</label>
-        <input type="text" id="task-executor">
-      </div>
-
-      <div>
-        <label>Prazo Final</label>
-        <input type="date" id="task-deadline">
-      </div>
-
-      <div id="div-feedback" style="display:none">
-        <label>Exige Retorno?</label>
-        <select id="task-exige-feedback">
-          <option value="NAO">Não</option>
-          <option value="SIM">Sim</option>
-        </select>
+      <div class="stat-card">
+        <h4>Feedback</h4>
+        <div class="value" id="stat-feedback" style="color:#00c3ff">0</div>
       </div>
 
     </div>
 
-    <button id="btn-main-action" class="btn-gold" onclick="addOrUpdateTask()">
-      Sincronizar Missão na Nuvem
-    </button>
-
-  </div>
-
-  <div class="card">
-
-    <div class="search-box">
-      <span>🔍</span>
-      <input type="text" id="search-input" placeholder="Filtrar responsável ou missão..." onkeyup="render()">
-    </div>
-
-    <div style="overflow-x:auto">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Missão</th>
-            <th>Prazo</th>
-            <th>Anotações</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-
-        <tbody id="task-list"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-
-const supabaseUrl = 'https://oxwnbjmjpxvjtfvzkdju.supabase.co';
-const supabaseKey = 'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
-
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-let tasks = [];
-let currentEditId = null;
-
-function showNotify(msg, type='success'){
-
-  const container = document.getElementById('notification-container');
-
-  const toast = document.createElement('div');
-
-  toast.className = `notification ${type}`;
-
-  toast.innerHTML = `<span>${type==='success'?'✅':'⚠️'}</span> ${msg}`;
-
-  container.appendChild(toast);
-
-  setTimeout(()=>{
-    toast.style.opacity='0';
-    setTimeout(()=>toast.remove(),500);
-  },3000);
-}
-
-function formatDataBR(iso){
-
-  if(!iso) return "---";
-
-  const [a,m,d] = iso.split('-');
-
-  return `${d}/${m}/${a}`;
-}
-
-async function fetchTasks(){
-
-  const {data,error} = await supabase
-    .from('tarefas')
-    .select('*');
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  tasks = data || [];
-
-  updateStats();
-
-  render();
-}
-
-supabase.channel('custom-all-channel')
-.on('postgres_changes',
-{
-  event:'*',
-  schema:'public',
-  table:'tarefas'
-},
-(payload)=>{
-  fetchTasks();
-})
-.subscribe();
-
-fetchTasks();
-
-function updateStats(){
-
-  const now = new Date().toISOString().split('T')[0];
-
-  document.getElementById('stat-total').innerText = tasks.length;
-
-  document.getElementById('stat-atrasada').innerText =
-    tasks.filter(t=>t.end < now).length;
-
-  document.getElementById('stat-feedback').innerText =
-    tasks.filter(t=>t.exigeFeedbackSup==='SIM' && t.statusFeedbackSup==='NAO').length;
-}
-
-function toggleFields(){
-
-  var cat = document.getElementById('task-category').value;
-
-  document.getElementById('task-secao').disabled = (cat === 'PESSOAL');
-
-  var sup = document.getElementById('task-tem-superior').value;
-
-  var divF = document.getElementById('div-feedback');
-
-  var divS = document.getElementById('div-superior');
-
-  if(sup === 'SIM'){
-
-    divF.style.display = 'block';
-
-    divS.style.display = 'block';
-
-  } else {
-
-    divF.style.display = 'none';
-
-    divS.style.display = 'none';
-
-    document.getElementById('task-superior').value = '';
-  }
-}
-
-async function addOrUpdateTask(){
-
-  const desc = document.getElementById('task-desc').value;
-
-  const end = document.getElementById('task-deadline').value;
-
-  if(!desc || !end){
-
-    showNotify("Missão e Prazo obrigatórios!", "error");
-
-    return;
-  }
-
-  const payload = {
-
-    category: document.getElementById('task-category').value,
-
-    secao: document.getElementById('task-secao').value,
-
-    prioridade: document.getElementById('task-prioridade').value,
-
-    temSuperior: document.getElementById('task-tem-superior').value,
-
-    superior: document.getElementById('task-superior').value || 'N/A',
-
-    exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
-
-    desc: desc,
-
-    executor: document.getElementById('task-executor').value || 'Cap Romão',
-
-    end: end,
-
-    statusFeedbackSup: 'NAO'
-  };
-
-  if(currentEditId){
-
-    const {error} = await supabase
-      .from('tarefas')
-      .update(payload)
-      .eq('id', currentEditId);
-
-    if(error){
-
-      console.error(error);
-
-      showNotify("Erro ao atualizar","error");
-
-    } else {
-
-      showNotify("Alterações salvas");
-
-      resetForm();
-    }
-
-  } else {
-
-    payload.id = crypto.randomUUID();
-
-    payload.start = new Date().toISOString().split('T')[0];
-
-    payload.status = 'PENDENTE';
-
-    payload.feedback = '';
-
-    payload.createdAt = new Date().toISOString();
-
-    const {error} = await supabase
-      .from('tarefas')
-      .insert([payload]);
-
-    if(error){
-
-      console.error(error);
-
-      showNotify("Erro ao inserir","error");
-
-    } else {
-
-      showNotify("Missão sincronizada");
-
-      resetForm();
-    }
-  }
-}
-
-function resetForm(){
-
-  document.getElementById('task-desc').value = '';
-
-  document.getElementById('task-superior').value = '';
-
-  document.getElementById('task-tem-superior').value = 'NAO';
-
-  currentEditId = null;
-
-  toggleFields();
-}
-
-async function updateTaskField(id,field,value){
-
-  if(field === 'status' && value === 'CONCLUIDO'){
-
-    const {error} = await supabase
-      .from('tarefas')
-      .delete()
-      .eq('id', id);
-
-    if(!error){
-
-      showNotify("Missão concluída");
-    }
-
-  } else {
-
-    const {error} = await supabase
-      .from('tarefas')
-      .update({[field]:value})
-      .eq('id', id);
-
-    if(!error){
-
-      showNotify("Atualizado");
-    }
-  }
-}
-
-async function deleteTask(id){
-
-  if(confirm('Excluir missão?')){
-
-    const {error} = await supabase
-      .from('tarefas')
-      .delete()
-      .eq('id', id);
-
-    if(!error){
-
-      showNotify("Missão excluída");
-    }
-  }
-}
-
-function prepareEdit(id){
-
-  const t = tasks.find(x=>x.id===id);
-
-  if(!t) return;
-
-  document.getElementById('task-category').value = t.category || 'PROFISSIONAL';
-
-  document.getElementById('task-secao').value = t.secao || 'NENHUMA';
-
-  document.getElementById('task-prioridade').value = t.prioridade || 'MEDIA';
-
-  document.getElementById('task-tem-superior').value = t.temSuperior || 'NAO';
-
-  document.getElementById('task-superior').value = t.superior || '';
-
-  document.getElementById('task-desc').value = t.desc;
-
-  document.getElementById('task-executor').value = t.executor;
-
-  document.getElementById('task-deadline').value = t.end;
-
-  toggleFields();
-
-  currentEditId = id;
-
-  window.scrollTo({
-    top:0,
-    behavior:'smooth'
-  });
-
-  showNotify("Modo edição");
-}
-
-function render(){
-
-  const list = document.getElementById('task-list');
-
-  const search = document.getElementById('search-input').value.toLowerCase();
-
-  const now = new Date().toISOString().split('T')[0];
-
-  list.innerHTML = '';
-
-  let filtered = tasks.filter(t =>
-    t.desc.toLowerCase().includes(search) ||
-    t.executor.toLowerCase().includes(search)
-  );
-
-  filtered.forEach(t=>{
-
-    const isAtrasada = t.end < now;
-
-    const tr = document.createElement('tr');
-
-    tr.innerHTML = `
-      <td>
-
-        <div class="status-pri-group">
-
-          <select onchange="updateTaskField('${t.id}','status',this.value)">
-            <option value="PENDENTE">⏳ PENDENTE</option>
-            <option value="CONCLUIDO">✅ CONCLUÍDO</option>
+    <div class="card">
+
+      <h3 style="color:var(--primary);margin-top:0;">
+        Lançar Ordem de Missão
+      </h3>
+
+      <div class="grid-form">
+
+        <div>
+          <label>Categoria</label>
+          <select id="task-category" onchange="toggleFields()">
+            <option value="PROFISSIONAL">BAEP</option>
+            <option value="PESSOAL">PESSOAL</option>
           </select>
+        </div>
 
-          <select onchange="updateTaskField('${t.id}','prioridade',this.value)" class="pri-${t.prioridade}">
-
-            <option value="ALTA" ${t.prioridade==='ALTA'?'selected':''}>🔴 ALTA</option>
-
-            <option value="MEDIA" ${t.prioridade==='MEDIA'?'selected':''}>🟡 MÉDIA</option>
-
-            <option value="BAIXA" ${t.prioridade==='BAIXA'?'selected':''}>🟢 BAIXA</option>
-
+        <div>
+          <label>Seção</label>
+          <select id="task-secao">
+            <option value="NENHUMA">---</option>
+            <option value="P1">P1</option>
+            <option value="P2">P2</option>
+            <option value="P3">P3</option>
+            <option value="P4">P4</option>
+            <option value="P5">P5</option>
+            <option value="SJD">SJD</option>
           </select>
-
         </div>
 
-      </td>
-
-      <td>
-
-        <span class="badge bg-prof">${t.secao}</span>
-
-        <div style="font-weight:800;color:#fff;margin:4px 0;font-size:1.05rem;">
-          ${t.desc}
+        <div>
+          <label>Prioridade</label>
+          <select id="task-prioridade">
+            <option value="ALTA">🔴 ALTA</option>
+            <option value="MEDIA">🟡 MÉDIA</option>
+            <option value="BAIXA">🟢 BAIXA</option>
+          </select>
         </div>
 
-        <div style="font-size:0.75rem;color:var(--primary);font-weight:600;">
-          Responsável: ${t.executor}
+        <div>
+          <label>Demanda passada por superior?</label>
+
+          <select id="task-tem-superior" onchange="toggleFields()">
+            <option value="NAO">Não</option>
+            <option value="SIM">Sim</option>
+          </select>
         </div>
 
-        ${t.temSuperior === 'SIM' ? `
-          <div style="font-size:0.75rem;color:#00c3ff;font-weight:600;">
-            Superior: ${t.superior}
-          </div>
-        ` : ''}
+        <div id="div-superior" style="display:none">
+          <label>Nome do Superior</label>
 
-      </td>
-
-      <td style="color:${isAtrasada?'var(--danger)':'#fff'};font-weight:800;">
-        ${formatDataBR(t.end)}
-      </td>
-
-      <td>
-        <textarea onchange="updateTaskField('${t.id}','feedback',this.value)">${t.feedback || ''}</textarea>
-      </td>
-
-      <td>
-
-        <div class="action-row">
-
-          <button class="btn-sm btn-edit" onclick="prepareEdit('${t.id}')">
-            EDIT
-          </button>
-
-          <button class="btn-sm btn-del" onclick="deleteTask('${t.id}')">
-            DEL
-          </button>
-
+          <input type="text"
+            id="task-superior"
+            placeholder="Ex: Ten Cel PM Senise">
         </div>
 
-      </td>
-    `;
+        <div id="div-feedback" style="display:none">
+          <label>Exige retorno?</label>
 
-    list.appendChild(tr);
-  });
-}
+          <select id="task-exige-feedback">
+            <option value="NAO">Não</option>
+            <option value="SIM">Sim</option>
+          </select>
+        </div>
 
-window.addEventListener('DOMContentLoaded', toggleFields);
+        <div class="missao-full">
+          <label>Missão</label>
 
-</script>
+          <input type="text"
+            id="task-descricao"
+            placeholder="Descreva a missão operacional...">
+        </div>
+
+        <div>
+          <label>Executor</label>
+
+          <input type="text"
+            id="task-executor">
+        </div>
+
+        <div>
+          <label>Prazo Final</label>
+
+          <input type="date"
+            id="task-deadline">
+        </div>
+
+      </div>
+
+      <button class="btn-gold" onclick="addTask()">
+        SINCRONIZAR MISSÃO
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="search-box">
+
+        <span>🔍</span>
+
+        <input type="text"
+          id="search-input"
+          placeholder="Filtrar missão..."
+          onkeyup="render()">
+
+      </div>
+
+      <div style="overflow-x:auto">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Status</th>
+              <th>Missão</th>
+              <th>Prazo</th>
+              <th>Anotações</th>
+              <th>Ações</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="task-list"></tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    // =========================
+    // CONFIGURAÇÃO SUPABASE
+    // =========================
+
+    const supabaseUrl = 'https://oxwnbjmjpxvjtfvzkdju.supabase.co';
+
+    const supabaseKey =
+      'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
+
+    const supabase = window.supabase.createClient(
+      supabaseUrl,
+      supabaseKey
+    );
+
+    let tasks = [];
+
+    // =========================
+    // NOTIFICAÇÕES
+    // =========================
+
+    function showNotify(msg) {
+
+      const div = document.createElement('div');
+
+      div.className = 'notification';
+
+      div.innerText = msg;
+
+      document.body.appendChild(div);
+
+      setTimeout(() => {
+
+        div.remove();
+
+      }, 3000);
+    }
+
+    // =========================
+    // FORMATA DATA
+    // =========================
+
+    function formatDataBR(iso) {
+
+      if (!iso) return '---';
+
+      const [a, m, d] = iso.split('-');
+
+      return `${d}/${m}/${a}`;
+    }
+
+    // =========================
+    // CAMPOS DINÂMICOS
+    // =========================
+
+    function toggleFields() {
+
+      const superior =
+        document.getElementById('task-tem-superior').value;
+
+      const divSuperior =
+        document.getElementById('div-superior');
+
+      const divFeedback =
+        document.getElementById('div-feedback');
+
+      if (superior === 'SIM') {
+
+        divSuperior.style.display = 'block';
+
+        divFeedback.style.display = 'block';
+
+      } else {
+
+        divSuperior.style.display = 'none';
+
+        divFeedback.style.display = 'none';
+
+        document.getElementById('task-superior').value = '';
+      }
+    }
+
+    // =========================
+    // BUSCAR TAREFAS
+    // =========================
+
+    async function fetchTasks() {
+
+      const { data, error } = await supabase
+        .from('tarefas')
+        .select('*')
+        .order('createdAt', { ascending: false });
+
+      if (error) {
+
+        console.error(JSON.stringify(error, null, 2));
+
+        showNotify('Erro ao buscar dados');
+
+        return;
+      }
+
+      tasks = data || [];
+
+      updateStats();
+
+      render();
+    }
+
+    // =========================
+    // ESTATÍSTICAS
+    // =========================
+
+    function updateStats() {
+
+      const hoje =
+        new Date().toISOString().split('T')[0];
+
+      document.getElementById('stat-total')
+        .innerText = tasks.length;
+
+      document.getElementById('stat-atrasada')
+        .innerText =
+        tasks.filter(t => t.end < hoje).length;
+
+      document.getElementById('stat-feedback')
+        .innerText =
+        tasks.filter(
+          t =>
+          t.exigeFeedbackSup === 'SIM' &&
+          t.statusFeedbackSup === 'NAO'
+        ).length;
+    }
+
+    // =========================
+    // ADICIONAR TAREFA
+    // =========================
+
+    async function addTask() {
+
+      const descricao =
+        document.getElementById('task-descricao').value;
+
+      const prazo =
+        document.getElementById('task-deadline').value;
+
+      if (!descricao || !prazo) {
+
+        showNotify('Missão e prazo obrigatórios');
+
+        return;
+      }
+
+      const payload = {
+
+        id: crypto.randomUUID(),
+
+        category:
+          document.getElementById('task-category').value,
+
+        secao:
+          document.getElementById('task-secao').value,
+
+        prioridade:
+          document.getElementById('task-prioridade').value,
+
+        temSuperior:
+          document.getElementById('task-tem-superior').value,
+
+        superior:
+          document.getElementById('task-superior').value || '',
+
+        exigeFeedbackSup:
+          document.getElementById('task-exige-feedback').value,
+
+        descricao: descricao,
+
+        executor:
+          document.getElementById('task-executor').value || 'Não definido',
+
+        start:
+          new Date().toISOString().split('T')[0],
+
+        end: prazo,
+
+        status: 'PENDENTE',
+
+        feedback: '',
+
+        statusFeedbackSup: 'NAO',
+
+        createdAt: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('tarefas')
+        .insert([payload]);
+
+      if (error) {
+
+        console.error(JSON.stringify(error, null, 2));
+
+        showNotify('Erro ao salvar');
+
+        return;
+      }
+
+      showNotify('Missão salva');
+
+      limparFormulario();
+
+      fetchTasks();
+    }
+
+    // =========================
+    // LIMPAR FORM
+    // =========================
+
+    function limparFormulario() {
+
+      document.getElementById('task-descricao').value = '';
+
+      document.getElementById('task-executor').value = '';
+
+      document.getElementById('task-superior').value = '';
+
+      document.getElementById('task-deadline').value = '';
+
+      document.getElementById('task-tem-superior').value = 'NAO';
+
+      toggleFields();
+    }
+
+    // =========================
+    // EXCLUIR
+    // =========================
+
+    async function deleteTask(id) {
+
+      if (!confirm('Excluir missão?')) return;
+
+      const { error } = await supabase
+        .from('tarefas')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+
+        console.error(error);
+
+        showNotify('Erro ao excluir');
+
+        return;
+      }
+
+      showNotify('Missão excluída');
+
+      fetchTasks();
+    }
+
+    // =========================
+    // ATUALIZA CAMPO
+    // =========================
+
+    async function updateField(id, field, value) {
+
+      const { error } = await supabase
+        .from('tarefas')
+        .update({ [field]: value })
+        .eq('id', id);
+
+      if (error) {
+
+        console.error(error);
+
+        showNotify('Erro ao atualizar');
+
+        return;
+      }
+
+      fetchTasks();
+    }
+
+    // =========================
+    // WHATSAPP
+    // =========================
+
+    function sendWA(id) {
+
+      const t = tasks.find(x => x.id === id);
+
+      const msg = encodeURIComponent(
+
+        `🚨 ORDEM DE MISSÃO - 8º BAEP\n\n` +
+
+        `📋 Missão: ${t.descricao}\n` +
+
+        `👤 Executor: ${t.executor}\n` +
+
+        `🏢 Seção: ${t.secao}\n` +
+
+        `📅 Prazo: ${formatDataBR(t.end)}\n` +
+
+        `${t.temSuperior === 'SIM'
+          ? `👮 Superior: ${t.superior}\n`
+          : ''
+        }`
+      );
+
+      window.open(
+        `https://wa.me/?text=${msg}`,
+        '_blank'
+      );
+    }
+
+    // =========================
+    // RENDER
+    // =========================
+
+    function render() {
+
+      const tbody =
+        document.getElementById('task-list');
+
+      const busca =
+        document.getElementById('search-input')
+          .value.toLowerCase();
+
+      tbody.innerHTML = '';
+
+      const hoje =
+        new Date().toISOString().split('T')[0];
+
+      const filtradas = tasks.filter(t =>
+
+        t.descricao?.toLowerCase().includes(busca) ||
+
+        t.executor?.toLowerCase().includes(busca)
+      );
+
+      filtradas.forEach(t => {
+
+        const atrasada = t.end < hoje;
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+
+          <td>
+
+            <select
+              onchange="updateField('${t.id}','status',this.value)"
+            >
+
+              <option value="PENDENTE"
+                ${t.status === 'PENDENTE' ? 'selected' : ''}
+              >
+                ⏳ PENDENTE
+              </option>
+
+              <option value="CONCLUIDO"
+                ${t.status === 'CONCLUIDO' ? 'selected' : ''}
+              >
+                ✅ CONCLUÍDO
+              </option>
+
+            </select>
+
+          </td>
+
+          <td>
+
+            <span class="badge">
+              ${t.secao}
+            </span>
+
+            <div
+              style="
+                font-weight:800;
+                font-size:1rem;
+                margin-bottom:8px;
+              "
+            >
+              ${t.descricao}
+            </div>
+
+            <div
+              style="
+                font-size:0.75rem;
+                color:var(--primary);
+                font-weight:600;
+              "
+            >
+              Responsável: ${t.executor}
+            </div>
+
+            ${t.temSuperior === 'SIM'
+              ? `
+                <div
+                  style="
+                    font-size:0.75rem;
+                    color:#00c3ff;
+                    margin-top:5px;
+                    font-weight:600;
+                  "
+                >
+                  Superior: ${t.superior}
+                </div>
+              `
+              : ''
+            }
+
+          </td>
+
+          <td
+            style="
+              color:${atrasada ? 'var(--danger)' : '#fff'};
+              font-weight:800;
+            "
+          >
+            ${formatDataBR(t.end)}
+          </td>
+
+          <td>
+
+            <textarea
+              onchange="updateField('${t.id}','feedback',this.value)"
+            >${t.feedback || ''}</textarea>
+
+          </td>
+
+          <td>
+
+            <div class="action-row">
+
+              <button
+                class="btn-sm btn-wa"
+                onclick="sendWA('${t.id}')"
+              >
+                WA
+              </button>
+
+              <button
+                class="btn-sm btn-del"
+                onclick="deleteTask('${t.id}')"
+              >
+                DEL
+              </button>
+
+            </div>
+
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =========================
+    // REALTIME
+    // =========================
+
+    supabase
+      .channel('tarefas-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tarefas'
+        },
+        () => {
+
+          fetchTasks();
+        }
+      )
+      .subscribe();
+
+    fetchTasks();
+
+    window.addEventListener(
+      'DOMContentLoaded',
+      toggleFields
+    );
+
+  </script>
 
 </body>
+
 </html>
