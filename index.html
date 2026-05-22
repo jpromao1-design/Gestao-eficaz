@@ -1,1075 +1,373 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!-- ========================================= -->
+<!-- MELHORIAS VISUAIS + WHATSAPP + CALENDÁRIO -->
+<!-- NÃO REMOVE NADA DO SISTEMA ATUAL -->
+<!-- ========================================= -->
 
-<head>
+<style>
 
-  <meta charset="UTF-8" />
+  :root{
 
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0" />
+    --bg-body:#030303;
+    --bg-card:#0b0b0b;
+    --bg-secondary:#101010;
 
-  <title>SGT 8º BAEP - Gestão de Missões</title>
+    --primary:#d6b34b;
+    --primary-strong:#f1d97a;
 
-  <meta name="theme-color" content="#050505" />
+    --accent:#8c6a36;
 
-  <!-- SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    --danger:#ff4d4d;
 
-  <style>
+    --success:#00ff88;
 
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;800&display=swap');
+    --text-main:#f2f2f2;
 
-    :root{
-      --bg-body:#050505;
-      --primary:#f1f10e;
-      --accent:#8c6a36;
-      --danger:#ff4d4d;
-      --success:#00ff6a;
-      --text-main:#e0e0e0;
-      --border:#2a2a2a;
-    }
+    --border:#252525;
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
+    --shadow:
+      0 0 10px rgba(214,179,75,.15),
+      0 0 25px rgba(214,179,75,.05);
 
-    body{
-      margin:0;
-      padding-bottom:30px;
-      font-family:'Montserrat',sans-serif;
-      background:radial-gradient(circle at top center,#1a1a1a 0%,var(--bg-body) 100%);
-      color:var(--text-main);
-    }
+    --military-gradient:
+      linear-gradient(
+        135deg,
+        #050505 0%,
+        #101010 40%,
+        #161616 100%
+      );
+  }
 
-    .topbar{
-      background:rgba(0,0,0,0.95);
-      border-bottom:2px solid var(--accent);
-      padding:15px;
-      text-align:center;
-      position:sticky;
-      top:0;
-      z-index:1000;
-    }
+  body{
 
-    .topbar h1{
-      margin:0;
-      color:var(--primary);
-      font-family:'Cinzel',serif;
-      letter-spacing:2px;
-      font-size:1.5rem;
-    }
-
-    .container{
-      max-width:1600px;
-      margin:15px auto;
-      padding:0 20px;
-    }
-
-    .dashboard{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:15px;
-      margin-bottom:20px;
-    }
-
-    .stat-card{
-      background:rgba(20,20,20,0.9);
-      border:1px solid var(--border);
-      border-left:5px solid var(--accent);
-      padding:15px;
-      border-radius:8px;
-      text-align:center;
-    }
-
-    .stat-card h4{
-      margin:0;
-      font-size:.7rem;
-      text-transform:uppercase;
-      color:#888;
-    }
-
-    .stat-card .value{
-      font-size:2.2rem;
-      font-weight:800;
-      color:var(--primary);
-      margin-top:5px;
-      font-family:'Cinzel',serif;
-    }
-
-    .card{
-      background:#111;
-      border:1px solid var(--border);
-      border-radius:8px;
-      padding:20px;
-      margin-bottom:20px;
-    }
-
-    label{
-      display:block;
-      font-size:.7rem;
-      color:var(--accent);
-      font-weight:800;
-      text-transform:uppercase;
-      margin-bottom:5px;
-    }
-
-    input,
-    select,
-    textarea{
-      width:100%;
-      padding:12px;
-      background:#000;
-      border:1px solid var(--border);
-      color:#fff;
-      border-radius:5px;
-      font-size:.9rem;
-    }
-
-    textarea{
-      min-height:100px;
-      resize:vertical;
-    }
-
-    .btn-gold{
-      background:linear-gradient(45deg,var(--accent),#d4af37);
-      color:#000;
-      width:100%;
-      margin-top:15px;
-      font-weight:800;
-      cursor:pointer;
-      border:none;
-      padding:15px;
-      border-radius:6px;
-      text-transform:uppercase;
-      font-size:.9rem;
-    }
-
-    .search-box{
-      background:#1a1a1a;
-      border:1px solid var(--accent);
-      padding:12px;
-      border-radius:8px;
-      margin-bottom:20px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
-    .search-box input{
-      background:transparent;
-      border:none;
-      outline:none;
-      width:100%;
-      color:#fff;
-    }
-
-    .grid-form{
-      display:grid;
-      gap:15px;
-      grid-template-columns:repeat(4,1fr);
-    }
-
-    .missao-full{
-      grid-column:span 2;
-    }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      table-layout:fixed;
-    }
-
-    th{
-      background:#000;
-      color:var(--accent);
-      padding:15px 10px;
-      text-align:left;
-      font-size:.85rem;
-      text-transform:uppercase;
-      border-bottom:2px solid var(--accent);
-    }
-
-    td{
-      padding:15px 10px;
-      border-bottom:1px solid #222;
-      vertical-align:top;
-    }
-
-    .badge{
-      padding:4px 8px;
-      border-radius:4px;
-      font-size:.65rem;
-      font-weight:800;
-      display:inline-block;
-      margin-bottom:5px;
-      background:rgba(140,106,54,.2);
-      color:#d4af37;
-      border:1px solid #d4af37;
-    }
-
-    .action-row{
-      display:flex;
-      gap:5px;
-    }
-
-    .btn-sm{
-      flex:1;
-      padding:10px 5px;
-      border:none;
-      border-radius:4px;
-      font-size:.65rem;
-      font-weight:800;
-      cursor:pointer;
-      color:white;
-    }
-
-    .btn-wa{
-      background:#128C7E;
-    }
-
-    .btn-del{
-      background:var(--danger);
-    }
-
-    .notification{
-      position:fixed;
-      top:20px;
-      right:20px;
-      background:#111;
-      border:1px solid var(--accent);
-      padding:15px;
-      border-radius:8px;
-      z-index:99999;
-      font-weight:700;
-    }
-
-    @media(max-width:1024px){
-
-      .grid-form{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .missao-full{
-        grid-column:1/-1;
-      }
-
-      table,
-      thead,
-      tbody,
-      th,
-      td,
-      tr{
-        display:block;
-      }
-
-      th{
-        display:none;
-      }
-
-      tr{
-        background:#0a0a0a;
-        border:1px solid var(--border);
-        border-radius:10px;
-        margin-bottom:15px;
-        padding:12px;
-      }
-    }
-
-  </style>
-
-</head>
-
-<body>
-
-  <div class="topbar">
-
-    <h1>SGT - 8º BAEP</h1>
-
-    <small style="color:var(--success)">
-      SUPABASE ONLINE 🟢 v9.0
-    </small>
-
-  </div>
-
-  <div class="container">
-
-    <!-- DASHBOARD -->
-
-    <div class="dashboard">
-
-      <div class="stat-card">
-
-        <h4>Total</h4>
-
-        <div class="value" id="stat-total">
-          0
-        </div>
-
-      </div>
-
-      <div class="stat-card" style="border-left-color:var(--danger)">
-
-        <h4 style="color:var(--danger)">
-          Atrasadas
-        </h4>
-
-        <div class="value"
-          id="stat-atrasada"
-          style="color:var(--danger)">
-
-          0
-
-        </div>
-
-      </div>
-
-      <div class="stat-card">
-
-        <h4>Feedback</h4>
-
-        <div class="value"
-          id="stat-feedback"
-          style="color:#00c3ff">
-
-          0
-
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- FORM -->
-
-    <div class="card">
-
-      <h3 style="color:var(--primary);margin-top:0;">
-        Lançar Ordem de Missão
-      </h3>
-
-      <div class="grid-form">
-
-        <div>
-
-          <label>Categoria</label>
-
-          <select id="task-category">
-
-            <option value="PROFISSIONAL">
-              BAEP
-            </option>
-
-            <option value="PESSOAL">
-              PESSOAL
-            </option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Seção</label>
-
-          <select id="task-secao">
-
-            <option value="NENHUMA">---</option>
-
-            <option value="P1">P1</option>
-
-            <option value="P2">P2</option>
-
-            <option value="P3">P3</option>
-
-            <option value="P4">P4</option>
-
-            <option value="P5">P5</option>
-
-            <option value="SJD">SJD</option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Prioridade</label>
-
-          <select id="task-prioridade">
-
-            <option value="ALTA">
-              🔴 ALTA
-            </option>
-
-            <option value="MEDIA">
-              🟡 MÉDIA
-            </option>
-
-            <option value="BAIXA">
-              🟢 BAIXA
-            </option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Demanda passada por superior?</label>
-
-          <select id="task-tem-superior"
-            onchange="toggleFields()">
-
-            <option value="NAO">
-              Não
-            </option>
-
-            <option value="SIM">
-              Sim
-            </option>
-
-          </select>
-
-        </div>
-
-        <div id="div-superior"
-          style="display:none">
-
-          <label>Nome do Superior</label>
-
-          <input type="text"
-            id="task-superior"
-            placeholder="Ex: Ten Cel PM Senise">
-
-        </div>
-
-        <div id="div-feedback"
-          style="display:none">
-
-          <label>Exige retorno?</label>
-
-          <select id="task-exige-feedback">
-
-            <option value="NAO">
-              Não
-            </option>
-
-            <option value="SIM">
-              Sim
-            </option>
-
-          </select>
-
-        </div>
-
-        <div class="missao-full">
-
-          <label>Missão</label>
-
-          <input type="text"
-            id="task-descricao"
-            placeholder="Descreva a missão operacional...">
-
-        </div>
-
-        <div>
-
-          <label>Executor</label>
-
-          <input type="text"
-            id="task-executor">
-
-        </div>
-
-        <div>
-
-          <label>Prazo Final</label>
-
-          <input type="date"
-            id="task-deadline">
-
-        </div>
-
-      </div>
-
-      <button class="btn-gold"
-        onclick="addTask()">
-
-        SINCRONIZAR MISSÃO
-
-      </button>
-
-    </div>
-
-    <!-- LISTAGEM -->
-
-    <div class="card">
-
-      <div class="search-box">
-
-        <span>🔍</span>
-
-        <input type="text"
-          id="search-input"
-          placeholder="Filtrar missão..."
-          onkeyup="render()">
-
-      </div>
-
-      <div style="overflow-x:auto">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>Status</th>
-
-              <th>Missão</th>
-
-              <th>Prazo</th>
-
-              <th>Anotações</th>
-
-              <th>Ações</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody id="task-list"></tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <script>
-
-    // =====================================
-    // SUPABASE
-    // =====================================
-
-    const supabaseUrl =
-      'https://oxwnbjmjpxvjtfvzkdju.supabase.co';
-
-    const supabaseKey =
-      'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
-
-    const client =
-      window.supabase.createClient(
-        supabaseUrl,
-        supabaseKey
+    background:
+      radial-gradient(
+        circle at top center,
+        #1d1d1d 0%,
+        #050505 100%
       );
 
-    // =====================================
-    // VARIÁVEIS
-    // =====================================
+    color:var(--text-main);
+  }
 
-    let tasks = [];
+  .card{
 
-    // =====================================
-    // NOTIFICAÇÃO
-    // =====================================
+    background:var(--military-gradient);
 
-    function showNotify(msg){
+    border:1px solid #2e2e2e;
 
-      const div =
-        document.createElement('div');
+    box-shadow:var(--shadow);
 
-      div.className = 'notification';
+    backdrop-filter:blur(6px);
+  }
 
-      div.innerText = msg;
+  .topbar{
 
-      document.body.appendChild(div);
-
-      setTimeout(()=>{
-
-        div.remove();
-
-      },3000);
-    }
-
-    // =====================================
-    // DATA BR
-    // =====================================
-
-    function formatDataBR(iso){
-
-      if(!iso) return '---';
-
-      const [a,m,d] = iso.split('-');
-
-      return `${d}/${m}/${a}`;
-    }
-
-    // =====================================
-    // MOSTRAR CAMPOS
-    // =====================================
-
-    function toggleFields(){
-
-      const superior =
-        document.getElementById('task-tem-superior').value;
-
-      const divSuperior =
-        document.getElementById('div-superior');
-
-      const divFeedback =
-        document.getElementById('div-feedback');
-
-      if(superior === 'SIM'){
-
-        divSuperior.style.display = 'block';
-
-        divFeedback.style.display = 'block';
-
-      } else {
-
-        divSuperior.style.display = 'none';
-
-        divFeedback.style.display = 'none';
-
-        document.getElementById('task-superior').value = '';
-      }
-    }
-
-    // =====================================
-    // BUSCAR TAREFAS
-    // =====================================
-
-    async function fetchTasks(){
-
-      const { data, error } =
-        await client
-          .from('tarefas')
-          .select('*')
-          .order('createdAt',
-            { ascending:false });
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao carregar');
-
-        return;
-      }
-
-      tasks = data || [];
-
-      updateStats();
-
-      render();
-    }
-
-    // =====================================
-    // ESTATÍSTICAS
-    // =====================================
-
-    function updateStats(){
-
-      const hoje =
-        new Date().toISOString().split('T')[0];
-
-      document.getElementById('stat-total')
-        .innerText = tasks.length;
-
-      document.getElementById('stat-atrasada')
-        .innerText =
-        tasks.filter(
-          t => t.end < hoje
-        ).length;
-
-      document.getElementById('stat-feedback')
-        .innerText =
-        tasks.filter(
-          t =>
-          t.exigeFeedbackSup === 'SIM' &&
-          t.statusFeedbackSup === 'NAO'
-        ).length;
-    }
-
-    // =====================================
-    // SALVAR
-    // =====================================
-
-    async function addTask(){
-
-      const descricao =
-        document.getElementById('task-descricao').value;
-
-      const prazo =
-        document.getElementById('task-deadline').value;
-
-      if(!descricao || !prazo){
-
-        showNotify('Missão e prazo obrigatórios');
-
-        return;
-      }
-
-      const payload = {
-
-        id: crypto.randomUUID(),
-
-        category:
-          document.getElementById('task-category').value,
-
-        secao:
-          document.getElementById('task-secao').value,
-
-        prioridade:
-          document.getElementById('task-prioridade').value,
-
-        temSuperior:
-          document.getElementById('task-tem-superior').value,
-
-        superior:
-          document.getElementById('task-superior').value || '',
-
-        exigeFeedbackSup:
-          document.getElementById('task-exige-feedback').value,
-
-        descricao: descricao,
-
-        executor:
-          document.getElementById('task-executor').value || 'Não definido',
-
-        start:
-          new Date().toISOString().split('T')[0],
-
-        end: prazo,
-
-        status: 'PENDENTE',
-
-        feedback: '',
-
-        statusFeedbackSup: 'NAO',
-
-        createdAt:
-          new Date().toISOString()
-      };
-
-      const { error } =
-        await client
-          .from('tarefas')
-          .insert([payload]);
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao salvar');
-
-        return;
-      }
-
-      showNotify('Missão salva');
-
-      limparFormulario();
-
-      fetchTasks();
-    }
-
-    // =====================================
-    // LIMPAR FORM
-    // =====================================
-
-    function limparFormulario(){
-
-      document.getElementById('task-descricao').value = '';
-
-      document.getElementById('task-executor').value = '';
-
-      document.getElementById('task-superior').value = '';
-
-      document.getElementById('task-deadline').value = '';
-
-      document.getElementById('task-tem-superior').value = 'NAO';
-
-      toggleFields();
-    }
-
-    // =====================================
-    // EXCLUIR
-    // =====================================
-
-    async function deleteTask(id){
-
-      if(!confirm('Excluir missão?'))
-        return;
-
-      const { error } =
-        await client
-          .from('tarefas')
-          .delete()
-          .eq('id', id);
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao excluir');
-
-        return;
-      }
-
-      showNotify('Missão excluída');
-
-      fetchTasks();
-    }
-
-    // =====================================
-    // ATUALIZAR
-    // =====================================
-
-    async function updateField(id, field, value){
-
-      const { error } =
-        await client
-          .from('tarefas')
-          .update({ [field]: value })
-          .eq('id', id);
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao atualizar');
-
-        return;
-      }
-
-      fetchTasks();
-    }
-
-    // =====================================
-    // WHATSAPP
-    // =====================================
-
-    function sendWA(id){
-
-      const t =
-        tasks.find(x => x.id === id);
-
-      const msg =
-        encodeURIComponent(
-
-          `🚨 ORDEM DE MISSÃO - 8º BAEP\n\n` +
-
-          `📋 Missão: ${t.descricao}\n` +
-
-          `👤 Executor: ${t.executor}\n` +
-
-          `🏢 Seção: ${t.secao}\n` +
-
-          `📅 Prazo: ${formatDataBR(t.end)}\n` +
-
-          `${t.temSuperior === 'SIM'
-            ? `👮 Superior: ${t.superior}\n`
-            : ''
-          }`
-        );
-
-      window.open(
-        `https://wa.me/?text=${msg}`,
-        '_blank'
+    background:
+      linear-gradient(
+        90deg,
+        #050505 0%,
+        #111111 50%,
+        #050505 100%
       );
+
+    border-bottom:2px solid var(--primary);
+  }
+
+  .topbar h1{
+
+    color:var(--primary-strong);
+
+    text-shadow:
+      0 0 10px rgba(214,179,75,.5);
+  }
+
+  input,
+  select,
+  textarea{
+
+    background:#050505;
+
+    border:1px solid #2f2f2f;
+
+    transition:.2s ease;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:
+      0 0 8px rgba(214,179,75,.25);
+  }
+
+  .btn-gold{
+
+    background:
+      linear-gradient(
+        45deg,
+        #8c6a36,
+        #d4af37,
+        #f1d97a
+      );
+
+    color:#000;
+
+    transition:.25s ease;
+  }
+
+  .btn-gold:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+      0 0 12px rgba(214,179,75,.4);
+  }
+
+  .btn-sm{
+
+    transition:.2s ease;
+  }
+
+  .btn-sm:hover{
+
+    transform:translateY(-1px);
+
+    filter:brightness(1.1);
+  }
+
+  .dashboard .stat-card{
+
+    background:
+      linear-gradient(
+        180deg,
+        #0f0f0f,
+        #070707
+      );
+
+    box-shadow:var(--shadow);
+  }
+
+  .dashboard .stat-card:hover{
+
+    border-color:var(--primary);
+
+    transform:translateY(-3px);
+  }
+
+  table tr:hover{
+
+    background:
+      rgba(214,179,75,.03);
+  }
+
+  .badge{
+
+    background:
+      rgba(214,179,75,.15);
+
+    border:1px solid rgba(214,179,75,.35);
+
+    color:var(--primary-strong);
+  }
+
+  /* ========================= */
+  /* BOTÃO CALENDÁRIO VISÍVEL */
+  /* ========================= */
+
+  input[type="date"]{
+
+    position:relative;
+
+    color:#fff;
+
+    cursor:pointer;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator{
+
+    opacity:1;
+
+    filter:
+      invert(80%)
+      sepia(40%)
+      saturate(500%)
+      hue-rotate(5deg);
+
+    cursor:pointer;
+
+    width:22px;
+    height:22px;
+  }
+
+  /* ========================= */
+  /* BOTÃO WHATSAPP FLUTUANTE */
+  /* ========================= */
+
+  .floating-wa{
+
+    position:fixed;
+
+    bottom:25px;
+
+    right:25px;
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:50%;
+
+    background:#25D366;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:2rem;
+
+    color:white;
+
+    cursor:pointer;
+
+    z-index:99999;
+
+    box-shadow:
+      0 0 20px rgba(37,211,102,.5);
+
+    transition:.2s ease;
+  }
+
+  .floating-wa:hover{
+
+    transform:scale(1.08);
+  }
+
+  /* ========================= */
+  /* NOTIFICAÇÕES MILITARES */
+  /* ========================= */
+
+  .notification{
+
+    background:
+      linear-gradient(
+        135deg,
+        #0b0b0b,
+        #181818
+      );
+
+    border-left:5px solid var(--primary);
+
+    box-shadow:
+      0 0 15px rgba(214,179,75,.15);
+
+    color:#fff;
+  }
+
+</style>
+
+<!-- ========================================= -->
+<!-- BOTÃO FLUTUANTE WHATSAPP -->
+<!-- ========================================= -->
+
+<div
+  class="floating-wa"
+  onclick="sendGeneralWhatsApp()"
+  title="Enviar relatório geral via WhatsApp"
+>
+  📲
+</div>
+
+<script>
+
+  // =========================================
+  // RELATÓRIO GERAL WHATSAPP
+  // =========================================
+
+  function sendGeneralWhatsApp(){
+
+    if(tasks.length === 0){
+
+      showNotify('Nenhuma missão cadastrada');
+
+      return;
     }
 
-    // =====================================
-    // RENDER
-    // =====================================
+    let mensagem =
+      `🚨 *SGT - 8º BAEP*\n` +
+      `📋 *RELATÓRIO OPERACIONAL DE MISSÕES*\n\n`;
 
-    function render(){
+    tasks.forEach((t,index)=>{
 
-      const tbody =
-        document.getElementById('task-list');
+      mensagem +=
+        `----------------------------------\n` +
 
-      const busca =
-        document.getElementById('search-input')
-          .value.toLowerCase();
+        `🎯 *MISSÃO ${index + 1}*\n\n` +
 
-      tbody.innerHTML = '';
+        `📌 Missão: ${t.descricao}\n` +
 
-      const hoje =
-        new Date().toISOString().split('T')[0];
+        `👤 Executor: ${t.executor}\n` +
 
-      const filtradas =
-        tasks.filter(t =>
+        `🏢 Seção: ${t.secao}\n` +
 
-          t.descricao?.toLowerCase()
-            .includes(busca)
+        `⚡ Prioridade: ${t.prioridade}\n` +
 
-          ||
+        `📅 Prazo: ${formatDataBR(t.end)}\n` +
 
-          t.executor?.toLowerCase()
-            .includes(busca)
-        );
+        `${t.temSuperior === 'SIM'
+          ? `👮 Superior: ${t.superior}\n`
+          : ''
+        }` +
 
-      filtradas.forEach(t => {
+        `📊 Status: ${t.status}\n\n`;
+    });
 
-        const atrasada =
-          t.end < hoje;
+    const url =
+      `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
 
-        const tr =
-          document.createElement('tr');
+    window.open(url,'_blank');
+  }
 
-        tr.innerHTML = `
+  // =========================================
+  // NOTIFICAÇÕES AUTOMÁTICAS WHATSAPP
+  // =========================================
 
-          <td>
+  async function sendAutoWhatsApp(payload){
 
-            <select
-              onchange="updateField('${t.id}','status',this.value)"
-            >
+    try{
 
-              <option
-                value="PENDENTE"
-                ${t.status === 'PENDENTE' ? 'selected' : ''}
-              >
-                ⏳ PENDENTE
-              </option>
+      const mensagem =
+        `🚨 *NOVA MISSÃO CADASTRADA*\n\n` +
 
-              <option
-                value="CONCLUIDO"
-                ${t.status === 'CONCLUIDO' ? 'selected' : ''}
-              >
-                ✅ CONCLUÍDO
-              </option>
+        `📌 ${payload.descricao}\n\n` +
 
-            </select>
+        `👤 Executor: ${payload.executor}\n` +
 
-          </td>
+        `🏢 Seção: ${payload.secao}\n` +
 
-          <td>
+        `⚡ Prioridade: ${payload.prioridade}\n` +
 
-            <span class="badge">
-              ${t.secao}
-            </span>
+        `📅 Prazo: ${formatDataBR(payload.end)}\n` +
 
-            <div
-              style="
-                font-weight:800;
-                font-size:1rem;
-                margin-bottom:8px;
-              "
-            >
-              ${t.descricao}
-            </div>
+        `${payload.temSuperior === 'SIM'
+          ? `👮 Superior: ${payload.superior}\n`
+          : ''
+        }`;
 
-            <div
-              style="
-                font-size:.75rem;
-                color:var(--primary);
-                font-weight:600;
-              "
-            >
-              Responsável: ${t.executor}
-            </div>
+      const url =
+        `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
 
-            ${t.temSuperior === 'SIM'
-              ? `
-                <div
-                  style="
-                    font-size:.75rem;
-                    color:#00c3ff;
-                    margin-top:5px;
-                    font-weight:600;
-                  "
-                >
-                  Superior: ${t.superior}
-                </div>
-              `
-              : ''
-            }
+      window.open(url,'_blank');
 
-          </td>
+    } catch(e){
 
-          <td
-            style="
-              color:${atrasada ? 'var(--danger)' : '#fff'};
-              font-weight:800;
-            "
-          >
-            ${formatDataBR(t.end)}
-          </td>
-
-          <td>
-
-            <textarea
-              onchange="updateField('${t.id}','feedback',this.value)"
-            >${t.feedback || ''}</textarea>
-
-          </td>
-
-          <td>
-
-            <div class="action-row">
-
-              <button
-                class="btn-sm btn-wa"
-                onclick="sendWA('${t.id}')"
-              >
-                WA
-              </button>
-
-              <button
-                class="btn-sm btn-del"
-                onclick="deleteTask('${t.id}')"
-              >
-                DEL
-              </button>
-
-            </div>
-
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
+      console.error(e);
     }
+  }
 
-    // =====================================
-    // REALTIME
-    // =====================================
-
-    client
-      .channel('tarefas-realtime')
-
-      .on(
-        'postgres_changes',
-        {
-          event:'*',
-          schema:'public',
-          table:'tarefas'
-        },
-        () => {
-
-          fetchTasks();
-        }
-      )
-
-      .subscribe();
-
-    // =====================================
-    // INICIAR
-    // =====================================
-
-    fetchTasks();
-
-    window.addEventListener(
-      'DOMContentLoaded',
-      toggleFields
-    );
-
-  </script>
-
-</body>
-
-</html>
+</script>
