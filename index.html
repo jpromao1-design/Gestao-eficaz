@@ -12,10 +12,8 @@
 
   <title>SGT 8º BAEP - Gestão de Missões v10</title>
 
-  <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- FONTES -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
 
   <link rel="preconnect"
@@ -452,6 +450,12 @@
       transform:translateY(-1px);
     }
 
+    .btn-edit{
+
+      background:#e67e22;
+
+    }
+
     .btn-wa{
 
       background:#128C7E;
@@ -617,8 +621,6 @@
 
   <div class="container">
 
-    <!-- DASHBOARD -->
-
     <div class="dashboard">
 
       <div class="stat-card">
@@ -663,8 +665,6 @@
       </div>
 
     </div>
-
-    <!-- FORMULÁRIO -->
 
     <div class="card">
 
@@ -817,16 +817,26 @@
 
       </div>
 
-      <button class="btn-gold"
-        onclick="addTask()">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-gold"
+          id="btn-save"
+          onclick="addTask()">
 
-        SINCRONIZAR MISSÃO
+          SINCRONIZAR MISSÃO
 
-      </button>
+        </button>
+
+        <button class="btn-gold"
+          id="btn-cancel-edit"
+          onclick="cancelEdit()"
+          style="display:none; background: var(--danger); color: white;">
+
+          CANCELAR EDIÇÃO
+
+        </button>
+      </div>
 
     </div>
-
-    <!-- LISTAGEM -->
 
     <div class="card">
 
@@ -873,8 +883,6 @@
 
   </div>
 
-  <!-- BOTÃO FLUTUANTE WHATSAPP -->
-
   <div
     class="floating-wa"
     onclick="sendGeneralWhatsApp()"
@@ -906,6 +914,7 @@
     // =====================================
 
     let tasks = [];
+    let editingTaskId = null; // Variável para controlar edição
 
     // =====================================
     // NOTIFICAÇÃO
@@ -1063,7 +1072,7 @@
     }
 
     // =====================================
-    // SALVAR
+    // SALVAR / ATUALIZAR
     // =====================================
 
     async function addTask(){
@@ -1082,8 +1091,6 @@
       }
 
       const payload = {
-
-        id: crypto.randomUUID(),
 
         category:
           document.getElementById('task-category').value,
@@ -1108,42 +1115,105 @@
         executor:
           document.getElementById('task-executor').value || 'Não definido',
 
-        start:
-          new Date().toISOString().split('T')[0],
+        end: prazo
 
-        end: prazo,
-
-        status:'PENDENTE',
-
-        feedback:'',
-
-        statusFeedbackSup:'NAO',
-
-        createdAt:
-          new Date().toISOString()
       };
 
-      const { error } =
-        await client
+      if (editingTaskId) {
+
+        // LÓGICA DE ATUALIZAÇÃO
+        const { error } = await client
           .from('tarefas')
-          .insert([payload]);
+          .update(payload)
+          .eq('id', editingTaskId);
 
-      if(error){
+        if(error){
+          console.error(error);
+          showNotify('Erro ao atualizar');
+          return;
+        }
 
-        console.error(error);
+        showNotify('Missão atualizada!');
+        cancelEdit();
+        fetchTasks();
 
-        showNotify('Erro ao salvar');
+      } else {
 
-        return;
+        // LÓGICA DE INSERÇÃO
+        payload.id = crypto.randomUUID();
+        payload.start = new Date().toISOString().split('T')[0];
+        payload.status = 'PENDENTE';
+        payload.feedback = '';
+        payload.statusFeedbackSup = 'NAO';
+        payload.createdAt = new Date().toISOString();
+
+        const { error } =
+          await client
+            .from('tarefas')
+            .insert([payload]);
+
+        if(error){
+
+          console.error(error);
+
+          showNotify('Erro ao salvar');
+
+          return;
+        }
+
+        showNotify('Missão salva');
+
+        sendAutoWhatsApp(payload);
+
+        limparFormulario();
+
+        fetchTasks();
+
       }
+    }
 
-      showNotify('Missão salva');
+    // =====================================
+    // CARREGAR PARA EDIÇÃO
+    // =====================================
 
-      sendAutoWhatsApp(payload);
+    function editTask(id) {
 
+      const t = tasks.find(x => x.id === id);
+      if (!t) return;
+
+      editingTaskId = id;
+
+      document.getElementById('task-category').value = t.category || 'PROFISSIONAL';
+      document.getElementById('task-secao').value = t.secao || 'NENHUMA';
+      document.getElementById('task-prioridade').value = t.prioridade || 'ALTA';
+      document.getElementById('task-tem-superior').value = t.temSuperior || 'NAO';
+      document.getElementById('task-superior').value = t.superior || '';
+      document.getElementById('task-exige-feedback').value = t.exigeFeedbackSup || 'NAO';
+      document.getElementById('task-descricao').value = t.descricao || '';
+      document.getElementById('task-executor').value = t.executor || '';
+      document.getElementById('task-deadline').value = t.end || '';
+
+      toggleFields();
+
+      document.getElementById('btn-save').innerText = 'ATUALIZAR MISSÃO';
+      document.getElementById('btn-cancel-edit').style.display = 'block';
+
+      // Rolar a tela para o formulário
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    }
+
+    // =====================================
+    // CANCELAR EDIÇÃO
+    // =====================================
+
+    function cancelEdit() {
+
+      editingTaskId = null;
+      document.getElementById('btn-save').innerText = 'SINCRONIZAR MISSÃO';
+      document.getElementById('btn-cancel-edit').style.display = 'none';
       limparFormulario();
 
-      fetchTasks();
     }
 
     // =====================================
@@ -1161,6 +1231,14 @@
       document.getElementById('task-deadline').value = '';
 
       document.getElementById('task-tem-superior').value = 'NAO';
+
+      document.getElementById('task-category').value = 'PROFISSIONAL';
+
+      document.getElementById('task-secao').value = 'NENHUMA';
+
+      document.getElementById('task-prioridade').value = 'ALTA';
+
+      document.getElementById('task-exige-feedback').value = 'NAO';
 
       toggleFields();
     }
@@ -1195,7 +1273,7 @@
     }
 
     // =====================================
-    // ATUALIZAR
+    // ATUALIZAR STATUS/FEEDBACK INLINE
     // =====================================
 
     async function updateField(id, field, value){
@@ -1397,6 +1475,13 @@
           <td>
 
             <div class="action-row">
+
+              <button
+                class="btn-sm btn-edit"
+                onclick="editTask('${t.id}')"
+              >
+                EDIT
+              </button>
 
               <button
                 class="btn-sm btn-wa"
