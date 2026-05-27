@@ -1,1797 +1,387 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
-  <meta charset="UTF-8" />
-
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-  <meta name="theme-color" content="#050505" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#050505"/>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Gestão Eficaz">
-  <meta name="description" content="Sistema de Gestão de Missões.">
-
-  <title>Gestão Eficaz </title>
-
+  <title>Gestão Eficaz - 8º BAEP v10</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="./assets/icon-512.png">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <link rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
-
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-
     :root{
-
-      --bg-body:#030303;
-
-      --bg-card:#0d0d0d;
-
-      --bg-secondary:#151515;
-
-      --primary:#d6b34b;
-
-      --primary-strong:#f5d77d;
-
-      --accent:#8c6a36;
-
-      --danger:#ff4d4d;
-
-      --success:#00ff88;
-
-      --text-main:#f2f2f2;
-
+      --primary:#d6b34b;--primary-strong:#f5d77d;--accent:#8c6a36;
+      --danger:#ff4d4d;--success:#00ff88;--text-main:#f2f2f2;
       --border:#2a2a2a;
-
-      --shadow:
-        0 0 10px rgba(214,179,75,.15),
-        0 0 25px rgba(214,179,75,.05);
-
-      --military-gradient:
-        linear-gradient(
-          135deg,
-          #050505 0%,
-          #101010 40%,
-          #161616 100%
-        );
-
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --shadow:0 0 10px rgba(214,179,75,.15),0 0 25px rgba(214,179,75,.05);
+      --mg:linear-gradient(135deg,#050505 0%,#101010 40%,#161616 100%);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
-
-    *{
-
-      box-sizing:border-box;
-
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html, body {
-      min-height: 100%;
-    }
-
-    body{
-
-      margin:0;
-
-      padding-bottom:calc(100px + var(--safe-bottom));
-
-      font-family:'Montserrat',sans-serif;
-
-      background:
-        radial-gradient(
-          circle at top center,
-          #1a1a1a 0%,
-          #050505 100%
-        );
-
-      color:var(--text-main);
-    }
-
-    .topbar{
-
-      background:
-        linear-gradient(
-          90deg,
-          #050505 0%,
-          #111111 50%,
-          #050505 100%
-        );
-
-      border-bottom:2px solid var(--primary);
-
-      padding:calc(15px + var(--safe-top)) 15px 15px;
-
-      text-align:center;
-
-      position:sticky;
-
-      top:0;
-
-      z-index:9999;
-
-      box-shadow:0 0 20px rgba(0,0,0,.5);
-    }
-
-    .topbar h1{
-
-      margin:0;
-
-      font-family:'Cinzel',serif;
-
-      color:var(--primary-strong);
-
-      letter-spacing:2px;
-
-      font-size:1.5rem;
-
-      text-shadow:
-        0 0 10px rgba(214,179,75,.4);
-    }
-
-    .container{
-
-      max-width:1600px;
-
-      margin:15px auto;
-
-      padding:0 20px;
-    }
-
-    .install-banner{
-      display:none;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      background:linear-gradient(135deg,#111,#1a1a1a);
-      border:1px solid var(--primary);
-      border-radius:12px;
-      padding:14px 16px;
-      margin-bottom:20px;
-      box-shadow:var(--shadow);
-    }
-
-    .install-banner.show{
-      display:flex;
-    }
-
-    .install-banner .text strong{
-      display:block;
-      color:var(--primary-strong);
-      font-size:.95rem;
-    }
-
-    .install-banner .text small{
-      color:#cfcfcf;
-      display:block;
-      margin-top:4px;
-    }
-
-    .install-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .btn-install,
-    .btn-dismiss{
-      border:none;
-      border-radius:8px;
-      padding:10px 14px;
-      cursor:pointer;
-      font-weight:800;
-      text-transform:uppercase;
-      font-size:.72rem;
-    }
-
-    .btn-install{
-      background:linear-gradient(45deg,#8c6a36,#d4af37,#f1d97a);
-      color:#000;
-    }
-
-    .btn-dismiss{
-      background:#202020;
-      color:#fff;
-      border:1px solid #383838;
-    }
-
-    .dashboard{
-
-      display:grid;
-
-      grid-template-columns:repeat(3,1fr);
-
-      gap:15px;
-
-      margin-bottom:20px;
-    }
-
-    .stat-card{
-
-      background:var(--military-gradient);
-
-      border:1px solid var(--border);
-
-      border-left:5px solid var(--primary);
-
-      padding:15px;
-
-      border-radius:10px;
-
-      text-align:center;
-
-      transition:.2s ease;
-
-      box-shadow:var(--shadow);
-    }
-
-    .stat-card:hover{
-
-      transform:translateY(-2px);
-
-      border-color:var(--primary);
-    }
-
-    .stat-card h4{
-
-      margin:0;
-
-      font-size:.7rem;
-
-      text-transform:uppercase;
-
-      color:#999;
-    }
-
-    .stat-card .value{
-
-      font-size:2.2rem;
-
-      font-weight:800;
-
-      color:var(--primary-strong);
-
-      margin-top:5px;
-
-      font-family:'Cinzel',serif;
-    }
-
-    .card{
-
-      background:var(--military-gradient);
-
-      border:1px solid var(--border);
-
-      border-radius:10px;
-
-      padding:20px;
-
-      margin-bottom:20px;
-
-      box-shadow:var(--shadow);
-    }
-
-    label{
-
-      display:block;
-
-      font-size:.7rem;
-
-      color:var(--primary);
-
-      font-weight:800;
-
-      text-transform:uppercase;
-
-      margin-bottom:5px;
-    }
-
-    input,
-    select,
-    textarea{
-
-      width:100%;
-
-      padding:12px;
-
-      background:#050505;
-
-      border:1px solid #2f2f2f;
-
-      color:#fff;
-
-      border-radius:6px;
-
-      font-size:.9rem;
-
-      transition:.2s ease;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus{
-
-      outline:none;
-
-      border-color:var(--primary);
-
-      box-shadow:
-        0 0 8px rgba(214,179,75,.25);
-    }
-
-    textarea{
-
-      min-height:100px;
-
-      resize:vertical;
-    }
-
-    .btn-gold{
-
-      background:
-        linear-gradient(
-          45deg,
-          #8c6a36,
-          #d4af37,
-          #f1d97a
-        );
-
-      color:#000;
-
-      width:100%;
-
-      margin-top:15px;
-
-      font-weight:800;
-
-      cursor:pointer;
-
-      border:none;
-
-      padding:15px;
-
-      border-radius:6px;
-
-      text-transform:uppercase;
-
-      font-size:.9rem;
-
-      transition:.25s ease;
-    }
-
-    .btn-gold:hover{
-
-      transform:translateY(-2px);
-
-      box-shadow:
-        0 0 12px rgba(214,179,75,.4);
-    }
-
-    .search-box{
-
-      background:#1a1a1a;
-
-      border:1px solid var(--accent);
-
-      padding:12px;
-
-      border-radius:8px;
-
-      margin-bottom:20px;
-
-      display:flex;
-
-      gap:10px;
-
-      align-items:center;
-    }
-
-    .search-box input{
-
-      background:transparent;
-
-      border:none;
-
-      outline:none;
-
-      width:100%;
-
-      color:#fff;
-    }
-
-    .grid-form{
-
-      display:grid;
-
-      gap:15px;
-
-      grid-template-columns:repeat(4,1fr);
-    }
-
-    .missao-full{
-
-      grid-column:span 2;
-    }
-
-    table{
-
-      width:100%;
-
-      border-collapse:collapse;
-
-      table-layout:fixed;
-    }
-
-    th{
-
-      background:#000;
-
-      color:var(--primary);
-
-      padding:15px 10px;
-
-      text-align:left;
-
-      font-size:.85rem;
-
-      text-transform:uppercase;
-
-      border-bottom:2px solid var(--primary);
-    }
-
-    td{
-
-      padding:15px 10px;
-
-      border-bottom:1px solid #222;
-
-      vertical-align:top;
-    }
-
-    tr:hover{
-
-      background:
-        rgba(214,179,75,.03);
-    }
-
-    .badge{
-
-      padding:4px 8px;
-
-      border-radius:4px;
-
-      font-size:.65rem;
-
-      font-weight:800;
-
-      display:inline-block;
-
-      margin-bottom:5px;
-
-      background:
-        rgba(214,179,75,.15);
-
-      border:1px solid rgba(214,179,75,.35);
-
-      color:var(--primary-strong);
-    }
-
-    .action-row{
-
-      display:flex;
-
-      gap:5px;
-    }
-
-    .btn-sm{
-
-      flex:1;
-
-      padding:10px 5px;
-
-      border:none;
-
-      border-radius:4px;
-
-      font-size:.65rem;
-
-      font-weight:800;
-
-      cursor:pointer;
-
-      color:white;
-
-      transition:.2s ease;
-    }
-
-    .btn-sm:hover{
-
-      transform:translateY(-1px);
-    }
-
-    .btn-edit{
-
-      background:#e67e22;
-
-    }
-
-    .btn-wa{
-
-      background:#128C7E;
-    }
-
-    .btn-del{
-
-      background:var(--danger);
-    }
-
-    .notification{
-
-      position:fixed;
-
-      top:20px;
-
-      right:20px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #0b0b0b,
-          #181818
-        );
-
-      border-left:5px solid var(--primary);
-
-      padding:15px;
-
-      border-radius:8px;
-
-      z-index:99999;
-
-      font-weight:700;
-
-      color:#fff;
-
-      box-shadow:
-        0 0 15px rgba(214,179,75,.15);
-    }
-
-    .floating-wa{
-
-      position:fixed;
-
-      bottom:calc(25px + var(--safe-bottom));
-
-      right:25px;
-
-      width:65px;
-
-      height:65px;
-
-      border-radius:50%;
-
-      background:#25D366;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-
-      font-size:2rem;
-
-      color:white;
-
-      cursor:pointer;
-
-      z-index:99999;
-
-      box-shadow:
-        0 0 20px rgba(37,211,102,.5);
-
-      transition:.2s ease;
-    }
-
-    .floating-wa:hover{
-
-      transform:scale(1.08);
-    }
-
-    input[type="date"]{
-
-      position:relative;
-
-      cursor:pointer;
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator{
-
-      opacity:1;
-
-      filter:
-        invert(80%)
-        sepia(40%)
-        saturate(500%)
-        hue-rotate(5deg);
-
-      cursor:pointer;
-
-      width:22px;
-
-      height:22px;
-    }
-
-    .pwa-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      margin-top:10px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(214,179,75,.35);
-      background:rgba(214,179,75,.10);
-      color:var(--primary-strong);
-      font-size:.72rem;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.6px;
-    }
-
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%}
+    body{margin:0;padding-bottom:calc(60px + var(--safe-bottom));font-family:'Montserrat',sans-serif;background:radial-gradient(circle at top center,#1a1a1a 0%,#050505 100%);color:var(--text-main)}
+    .topbar{background:linear-gradient(90deg,#050505,#111111,#050505);border-bottom:2px solid var(--primary);padding:calc(15px + var(--safe-top)) 15px 15px;text-align:center;position:sticky;top:0;z-index:9999;box-shadow:0 0 20px rgba(0,0,0,.5)}
+    .topbar h1{margin:0;font-family:'Cinzel',serif;color:var(--primary-strong);letter-spacing:2px;font-size:1.5rem;text-shadow:0 0 10px rgba(214,179,75,.4)}
+    .container{max-width:1600px;margin:15px auto;padding:0 20px}
+    .install-banner{display:none;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#111,#1a1a1a);border:1px solid var(--primary);border-radius:12px;padding:14px 16px;margin-bottom:20px;box-shadow:var(--shadow)}
+    .install-banner.show{display:flex}
+    .install-banner .text strong{display:block;color:var(--primary-strong);font-size:.95rem}
+    .install-banner .text small{color:#cfcfcf;display:block;margin-top:4px}
+    .install-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn-install,.btn-dismiss{border:none;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:800;text-transform:uppercase;font-size:.72rem}
+    .btn-install{background:linear-gradient(45deg,#8c6a36,#d4af37,#f1d97a);color:#000}
+    .btn-dismiss{background:#202020;color:#fff;border:1px solid #383838}
+    .dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px}
+    .stat-card{background:var(--mg);border:1px solid var(--border);border-left:5px solid var(--primary);padding:15px;border-radius:10px;text-align:center;transition:.2s;box-shadow:var(--shadow)}
+    .stat-card:hover{transform:translateY(-2px)}
+    .stat-card h4{margin:0;font-size:.7rem;text-transform:uppercase;color:#999}
+    .stat-card .value{font-size:2.2rem;font-weight:800;color:var(--primary-strong);margin-top:5px;font-family:'Cinzel',serif}
+    .card{background:var(--mg);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+    label{display:block;font-size:.7rem;color:var(--primary);font-weight:800;text-transform:uppercase;margin-bottom:5px}
+    input,select,textarea{width:100%;padding:12px;background:#050505;border:1px solid #2f2f2f;color:#fff;border-radius:6px;font-size:.9rem;transition:.2s}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 8px rgba(214,179,75,.25)}
+    textarea{min-height:100px;resize:vertical}
+    .btn-gold{background:linear-gradient(45deg,#8c6a36,#d4af37,#f1d97a);color:#000;width:100%;margin-top:15px;font-weight:800;cursor:pointer;border:none;padding:15px;border-radius:6px;text-transform:uppercase;font-size:.9rem;transition:.25s}
+    .btn-gold:hover{transform:translateY(-2px);box-shadow:0 0 12px rgba(214,179,75,.4)}
+    .search-box{background:#1a1a1a;border:1px solid var(--accent);padding:12px;border-radius:8px;margin-bottom:20px;display:flex;gap:10px;align-items:center}
+    .search-box input{background:transparent;border:none;outline:none;width:100%;color:#fff}
+    .grid-form{display:grid;gap:15px;grid-template-columns:repeat(4,1fr)}
+    .missao-full{grid-column:span 2}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    th{background:#000;color:var(--primary);padding:15px 10px;text-align:left;font-size:.85rem;text-transform:uppercase;border-bottom:2px solid var(--primary)}
+    td{padding:15px 10px;border-bottom:1px solid #222;vertical-align:top}
+    tr:hover{background:rgba(214,179,75,.03)}
+    .badge{padding:4px 8px;border-radius:4px;font-size:.65rem;font-weight:800;display:inline-block;margin-bottom:5px;background:rgba(214,179,75,.15);border:1px solid rgba(214,179,75,.35);color:var(--primary-strong)}
+    .action-row{display:flex;gap:5px}
+    .btn-sm{flex:1;padding:10px 5px;border:none;border-radius:4px;font-size:.65rem;font-weight:800;cursor:pointer;color:#fff;transition:.2s}
+    .btn-sm:hover{transform:translateY(-1px)}
+    .btn-edit{background:#e67e22}.btn-wa{background:#128C7E}.btn-del{background:var(--danger)}
+    .notification{position:fixed;top:20px;right:20px;background:linear-gradient(135deg,#0b0b0b,#181818);border-left:5px solid var(--primary);padding:15px;border-radius:8px;z-index:99999;font-weight:700;color:#fff;box-shadow:0 0 15px rgba(214,179,75,.15)}
+    input[type="date"]{cursor:pointer}
+    input[type="date"]::-webkit-calendar-picker-indicator{opacity:1;filter:invert(80%) sepia(40%) saturate(500%) hue-rotate(5deg);cursor:pointer;width:22px;height:22px}
     @media(max-width:1024px){
-
-      .grid-form{
-
-        grid-template-columns:1fr 1fr;
-      }
-
-      .missao-full{
-
-        grid-column:1/-1;
-      }
-
-      table,
-      thead,
-      tbody,
-      th,
-      td,
-      tr{
-
-        display:block;
-      }
-
-      th{
-
-        display:none;
-      }
-
-      tr{
-
-        background:#0a0a0a;
-
-        border:1px solid var(--border);
-
-        border-radius:10px;
-
-        margin-bottom:15px;
-
-        padding:12px;
-      }
+      .grid-form{grid-template-columns:1fr 1fr}.missao-full{grid-column:1/-1}
+      table,thead,tbody,th,td,tr{display:block}th{display:none}
+      tr{background:#0a0a0a;border:1px solid var(--border);border-radius:10px;margin-bottom:15px;padding:12px}
     }
-
     @media(max-width:720px){
-      .dashboard{
-        grid-template-columns:1fr;
-      }
-
-      .grid-form{
-        grid-template-columns:1fr;
-      }
-
-      .install-banner{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .install-actions{
-        width:100%;
-      }
-
-      .btn-install,
-      .btn-dismiss{
-        flex:1;
-      }
-
-      .floating-wa{
-        width:60px;
-        height:60px;
-        right:18px;
-      }
-
-      .container{
-        padding:0 14px;
-      }
+      .dashboard{grid-template-columns:1fr}.grid-form{grid-template-columns:1fr}
+      .install-banner{flex-direction:column;align-items:flex-start}
+      .install-actions{width:100%}.btn-install,.btn-dismiss{flex:1}
+      .container{padding:0 14px}
     }
-
   </style>
-
 </head>
-
 <body>
 
-  <div class="topbar">
+<div class="topbar">
+  <h1>Gestão Eficaz</h1>
+  <small style="color:var(--success)">SUPABASE ONLINE 🟢 v10</small>
+</div>
 
-    <h1>Gestão Eficaz</h1>
+<div class="container">
 
-    <small style="color:var(--success)">
-      SUPABASE ONLINE 🟢 v10
-    </small>
-
-    <div class="pwa-chip" id="pwa-status-chip">
-      📱 Modo aplicativo habilitado
+  <div class="install-banner" id="install-banner">
+    <div class="text">
+      <strong>Instalar aplicativo</strong>
+      <small>Adicione na tela inicial para abrir em tela cheia.</small>
     </div>
-
+    <div class="install-actions">
+      <button class="btn-install" id="install-btn">Instalar</button>
+      <button class="btn-dismiss" id="dismiss-install-btn">Agora não</button>
+    </div>
   </div>
 
-  <div class="container">
-
-    <div class="install-banner" id="install-banner">
-      <div class="text">
-        <strong>Instalar aplicativo</strong>
-        <small>Adicione o sistema na tela inicial para abrir em tela cheia, sem aparência de atalho.</small>
-      </div>
-      <div class="install-actions">
-        <button class="btn-install" id="install-btn">Instalar</button>
-        <button class="btn-dismiss" id="dismiss-install-btn">Agora não</button>
-      </div>
+  <div class="dashboard">
+    <div class="stat-card"><h4>Total</h4><div class="value" id="stat-total">0</div></div>
+    <div class="stat-card" style="border-left-color:var(--danger)">
+      <h4 style="color:var(--danger)">Atrasadas</h4>
+      <div class="value" id="stat-atrasada" style="color:var(--danger)">0</div>
     </div>
-
-    <div class="dashboard">
-
-      <div class="stat-card">
-
-        <h4>Total</h4>
-
-        <div class="value" id="stat-total">
-          0
-        </div>
-
-      </div>
-
-      <div class="stat-card"
-        style="border-left-color:var(--danger)">
-
-        <h4 style="color:var(--danger)">
-          Atrasadas
-        </h4>
-
-        <div class="value"
-          id="stat-atrasada"
-          style="color:var(--danger)">
-
-          0
-
-        </div>
-
-      </div>
-
-      <div class="stat-card">
-
-        <h4>Feedback</h4>
-
-        <div class="value"
-          id="stat-feedback"
-          style="color:#00c3ff">
-
-          0
-
-        </div>
-
-      </div>
-
+    <div class="stat-card">
+      <h4>Feedback</h4>
+      <div class="value" id="stat-feedback" style="color:#00c3ff">0</div>
     </div>
-
-    <div class="card">
-
-      <h3 style="color:var(--primary);margin-top:0;">
-        Lançar Ordem de Missão
-      </h3>
-
-      <div class="grid-form">
-
-        <div>
-
-          <label>Categoria</label>
-
-          <select id="task-category">
-
-            <option value="PROFISSIONAL">
-              BAEP
-            </option>
-
-            <option value="PESSOAL">
-              PESSOAL
-            </option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Seção</label>
-
-          <select id="task-secao">
-
-            <option value="NENHUMA">---</option>
-
-            <option value="P1">P1</option>
-
-            <option value="P2">P2</option>
-
-            <option value="P3">P3</option>
-
-            <option value="P4">P4</option>
-
-            <option value="P5">P5</option>
-
-            <option value="SJD">SJD</option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Prioridade</label>
-
-          <select id="task-prioridade">
-
-            <option value="ALTA">
-              🔴 ALTA
-            </option>
-
-            <option value="MEDIA">
-              🟡 MÉDIA
-            </option>
-
-            <option value="BAIXA">
-              🟢 BAIXA
-            </option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label>Demanda passada por superior?</label>
-
-          <select id="task-tem-superior"
-            onchange="toggleFields()">
-
-            <option value="NAO">
-              Não
-            </option>
-
-            <option value="SIM">
-              Sim
-            </option>
-
-          </select>
-
-        </div>
-
-        <div id="div-superior"
-          style="display:none">
-
-          <label>Nome do Superior</label>
-
-          <input type="text"
-            id="task-superior"
-            placeholder="Ex: Ten Cel PM Senise">
-
-        </div>
-
-        <div id="div-feedback"
-          style="display:none">
-
-          <label>Exige retorno?</label>
-
-          <select id="task-exige-feedback">
-
-            <option value="NAO">
-              Não
-            </option>
-
-            <option value="SIM">
-              Sim
-            </option>
-
-          </select>
-
-        </div>
-
-        <div class="missao-full">
-
-          <label>Missão</label>
-
-          <input type="text"
-            id="task-descricao"
-            placeholder="Descreva a missão operacional...">
-
-        </div>
-
-        <div>
-
-          <label>Executor</label>
-
-          <input type="text"
-            id="task-executor">
-
-        </div>
-
-        <div>
-
-          <label>Prazo Final</label>
-
-          <input type="date"
-            id="task-deadline">
-
-        </div>
-
-      </div>
-
-      <div style="display: flex; gap: 10px;">
-        <button class="btn-gold"
-          id="btn-save"
-          onclick="addTask()">
-
-          SINCRONIZAR MISSÃO
-
-        </button>
-
-        <button class="btn-gold"
-          id="btn-cancel-edit"
-          onclick="cancelEdit()"
-          style="display:none; background: var(--danger); color: white;">
-
-          CANCELAR EDIÇÃO
-
-        </button>
-      </div>
-
-    </div>
-
-    <div class="card">
-
-      <div class="search-box">
-
-        <span>🔍</span>
-
-        <input type="text"
-          id="search-input"
-          placeholder="Filtrar missão..."
-          onkeyup="render()">
-
-      </div>
-
-      <div style="overflow-x:auto">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>Status</th>
-
-              <th>Missão</th>
-
-              <th>Prazo</th>
-
-              <th>Anotações</th>
-
-              <th>Ações</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody id="task-list"></tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
   </div>
 
-  <div
-    class="floating-wa"
-    onclick="sendGeneralWhatsApp()"
-    title="Enviar relatório geral via WhatsApp"
-  >
-    📲
+  <div class="card">
+    <h3 style="color:var(--primary);margin-top:0;">Lançar Ordem de Missão</h3>
+    <div class="grid-form">
+      <div><label>Categoria</label>
+        <select id="task-category">
+          <option value="PROFISSIONAL">BAEP</option>
+          <option value="PESSOAL">PESSOAL</option>
+        </select>
+      </div>
+      <div><label>Seção</label>
+        <select id="task-secao">
+          <option value="NENHUMA">---</option>
+          <option value="P1">P1</option><option value="P2">P2</option>
+          <option value="P3">P3</option><option value="P4">P4</option>
+          <option value="P5">P5</option><option value="SJD">SJD</option>
+        </select>
+      </div>
+      <div><label>Prioridade</label>
+        <select id="task-prioridade">
+          <option value="ALTA">🔴 ALTA</option>
+          <option value="MEDIA">🟡 MÉDIA</option>
+          <option value="BAIXA">🟢 BAIXA</option>
+        </select>
+      </div>
+      <div><label>Demanda passada por superior?</label>
+        <select id="task-tem-superior" onchange="toggleFields()">
+          <option value="NAO">Não</option>
+          <option value="SIM">Sim</option>
+        </select>
+      </div>
+      <div id="div-superior" style="display:none">
+        <label>Nome do Superior</label>
+        <input type="text" id="task-superior" placeholder="Ex: Ten Cel PM Senise">
+      </div>
+      <div id="div-feedback" style="display:none">
+        <label>Exige retorno?</label>
+        <select id="task-exige-feedback">
+          <option value="NAO">Não</option>
+          <option value="SIM">Sim</option>
+        </select>
+      </div>
+      <div class="missao-full">
+        <label>Missão</label>
+        <input type="text" id="task-descricao" placeholder="Descreva a missão operacional...">
+      </div>
+      <div><label>Executor</label><input type="text" id="task-executor"></div>
+      <div><label>Prazo Final</label><input type="date" id="task-deadline"></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-gold" id="btn-save" onclick="addTask()">SINCRONIZAR MISSÃO</button>
+      <button class="btn-gold" id="btn-cancel-edit" onclick="cancelEdit()"
+        style="display:none;background:var(--danger);color:#fff;">CANCELAR EDIÇÃO</button>
+    </div>
   </div>
 
-  <script>
+  <div class="card">
+    <div class="search-box">
+      🔍 <input type="text" id="search-input" placeholder="Filtrar missão..." onkeyup="render()">
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Status</th><th>Missão</th><th>Prazo</th><th>Anotações</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="task-list"></tbody>
+      </table>
+    </div>
+  </div>
 
-    // =====================================
-    // SUPABASE
-    // =====================================
+</div>
 
-    const supabaseUrl =
-      'https://oxwnbjmjpxvjtfvzkdju.supabase.co';
+<script>
+  const supabaseUrl = 'https://oxwnbjmjpxvjtfvzkdju.supabase.co';
+  const supabaseKey = 'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
+  const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    const supabaseKey =
-      'sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk';
+  let tasks = [], editingTaskId = null, deferredPrompt = null;
 
-    const client =
-      window.supabase.createClient(
-        supabaseUrl,
-        supabaseKey
-      );
+  function showNotify(msg) {
+    const d = document.createElement('div');
+    d.className = 'notification'; d.innerText = msg;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 3000);
+  }
 
-    // =====================================
-    // VARIÁVEIS
-    // =====================================
+  function formatDataBR(iso) {
+    if (!iso) return '---';
+    const [a, m, d] = iso.split('-');
+    return d + '/' + m + '/' + a;
+  }
 
-    let tasks = [];
-    let editingTaskId = null; // Variável para controlar edição
-    let deferredPrompt = null;
+  function toggleFields() {
+    const s = document.getElementById('task-tem-superior').value;
+    document.getElementById('div-superior').style.display = s === 'SIM' ? 'block' : 'none';
+    document.getElementById('div-feedback').style.display = s === 'SIM' ? 'block' : 'none';
+    if (s !== 'SIM') document.getElementById('task-superior').value = '';
+  }
 
-    // =====================================
-    // NOTIFICAÇÃO
-    // =====================================
+  async function fetchTasks() {
+    const { data, error } = await client.from('tarefas').select('*').order('createdAt', { ascending: false });
+    if (error) { showNotify('Erro ao carregar'); return; }
+    tasks = data || []; updateStats(); render();
+  }
 
-    function showNotify(msg){
+  function updateStats() {
+    const h = new Date().toISOString().split('T')[0];
+    document.getElementById('stat-total').innerText = tasks.length;
+    document.getElementById('stat-atrasada').innerText = tasks.filter(t => t.end < h).length;
+    document.getElementById('stat-feedback').innerText = tasks.filter(t => t.exigeFeedbackSup === 'SIM' && t.statusFeedbackSup === 'NAO').length;
+  }
 
-      const div =
-        document.createElement('div');
-
-      div.className = 'notification';
-
-      div.innerText = msg;
-
-      document.body.appendChild(div);
-
-      setTimeout(()=>{
-
-        div.remove();
-
-      },3000);
+  async function addTask() {
+    const desc = document.getElementById('task-descricao').value;
+    const prazo = document.getElementById('task-deadline').value;
+    if (!desc || !prazo) { showNotify('Missão e prazo obrigatórios'); return; }
+    const p = {
+      category: document.getElementById('task-category').value,
+      secao: document.getElementById('task-secao').value,
+      prioridade: document.getElementById('task-prioridade').value,
+      temSuperior: document.getElementById('task-tem-superior').value,
+      superior: document.getElementById('task-superior').value || '',
+      exigeFeedbackSup: document.getElementById('task-exige-feedback').value,
+      descricao: desc,
+      executor: document.getElementById('task-executor').value || 'Não definido',
+      end: prazo
+    };
+    if (editingTaskId) {
+      const { error } = await client.from('tarefas').update(p).eq('id', editingTaskId);
+      if (error) { showNotify('Erro ao atualizar'); return; }
+      showNotify('Missão atualizada!'); cancelEdit(); fetchTasks();
+    } else {
+      p.id = crypto.randomUUID();
+      p.start = new Date().toISOString().split('T')[0];
+      p.status = 'PENDENTE'; p.feedback = ''; p.statusFeedbackSup = 'NAO';
+      p.createdAt = new Date().toISOString();
+      const { error } = await client.from('tarefas').insert([p]);
+      if (error) { showNotify('Erro ao salvar'); return; }
+      showNotify('Missão cadastrada com sucesso!');
+      limparFormulario(); fetchTasks();
     }
-
-    // =====================================
-    // DATA BR
-    // =====================================
-
-    function formatDataBR(iso){
-
-      if(!iso) return '---';
-
-      const [a,m,d] = iso.split('-');
-
-      return `${d}/${m}/${a}`;
-    }
-
-    // =====================================
-    // MOSTRAR CAMPOS
-    // =====================================
-
-    function toggleFields(){
-
-      const superior =
-        document.getElementById('task-tem-superior').value;
-
-      const divSuperior =
-        document.getElementById('div-superior');
-
-      const divFeedback =
-        document.getElementById('div-feedback');
-
-      if(superior === 'SIM'){
-
-        divSuperior.style.display = 'block';
-
-        divFeedback.style.display = 'block';
-
-      } else {
-
-        divSuperior.style.display = 'none';
-
-        divFeedback.style.display = 'none';
-
-        document.getElementById('task-superior').value = '';
-      }
-    }
-
-    // =====================================
-    // BUSCAR TAREFAS
-    // =====================================
-
-    async function fetchTasks(){
-
-      const { data, error } =
-        await client
-          .from('tarefas')
-          .select('*')
-          .order(
-            'createdAt',
-            { ascending:false }
-          );
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao carregar');
-
-        return;
-      }
-
-      tasks = data || [];
-
-      updateStats();
-
-      render();
-    }
-
-    // =====================================
-    // ESTATÍSTICAS
-    // =====================================
-
-    function updateStats(){
-
-      const hoje =
-        new Date().toISOString().split('T')[0];
-
-      document.getElementById('stat-total')
-        .innerText = tasks.length;
-
-      document.getElementById('stat-atrasada')
-        .innerText =
-        tasks.filter(
-          t => t.end < hoje
-        ).length;
-
-      document.getElementById('stat-feedback')
-        .innerText =
-        tasks.filter(
-          t =>
-          t.exigeFeedbackSup === 'SIM' &&
-          t.statusFeedbackSup === 'NAO'
-        ).length;
-    }
-
-    // =====================================
-    // WHATSAPP AUTOMÁTICO
-    // =====================================
-
-    function sendAutoWhatsApp(payload){
-
-      const mensagem =
-
-        `🚨 *NOVA MISSÃO CADASTRADA*\n\n` +
-
-        `📌 ${payload.descricao}\n\n` +
-
-        `👤 Executor: ${payload.executor}\n` +
-
-        `🏢 Seção: ${payload.secao}\n` +
-
-        `⚡ Prioridade: ${payload.prioridade}\n` +
-
-        `📅 Prazo: ${formatDataBR(payload.end)}\n` +
-
-        `${payload.temSuperior === 'SIM'
-          ? `👮 Superior: ${payload.superior}\n`
-          : ''
-        }`;
-
-      const url =
-        `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-
-      window.open(url,'_blank');
-    }
-
-    // =====================================
-    // SALVAR / ATUALIZAR
-    // =====================================
-
-    async function addTask(){
-
-      const descricao =
-        document.getElementById('task-descricao').value;
-
-      const prazo =
-        document.getElementById('task-deadline').value;
-
-      if(!descricao || !prazo){
-
-        showNotify('Missão e prazo obrigatórios');
-
-        return;
-      }
-
-      const payload = {
-
-        category:
-          document.getElementById('task-category').value,
-
-        secao:
-          document.getElementById('task-secao').value,
-
-        prioridade:
-          document.getElementById('task-prioridade').value,
-
-        temSuperior:
-          document.getElementById('task-tem-superior').value,
-
-        superior:
-          document.getElementById('task-superior').value || '',
-
-        exigeFeedbackSup:
-          document.getElementById('task-exige-feedback').value,
-
-        descricao: descricao,
-
-        executor:
-          document.getElementById('task-executor').value || 'Não definido',
-
-        end: prazo
-
-      };
-
-      if (editingTaskId) {
-
-        // LÓGICA DE ATUALIZAÇÃO
-        const { error } = await client
-          .from('tarefas')
-          .update(payload)
-          .eq('id', editingTaskId);
-
-        if(error){
-          console.error(error);
-          showNotify('Erro ao atualizar');
-          return;
-        }
-
-        showNotify('Missão atualizada!');
-        cancelEdit();
-        fetchTasks();
-
-      } else {
-
-        // LÓGICA DE INSERÇÃO
-        payload.id = crypto.randomUUID();
-        payload.start = new Date().toISOString().split('T')[0];
-        payload.status = 'PENDENTE';
-        payload.feedback = '';
-        payload.statusFeedbackSup = 'NAO';
-        payload.createdAt = new Date().toISOString();
-
-        const { error } =
-          await client
-            .from('tarefas')
-            .insert([payload]);
-
-        if(error){
-
-          console.error(error);
-
-          showNotify('Erro ao salvar');
-
-          return;
-        }
-
-        showNotify('Missão salva');
-
-        sendAutoWhatsApp(payload);
-
-        limparFormulario();
-
-        fetchTasks();
-
-      }
-    }
-
-    // =====================================
-    // CARREGAR PARA EDIÇÃO
-    // =====================================
-
-    function editTask(id) {
-
-      const t = tasks.find(x => x.id === id);
-      if (!t) return;
-
-      editingTaskId = id;
-
-      document.getElementById('task-category').value = t.category || 'PROFISSIONAL';
-      document.getElementById('task-secao').value = t.secao || 'NENHUMA';
-      document.getElementById('task-prioridade').value = t.prioridade || 'ALTA';
-      document.getElementById('task-tem-superior').value = t.temSuperior || 'NAO';
-      document.getElementById('task-superior').value = t.superior || '';
-      document.getElementById('task-exige-feedback').value = t.exigeFeedbackSup || 'NAO';
-      document.getElementById('task-descricao').value = t.descricao || '';
-      document.getElementById('task-executor').value = t.executor || '';
-      document.getElementById('task-deadline').value = t.end || '';
-
-      toggleFields();
-
-      document.getElementById('btn-save').innerText = 'ATUALIZAR MISSÃO';
-      document.getElementById('btn-cancel-edit').style.display = 'block';
-
-      // Rolar a tela para o formulário
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    }
-
-    // =====================================
-    // CANCELAR EDIÇÃO
-    // =====================================
-
-    function cancelEdit() {
-
-      editingTaskId = null;
-      document.getElementById('btn-save').innerText = 'SINCRONIZAR MISSÃO';
-      document.getElementById('btn-cancel-edit').style.display = 'none';
-      limparFormulario();
-
-    }
-
-    // =====================================
-    // LIMPAR
-    // =====================================
-
-    function limparFormulario(){
-
-      document.getElementById('task-descricao').value = '';
-
-      document.getElementById('task-executor').value = '';
-
-      document.getElementById('task-superior').value = '';
-
-      document.getElementById('task-deadline').value = '';
-
-      document.getElementById('task-tem-superior').value = 'NAO';
-
-      document.getElementById('task-category').value = 'PROFISSIONAL';
-
-      document.getElementById('task-secao').value = 'NENHUMA';
-
-      document.getElementById('task-prioridade').value = 'ALTA';
-
-      document.getElementById('task-exige-feedback').value = 'NAO';
-
-      toggleFields();
-    }
-
-    // =====================================
-    // EXCLUIR
-    // =====================================
-
-    async function deleteTask(id){
-
-      if(!confirm('Excluir missão?'))
-        return;
-
-      const { error } =
-        await client
-          .from('tarefas')
-          .delete()
-          .eq('id', id);
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao excluir');
-
-        return;
-      }
-
-      showNotify('Missão excluída');
-
-      fetchTasks();
-    }
-
-    // =====================================
-    // ATUALIZAR STATUS/FEEDBACK INLINE
-    // =====================================
-
-    async function updateField(id, field, value){
-
-      const { error } =
-        await client
-          .from('tarefas')
-          .update({ [field]: value })
-          .eq('id', id);
-
-      if(error){
-
-        console.error(error);
-
-        showNotify('Erro ao atualizar');
-
-        return;
-      }
-
-      fetchTasks();
-    }
-
-    // =====================================
-    // WHATSAPP GERAL
-    // =====================================
-
-    function sendGeneralWhatsApp(){
-
-      if(tasks.length === 0){
-
-        showNotify('Nenhuma missão cadastrada');
-
-        return;
-      }
-
-      let mensagem =
-
-        `🚨 *Gestão Eficaz*\n` +
-
-        `📋 *RELATÓRIO OPERACIONAL*\n\n`;
-
-      tasks.forEach((t,index)=>{
-
-        mensagem +=
-
-          `----------------------------------\n` +
-
-          `🎯 *MISSÃO ${index + 1}*\n\n` +
-
-          `📌 ${t.descricao}\n` +
-
-          `👤 Executor: ${t.executor}\n` +
-
-          `🏢 Seção: ${t.secao}\n` +
-
-          `⚡ Prioridade: ${t.prioridade}\n` +
-
-          `📅 Prazo: ${formatDataBR(t.end)}\n` +
-
-          `${t.temSuperior === 'SIM'
-            ? `👮 Superior: ${t.superior}\n`
-            : ''
-          }` +
-
-          `📊 Status: ${t.status}\n\n`;
-      });
-
-      const url =
-        `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-
-      window.open(url,'_blank');
-    }
-
-    // =====================================
-    // RENDER
-    // =====================================
-
-    function render(){
-
-      const tbody =
-        document.getElementById('task-list');
-
-      const busca =
-        document.getElementById('search-input')
-          .value.toLowerCase();
-
-      tbody.innerHTML = '';
-
-      const hoje =
-        new Date().toISOString().split('T')[0];
-
-      const filtradas =
-        tasks.filter(t =>
-
-          t.descricao?.toLowerCase()
-            .includes(busca)
-
-          ||
-
-          t.executor?.toLowerCase()
-            .includes(busca)
-        );
-
-      filtradas.forEach(t => {
-
-        const atrasada =
-          t.end < hoje;
-
-        const tr =
-          document.createElement('tr');
-
-        tr.innerHTML = `
-
-          <td>
-
-            <select
-              onchange="updateField('${t.id}','status',this.value)"
-            >
-
-              <option
-                value="PENDENTE"
-                ${t.status === 'PENDENTE' ? 'selected' : ''}
-              >
-                ⏳ PENDENTE
-              </option>
-
-              <option
-                value="CONCLUIDO"
-                ${t.status === 'CONCLUIDO' ? 'selected' : ''}
-              >
-                ✅ CONCLUÍDO
-              </option>
-
-            </select>
-
-          </td>
-
-          <td>
-
-            <span class="badge">
-              ${t.secao}
-            </span>
-
-            <div
-              style="
-                font-weight:800;
-                font-size:1rem;
-                margin-bottom:8px;
-              "
-            >
-              ${t.descricao}
-            </div>
-
-            <div
-              style="
-                font-size:.75rem;
-                color:var(--primary);
-                font-weight:600;
-              "
-            >
-              Responsável: ${t.executor}
-            </div>
-
-            ${t.temSuperior === 'SIM'
-              ? `
-                <div
-                  style="
-                    font-size:.75rem;
-                    color:#00c3ff;
-                    margin-top:5px;
-                    font-weight:600;
-                  "
-                >
-                  Superior: ${t.superior}
-                </div>
-              `
-              : ''
-            }
-
-          </td>
-
-          <td
-            style="
-              color:${atrasada ? 'var(--danger)' : '#fff'};
-              font-weight:800;
-            "
-          >
-            ${formatDataBR(t.end)}
-          </td>
-
-          <td>
-
-            <textarea
-              onchange="updateField('${t.id}','feedback',this.value)"
-            >${t.feedback || ''}</textarea>
-
-          </td>
-
-          <td>
-
-            <div class="action-row">
-
-              <button
-                class="btn-sm btn-edit"
-                onclick="editTask('${t.id}')"
-              >
-                EDIT
-              </button>
-
-              <button
-                class="btn-sm btn-wa"
-                onclick="sendWA('${t.id}')"
-              >
-                WA
-              </button>
-
-              <button
-                class="btn-sm btn-del"
-                onclick="deleteTask('${t.id}')"
-              >
-                DEL
-              </button>
-
-            </div>
-
-          </td>
-        `;
-
+  }
+
+  function editTask(id) {
+    const t = tasks.find(x => x.id === id); if (!t) return;
+    editingTaskId = id;
+    document.getElementById('task-category').value = t.category || 'PROFISSIONAL';
+    document.getElementById('task-secao').value = t.secao || 'NENHUMA';
+    document.getElementById('task-prioridade').value = t.prioridade || 'ALTA';
+    document.getElementById('task-tem-superior').value = t.temSuperior || 'NAO';
+    document.getElementById('task-superior').value = t.superior || '';
+    document.getElementById('task-exige-feedback').value = t.exigeFeedbackSup || 'NAO';
+    document.getElementById('task-descricao').value = t.descricao || '';
+    document.getElementById('task-executor').value = t.executor || '';
+    document.getElementById('task-deadline').value = t.end || '';
+    toggleFields();
+    document.getElementById('btn-save').innerText = 'ATUALIZAR MISSÃO';
+    document.getElementById('btn-cancel-edit').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    editingTaskId = null;
+    document.getElementById('btn-save').innerText = 'SINCRONIZAR MISSÃO';
+    document.getElementById('btn-cancel-edit').style.display = 'none';
+    limparFormulario();
+  }
+
+  function limparFormulario() {
+    ['task-descricao','task-executor','task-superior','task-deadline'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('task-tem-superior').value = 'NAO';
+    document.getElementById('task-category').value = 'PROFISSIONAL';
+    document.getElementById('task-secao').value = 'NENHUMA';
+    document.getElementById('task-prioridade').value = 'ALTA';
+    document.getElementById('task-exige-feedback').value = 'NAO';
+    toggleFields();
+  }
+
+  async function deleteTask(id) {
+    if (!confirm('Excluir missão?')) return;
+    const { error } = await client.from('tarefas').delete().eq('id', id);
+    if (error) { showNotify('Erro ao excluir'); return; }
+    showNotify('Missão excluída'); fetchTasks();
+  }
+
+  async function updateField(id, field, value) {
+    const { error } = await client.from('tarefas').update({ [field]: value }).eq('id', id);
+    if (error) showNotify('Erro ao atualizar'); else fetchTasks();
+  }
+
+  function render() {
+    const tbody = document.getElementById('task-list');
+    const busca = document.getElementById('search-input').value.toLowerCase();
+    tbody.innerHTML = '';
+    const h = new Date().toISOString().split('T')[0];
+    tasks.filter(t => t.descricao?.toLowerCase().includes(busca) || t.executor?.toLowerCase().includes(busca))
+      .forEach(t => {
+        const late = t.end < h;
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><select onchange="updateField(\'' + t.id + '\',\'status\',this.value)">' +
+          '<option value="PENDENTE"' + (t.status === 'PENDENTE' ? ' selected' : '') + '>⏳ PENDENTE</option>' +
+          '<option value="CONCLUIDO"' + (t.status === 'CONCLUIDO' ? ' selected' : '') + '>✅ CONCLUÍDO</option>' +
+          '</select></td>' +
+          '<td><span class="badge">' + t.secao + '</span>' +
+          '<div style="font-weight:800;font-size:1rem;margin-bottom:8px;">' + t.descricao + '</div>' +
+          '<div style="font-size:.75rem;color:var(--primary);font-weight:600;">Responsável: ' + t.executor + '</div>' +
+          (t.temSuperior === 'SIM' ? '<div style="font-size:.75rem;color:#00c3ff;margin-top:5px;font-weight:600;">Superior: ' + t.superior + '</div>' : '') +
+          '</td>' +
+          '<td style="color:' + (late ? 'var(--danger)' : '#fff') + ';font-weight:800;">' + formatDataBR(t.end) + '</td>' +
+          '<td><textarea onchange="updateField(\'' + t.id + '\',\'feedback\',this.value)">' + (t.feedback || '') + '</textarea></td>' +
+          '<td><div class="action-row">' +
+          '<button class="btn-sm btn-edit" onclick="editTask(\'' + t.id + '\')">EDIT</button>' +
+          '<button class="btn-sm btn-wa" onclick="sendWA(\'' + t.id + '\')">WA</button>' +
+          '<button class="btn-sm btn-del" onclick="deleteTask(\'' + t.id + '\')">DEL</button>' +
+          '</div></td>';
         tbody.appendChild(tr);
       });
-    }
+  }
 
-    // =====================================
-    // WHATSAPP INDIVIDUAL
-    // =====================================
-
-    function sendWA(id){
-
-      const t =
-        tasks.find(x => x.id === id);
-
-      const msg =
-        encodeURIComponent(
-
-          `🚨 ORDEM DE MISSÃO - 8º BAEP\n\n` +
-
-          `📋 Missão: ${t.descricao}\n` +
-
-          `👤 Executor: ${t.executor}\n` +
-
-          `🏢 Seção: ${t.secao}\n` +
-
-          `📅 Prazo: ${formatDataBR(t.end)}\n` +
-
-          `${t.temSuperior === 'SIM'
-            ? `👮 Superior: ${t.superior}\n`
-            : ''
-          }`
-        );
-
-      window.open(
-        `https://wa.me/?text=${msg}`,
-        '_blank'
-      );
-    }
-
-    // =====================================
-    // REALTIME
-    // =====================================
-
-    client
-      .channel('tarefas-realtime')
-
-      .on(
-        'postgres_changes',
-        {
-          event:'*',
-          schema:'public',
-          table:'tarefas'
-        },
-        () => {
-
-          fetchTasks();
-        }
-      )
-
-      .subscribe();
-
-    // =====================================
-    // PWA - INSTALL / SERVICE WORKER
-    // =====================================
-
-    function isRunningStandalone(){
-      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    }
-
-    function updatePwaStatus(){
-      const chip = document.getElementById('pwa-status-chip');
-      if(!chip) return;
-
-      if(isRunningStandalone()){
-        chip.innerHTML = '✅ Aplicativo instalado';
-      } else {
-        chip.innerHTML = '📱 Pronto para instalar';
-      }
-    }
-
-    async function registerServiceWorker(){
-      if(!('serviceWorker' in navigator)) return;
-
-      try{
-        await navigator.serviceWorker.register('./sw.js');
-        console.log('Service Worker registrado');
-      }catch(err){
-        console.error('Erro SW', err);
-      }
-    }
-
-    function setupInstallPrompt(){
-      const banner = document.getElementById('install-banner');
-      const installBtn = document.getElementById('install-btn');
-      const dismissBtn = document.getElementById('dismiss-install-btn');
-
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if(!isRunningStandalone()){
-          banner.classList.add('show');
-        }
-      });
-
-      installBtn.addEventListener('click', async () => {
-        if(!deferredPrompt){
-          showNotify('No iPhone: Compartilhar > Adicionar à Tela de Início');
-          return;
-        }
-
-        deferredPrompt.prompt();
-        const result = await deferredPrompt.userChoice;
-
-        if(result.outcome === 'accepted'){
-          showNotify('Aplicativo instalado com sucesso');
-          banner.classList.remove('show');
-        }
-
-        deferredPrompt = null;
-      });
-
-      dismissBtn.addEventListener('click', () => {
-        banner.classList.remove('show');
-      });
-
-      window.addEventListener('appinstalled', () => {
-        showNotify('Gestão Eficaz instalado na tela inicial');
-        banner.classList.remove('show');
-        deferredPrompt = null;
-        updatePwaStatus();
-      });
-    }
-
-    // =====================================
-    // INICIAR
-    // =====================================
-
-    fetchTasks();
-
-    window.addEventListener(
-      'DOMContentLoaded',
-      () => {
-        toggleFields();
-        registerServiceWorker();
-        setupInstallPrompt();
-        updatePwaStatus();
-      }
+  function sendWA(id) {
+    const t = tasks.find(x => x.id === id);
+    const msg = encodeURIComponent(
+      '🚨 ORDEM DE MISSÃO - 8º BAEP\n\n' +
+      '📋 Missão: ' + t.descricao + '\n' +
+      '👤 Executor: ' + t.executor + '\n' +
+      '🏢 Seção: ' + t.secao + '\n' +
+      '📅 Prazo: ' + formatDataBR(t.end) + '\n' +
+      (t.temSuperior === 'SIM' ? '👮 Superior: ' + t.superior + '\n' : '')
     );
+    window.open('https://wa.me/?text=' + msg, '_blank');
+  }
 
-  </script>
+  client.channel('tarefas-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tarefas' }, () => fetchTasks())
+    .subscribe();
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  async function registerSW() {
+    if (!('serviceWorker' in navigator)) return;
+    try { await navigator.serviceWorker.register('./sw.js'); } catch (e) { console.error(e); }
+  }
+
+  function setupInstall() {
+    const banner = document.getElementById('install-banner');
+    const ib = document.getElementById('install-btn');
+    const db = document.getElementById('dismiss-install-btn');
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); deferredPrompt = e;
+      if (!isStandalone()) banner.classList.add('show');
+    });
+    ib.addEventListener('click', async () => {
+      if (!deferredPrompt) { showNotify('iPhone: Compartilhar > Adicionar à Tela de Início'); return; }
+      deferredPrompt.prompt();
+      const r = await deferredPrompt.userChoice;
+      if (r.outcome === 'accepted') { showNotify('Aplicativo instalado!'); banner.classList.remove('show'); }
+      deferredPrompt = null;
+    });
+    db.addEventListener('click', () => banner.classList.remove('show'));
+    window.addEventListener('appinstalled', () => {
+      showNotify('Gestão Eficaz instalado!'); banner.classList.remove('show'); deferredPrompt = null;
+    });
+  }
+
+  fetchTasks();
+  window.addEventListener('DOMContentLoaded', () => { toggleFields(); registerSW(); setupInstall(); });
+</script>
 
 </body>
-
 </html>
