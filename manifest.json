@@ -1,1 +1,15 @@
-
+{
+  "name": "Gestão Eficaz - 8º BAEP",
+  "short_name": "Gestão Eficaz",
+  "description": "Sistema de Gestão de Missões do 8º BAEP.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#d6b34b",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
