@@ -735,7 +735,24 @@
         padding:0 14px;
       }
     }
+/* =====================================
+   MODO APP
+===================================== */
 
+.standalone-mode .topbar{
+
+  padding-top:
+    calc(
+      25px + var(--safe-top)
+    );
+
+}
+
+.standalone-mode body{
+
+  overscroll-behavior:none;
+
+}
   </style>
 
 </head>
@@ -1731,15 +1748,35 @@
     }
 
     async function registerServiceWorker(){
-      if(!('serviceWorker' in navigator)) return;
 
-      try{
-        await navigator.serviceWorker.register('./sw.js');
-        console.log('Service Worker registrado');
-      }catch(err){
-        console.error('Erro SW', err);
-      }
-    }
+  if(!('serviceWorker' in navigator))
+    return;
+
+  try{
+
+    const registration =
+      await navigator.serviceWorker.register(
+        './sw.js',
+        {
+          scope:'./'
+        }
+      );
+
+    console.log(
+      'Service Worker registrado',
+      registration
+    );
+
+  }catch(err){
+
+    console.error(
+      'Erro SW',
+      err
+    );
+
+  }
+
+}
 
     function setupInstallPrompt(){
       const banner = document.getElementById('install-banner');
@@ -1798,7 +1835,30 @@
         updatePwaStatus();
       }
     );
+// =====================================
+// IMPEDIR ZOOM IOS
+// =====================================
 
+document.addEventListener(
+  'gesturestart',
+  function (e) {
+    e.preventDefault();
+  }
+);
+
+// =====================================
+// DETECTAR MODO APP
+// =====================================
+
+if (
+  window.matchMedia('(display-mode: standalone)').matches
+) {
+
+  console.log('Rodando como APP');
+
+  document.body.classList.add('standalone-mode');
+
+}
   </script>
 
 </body>
