@@ -1,61 +1,79 @@
-const CACHE_NAME = 'gestao-eficaz-v1';
+const CACHE_NAME = "gestao-eficaz-v11";
 
-const urlsToCache = [
-
-  './',
-  './index.html',
-  './manifest.json',
-  './assets/icon-192.png',
-  './assets/icon-512.png'
-
+const PRECACHE_URLS = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./manifest.json",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+  "./assets/icon-192-maskable.png",
+  "./assets/icon-512-maskable.png",
 ];
 
-self.addEventListener('install', event => {
-
+self.addEventListener("install", (event) => {
   event.waitUntil(
-
-    caches.open(CACHE_NAME)
-      .then(cache => {
-
-        return cache.addAll(urlsToCache);
-
-      })
-
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
-
 });
 
-self.addEventListener('activate', event => {
-
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-
-    caches.keys().then(keys => {
-
-      return Promise.all(
-
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-
-      );
-
-    })
-
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+      )
+      .then(() => self.clients.claim())
   );
-
 });
 
-self.addEventListener('fetch', event => {
+function isAppShellRequest(request) {
+  const url = new URL(request.url);
+  const path = url.pathname;
 
+  return (
+    request.mode === "navigate" ||
+    path.endsWith("/") ||
+    path.endsWith("/index.html") ||
+    path.endsWith("/app.js") ||
+    path.endsWith("/styles.css")
+  );
+}
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET") return;
+
+  // HTML/CSS/JS: network-first para refletir atualizações rápido
+  if (isAppShellRequest(request)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Demais assets: cache-first
   event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
 
-    caches.match(event.request)
-      .then(response => {
-
-        return response || fetch(event.request);
-
-      })
-
+      return fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        return response;
+      });
+    })
   );
-
 });
