@@ -1,4 +1,4 @@
-const CACHE_NAME = "gestao-eficaz-v11";
+const CACHE_NAME = "gestao-eficaz-v14";
 
 const PRECACHE_URLS = [
   "./",
@@ -32,6 +32,10 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+function isSameOrigin(request) {
+  return new URL(request.url).origin === self.location.origin;
+}
+
 function isAppShellRequest(request) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -48,9 +52,9 @@ function isAppShellRequest(request) {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  if (request.method !== "GET") return;
+  // Nunca interceptar API/CDN externos (Supabase, fonts, jsDelivr)
+  if (!isSameOrigin(request) || request.method !== "GET") return;
 
-  // HTML/CSS/JS: network-first para refletir atualizações rápido
   if (isAppShellRequest(request)) {
     event.respondWith(
       fetch(request)
@@ -59,17 +63,20 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match("./index.html"))
+        )
     );
     return;
   }
 
-  // Demais assets: cache-first
+  // Assets locais: cache-first
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
 
       return fetch(request).then((response) => {
+        if (!response || !response.ok) return response;
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         return response;

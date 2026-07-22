@@ -6,10 +6,16 @@ const supabaseUrl = "https://oxwnbjmjpxvjtfvzkdju.supabase.co";
 const supabaseKey =
   "sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk";
 
-const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+if (!window.supabase) {
+  console.error("Biblioteca Supabase não carregou (CDN bloqueada ou cache antigo).");
+}
+
+const client = window.supabase
+  ? window.supabase.createClient(supabaseUrl, supabaseKey)
+  : null;
 
 // =====================================
-// STATE
+// STATE / KEYS
 // =====================================
 
 let tasks = [];
@@ -17,8 +23,15 @@ let editingTaskId = null;
 let deferredPrompt = null;
 let saving = false;
 let searchDebounceTimer = null;
+let connectionState = "loading"; // loading | online | offline | error | cached
+let completedAtSupported = true;
 
 const INSTALL_DISMISS_KEY = "gestao-eficaz-install-dismissed";
+const TASKS_CACHE_KEY = "gestao-eficaz-tasks-cache";
+const SHOW_DONE_KEY = "gestao-eficaz-show-done";
+const SORT_KEY = "gestao-eficaz-sort";
+
+const PRIORIDADE_PESO = { ALTA: 1, MEDIA: 2, BAIXA: 3 };
 
 // =====================================
 // HELPERS
@@ -47,7 +60,7 @@ function showNotify(msg) {
 
 function formatDataBR(iso) {
   if (!iso) return "---";
-  const [a, m, d] = iso.split("-");
+  const [a, m, d] = String(iso).split("T")[0].split("-");
   return `${d}/${m}/${a}`;
 }
 
@@ -55,8 +68,29 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
+function addDaysISO(days) {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
 function isOverdue(task, hoje = todayISO()) {
   return task.status !== "CONCLUIDO" && !!task.end && task.end < hoje;
+}
+
+function getDeadlineTone(task, hoje = todayISO()) {
+  if (task.status === "CONCLUIDO" || !task.end) return "ok";
+  if (task.end < hoje) return "late";
+  if (task.end === hoje) return "today";
+  if (task.end === addDaysISO(1)) return "tomorrow";
+  return "ok";
+}
+
+function csvEscape(value) {
+  const text = String(value ?? "");
+  if (/[",\n;]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
 }
 
 function setBusy(isBusy) {
@@ -67,6 +101,55 @@ function setBusy(isBusy) {
   if (btnCancel) btnCancel.disabled = isBusy;
 }
 
+function saveTasksCache(list) {
+  try {
+    localStorage.setItem(
+      TASKS_CACHE_KEY,
+      JSON.stringify({ savedAt: new Date().toISOString(), tasks: list })
+    );
+  } catch (err) {
+    console.warn("Falha ao salvar cache local", err);
+  }
+}
+
+function loadTasksCache() {
+  try {
+    const raw = localStorage.getItem(TASKS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed?.tasks) ? parsed : null;
+  } catch (err) {
+    console.warn("Falha ao ler cache local", err);
+    return null;
+  }
+}
+
+function setConnectionStatus(state, detail = "") {
+  connectionState = state;
+  const el = document.getElementById("connection-status");
+  if (!el) return;
+
+  const map = {
+    loading: { text: "Sincronizando…", className: "status-loading" },
+    online: { text: "Online · sincronizado", className: "status-online" },
+    offline: { text: "Offline", className: "status-offline" },
+    error: { text: "Erro de conexão", className: "status-error" },
+    cached: { text: "Offline · cache local", className: "status-cached" },
+  };
+
+  const info = map[state] || map.loading;
+  el.textContent = detail ? `${info.text} · ${detail}` : info.text;
+  el.className = info.className;
+}
+
+function getShowCompleted() {
+  return document.getElementById("toggle-show-done")?.checked === true;
+}
+
+function getSortMode() {
+  return document.getElementById("filter-sort")?.value || "prazo";
+}
+
 function getFilterValues() {
   return {
     busca: document.getElementById("search-input").value.trim().toLowerCase(),
@@ -74,21 +157,57 @@ function getFilterValues() {
     secao: document.getElementById("filter-secao").value,
     prioridade: document.getElementById("filter-prioridade").value,
     atrasadas: document.getElementById("filter-atrasadas").value,
+    sort: getSortMode(),
+    showDone: getShowCompleted(),
   };
 }
 
+function sortTasks(list, sortMode) {
+  const copy = [...list];
+
+  copy.sort((a, b) => {
+    if (sortMode === "prioridade") {
+      const pa = PRIORIDADE_PESO[a.prioridade] ?? 99;
+      const pb = PRIORIDADE_PESO[b.prioridade] ?? 99;
+      if (pa !== pb) return pa - pb;
+      return String(a.end || "").localeCompare(String(b.end || ""));
+    }
+
+    if (sortMode === "criacao") {
+      return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+    }
+
+    // prazo (padrão): pendentes primeiro por prazo, concluídas no fim
+    const aDone = a.status === "CONCLUIDO" ? 1 : 0;
+    const bDone = b.status === "CONCLUIDO" ? 1 : 0;
+    if (aDone !== bDone) return aDone - bDone;
+    return String(a.end || "9999-99-99").localeCompare(
+      String(b.end || "9999-99-99")
+    );
+  });
+
+  return copy;
+}
+
 function getFilteredTasks() {
-  const { busca, status, secao, prioridade, atrasadas } = getFilterValues();
+  const { busca, status, secao, prioridade, atrasadas, sort, showDone } =
+    getFilterValues();
   const hoje = todayISO();
 
-  return tasks.filter((t) => {
+  const filtradas = tasks.filter((t) => {
     const matchBusca =
       !busca ||
       t.descricao?.toLowerCase().includes(busca) ||
       t.executor?.toLowerCase().includes(busca) ||
       t.superior?.toLowerCase().includes(busca);
 
-    const matchStatus = status === "TODOS" || t.status === status;
+    let matchStatus = status === "TODOS" || t.status === status;
+
+    // Ocultar concluídas por padrão (exceto se filtro = Concluídos)
+    if (!showDone && status !== "CONCLUIDO" && t.status === "CONCLUIDO") {
+      matchStatus = false;
+    }
+
     const matchSecao = secao === "TODAS" || t.secao === secao;
     const matchPrioridade =
       prioridade === "TODAS" || t.prioridade === prioridade;
@@ -105,6 +224,8 @@ function getFilteredTasks() {
       matchAtrasadas
     );
   });
+
+  return sortTasks(filtradas, sort);
 }
 
 // =====================================
@@ -209,20 +330,70 @@ function buildPayloadFromForm() {
 // =====================================
 
 async function fetchTasks() {
-  const { data, error } = await client
-    .from("tarefas")
-    .select("*")
-    .order("createdAt", { ascending: false });
+  setConnectionStatus(navigator.onLine ? "loading" : "offline");
 
-  if (error) {
-    console.error(error);
-    showNotify("Erro ao carregar missões");
+  if (!client) {
+    setConnectionStatus("error", "biblioteca");
+    showNotify("Falha ao carregar Supabase. Atualize com Ctrl+F5.");
     return;
   }
 
-  tasks = data || [];
-  updateStats();
-  render();
+  if (!navigator.onLine) {
+    const cached = loadTasksCache();
+    if (cached) {
+      tasks = cached.tasks;
+      setConnectionStatus("cached", formatDataBR(cached.savedAt));
+      updateStats();
+      render();
+      showNotify("Exibindo última lista salva (offline)");
+    } else {
+      setConnectionStatus("offline");
+      showNotify("Sem conexão e sem cache local");
+    }
+    return;
+  }
+
+  try {
+    const { data, error } = await client
+      .from("tarefas")
+      .select("*")
+      .order("createdAt", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      const cached = loadTasksCache();
+      if (cached) {
+        tasks = cached.tasks;
+        setConnectionStatus("cached", "falha na nuvem");
+        updateStats();
+        render();
+        showNotify("Erro na nuvem · usando cache local");
+      } else {
+        setConnectionStatus("error");
+        showNotify("Erro ao carregar missões");
+      }
+      return;
+    }
+
+    tasks = data || [];
+    saveTasksCache(tasks);
+    setConnectionStatus("online", `${tasks.length} missão(ões)`);
+    updateStats();
+    render();
+  } catch (err) {
+    console.error(err);
+    const cached = loadTasksCache();
+    if (cached) {
+      tasks = cached.tasks;
+      setConnectionStatus("cached", "falha na nuvem");
+      updateStats();
+      render();
+      showNotify("Erro na nuvem · usando cache local");
+    } else {
+      setConnectionStatus("error");
+      showNotify("Erro ao carregar missões");
+    }
+  }
 }
 
 function updateStats() {
@@ -243,6 +414,11 @@ function updateStats() {
 
 async function addTask() {
   if (saving) return;
+
+  if (!navigator.onLine) {
+    showNotify("Sem conexão · não é possível salvar agora");
+    return;
+  }
 
   const payload = buildPayloadFromForm();
   if (!payload) return;
@@ -271,8 +447,15 @@ async function addTask() {
       payload.feedback = "";
       payload.statusFeedbackSup = "NAO";
       payload.createdAt = new Date().toISOString();
+      if (completedAtSupported) payload.completedAt = null;
 
-      const { error } = await client.from("tarefas").insert([payload]);
+      let { error } = await client.from("tarefas").insert([payload]);
+
+      if (error && completedAtSupported && /completedAt/i.test(error.message || "")) {
+        completedAtSupported = false;
+        delete payload.completedAt;
+        ({ error } = await client.from("tarefas").insert([payload]));
+      }
 
       if (error) {
         console.error(error);
@@ -280,8 +463,7 @@ async function addTask() {
         return;
       }
 
-      // WhatsApp NÃO abre automaticamente — só sob demanda (botão WA)
-      showNotify("Missão salva. Use WA se quiser compartilhar.");
+      showNotify("Missão salva. Use WhatsApp se quiser compartilhar.");
       limparFormulario();
     }
 
@@ -294,10 +476,22 @@ async function addTask() {
 async function deleteTask(id) {
   if (saving) return;
 
+  if (!navigator.onLine) {
+    showNotify("Sem conexão · não é possível excluir agora");
+    return;
+  }
+
   const task = tasks.find((t) => t.id === id);
   const label = task?.descricao ? `"${task.descricao}"` : "esta missão";
+  const prazo = task?.end ? formatDataBR(task.end) : "sem prazo";
 
-  if (!confirm(`Excluir ${label}?`)) return;
+  if (
+    !confirm(
+      `Excluir permanentemente a missão ${label}?\nPrazo: ${prazo}\n\nEsta ação não pode ser desfeita.`
+    )
+  ) {
+    return;
+  }
 
   setBusy(true);
 
@@ -320,10 +514,33 @@ async function deleteTask(id) {
 }
 
 async function updateField(id, field, value) {
-  const { error } = await client
-    .from("tarefas")
-    .update({ [field]: value })
-    .eq("id", id);
+  if (!navigator.onLine) {
+    showNotify("Sem conexão · alteração não sincronizada");
+    await fetchTasks();
+    return;
+  }
+
+  let patch = { [field]: value };
+
+  if (field === "status") {
+    if (value === "CONCLUIDO") {
+      patch.completedAt = new Date().toISOString();
+    } else if (value === "PENDENTE") {
+      patch.completedAt = null;
+    }
+  }
+
+  let { error } = await client.from("tarefas").update(patch).eq("id", id);
+
+  if (
+    error &&
+    patch.completedAt !== undefined &&
+    /completedAt/i.test(error.message || "")
+  ) {
+    completedAtSupported = false;
+    delete patch.completedAt;
+    ({ error } = await client.from("tarefas").update(patch).eq("id", id));
+  }
 
   if (error) {
     console.error(error);
@@ -333,10 +550,75 @@ async function updateField(id, field, value) {
   }
 
   const local = tasks.find((t) => t.id === id);
-  if (local) local[field] = value;
+  if (local) {
+    Object.assign(local, patch);
+  }
 
+  saveTasksCache(tasks);
   updateStats();
   render();
+}
+
+// =====================================
+// EXPORT
+// =====================================
+
+function exportCsv() {
+  const lista = getFilteredTasks();
+
+  if (lista.length === 0) {
+    showNotify("Nada para exportar com os filtros atuais");
+    return;
+  }
+
+  const headers = [
+    "id",
+    "descricao",
+    "executor",
+    "secao",
+    "prioridade",
+    "status",
+    "prazo",
+    "superior",
+    "exigeFeedback",
+    "statusFeedback",
+    "anotacoes",
+    "criadoEm",
+    "concluidoEm",
+  ];
+
+  const rows = lista.map((t) =>
+    [
+      t.id,
+      t.descricao,
+      t.executor,
+      t.secao,
+      t.prioridade,
+      t.status,
+      t.end,
+      t.superior,
+      t.exigeFeedbackSup,
+      t.statusFeedbackSup,
+      t.feedback,
+      t.createdAt,
+      t.completedAt || "",
+    ]
+      .map(csvEscape)
+      .join(";")
+  );
+
+  const csv = `\uFEFF${headers.join(";")}\n${rows.join("\n")}`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `gestao-eficaz-${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  showNotify(`Exportadas ${lista.length} missão(ões)`);
 }
 
 // =====================================
@@ -353,14 +635,14 @@ function sendWA(id) {
   if (!t) return;
 
   const msg =
-    `🚨 ORDEM DE MISSÃO - 8º BAEP\n\n` +
-    `📋 Missão: ${t.descricao}\n` +
-    `👤 Executor: ${t.executor}\n` +
-    `🏢 Seção: ${t.secao}\n` +
-    `⚡ Prioridade: ${t.prioridade}\n` +
-    `📅 Prazo: ${formatDataBR(t.end)}\n` +
-    (t.temSuperior === "SIM" ? `👮 Superior: ${t.superior}\n` : "") +
-    `📊 Status: ${t.status}`;
+    `ORDEM DE MISSÃO - 8º BAEP\n\n` +
+    `Missão: ${t.descricao}\n` +
+    `Executor: ${t.executor}\n` +
+    `Seção: ${t.secao}\n` +
+    `Prioridade: ${t.prioridade}\n` +
+    `Prazo: ${formatDataBR(t.end)}\n` +
+    (t.temSuperior === "SIM" ? `Superior: ${t.superior}\n` : "") +
+    `Status: ${t.status}`;
 
   openWhatsApp(msg);
 }
@@ -369,11 +651,22 @@ function sendWA(id) {
 // RENDER
 // =====================================
 
+function deadlineBadges(tone) {
+  if (tone === "late") return '<span class="badge badge-danger">Atrasada</span>';
+  if (tone === "today") return '<span class="badge badge-today">Vence hoje</span>';
+  if (tone === "tomorrow")
+    return '<span class="badge badge-tomorrow">Vence amanhã</span>';
+  return "";
+}
+
 function render() {
   const tbody = document.getElementById("task-list");
   const empty = document.getElementById("empty-state");
   const filtradas = getFilteredTasks();
   const hoje = todayISO();
+  const hiddenDoneCount = getShowCompleted()
+    ? 0
+    : tasks.filter((t) => t.status === "CONCLUIDO").length;
 
   tbody.innerHTML = "";
 
@@ -383,17 +676,24 @@ function render() {
       tasks.length === 0
         ? "Nenhuma missão cadastrada"
         : "Nenhuma missão encontrada";
-    empty.querySelector("span").textContent =
+
+    let hint =
       tasks.length === 0
         ? "Lance a primeira ordem de missão no formulário acima."
         : "Ajuste a busca ou os filtros para ver resultados.";
+
+    if (hiddenDoneCount > 0 && !getShowCompleted()) {
+      hint += ` Há ${hiddenDoneCount} concluída(s) oculta(s).`;
+    }
+
+    empty.querySelector("span").textContent = hint;
     return;
   }
 
   empty.hidden = true;
 
   filtradas.forEach((t) => {
-    const atrasada = isOverdue(t, hoje);
+    const tone = getDeadlineTone(t, hoje);
     const tr = document.createElement("tr");
     tr.dataset.id = t.id;
 
@@ -418,24 +718,31 @@ function render() {
         `
         : "";
 
+    const completedInfo =
+      t.status === "CONCLUIDO" && t.completedAt
+        ? `<div class="mission-completed">Concluída em ${escapeHtml(
+            formatDataBR(t.completedAt)
+          )}</div>`
+        : "";
+
     tr.innerHTML = `
       <td>
-        <select data-action="status" data-id="${escapeHtml(t.id)}">
+        <select data-action="status" data-id="${escapeHtml(t.id)}" aria-label="Status da missão">
           <option value="PENDENTE" ${t.status === "PENDENTE" ? "selected" : ""}>
-            ⏳ PENDENTE
+            Pendente
           </option>
           <option value="CONCLUIDO" ${t.status === "CONCLUIDO" ? "selected" : ""}>
-            ✅ CONCLUÍDO
+            Concluído
           </option>
         </select>
       </td>
       <td>
         <span class="badge">${escapeHtml(t.secao)}</span>
         <span class="badge">${escapeHtml(t.prioridade)}</span>
-        ${atrasada ? '<span class="badge badge-danger">ATRASADA</span>' : ""}
+        ${deadlineBadges(tone)}
         ${
           t.exigeFeedbackSup === "SIM" && t.statusFeedbackSup === "NAO"
-            ? '<span class="badge badge-info">FEEDBACK PENDENTE</span>'
+            ? '<span class="badge badge-info">Feedback pendente</span>'
             : ""
         }
         <div class="mission-title">${escapeHtml(t.descricao)}</div>
@@ -445,9 +752,10 @@ function render() {
             ? `<div class="mission-superior">Superior: ${escapeHtml(t.superior)}</div>`
             : ""
         }
+        ${completedInfo}
         ${feedbackBlock}
       </td>
-      <td class="${atrasada ? "deadline-late" : "deadline-ok"}">
+      <td class="deadline-${tone}">
         ${escapeHtml(formatDataBR(t.end))}
       </td>
       <td>
@@ -455,18 +763,19 @@ function render() {
           data-action="feedback"
           data-id="${escapeHtml(t.id)}"
           rows="3"
+          aria-label="Anotações"
         >${escapeHtml(t.feedback || "")}</textarea>
       </td>
       <td>
         <div class="action-row">
           <button type="button" class="btn-sm btn-edit" data-action="edit" data-id="${escapeHtml(t.id)}">
-            EDIT
+            Editar
           </button>
           <button type="button" class="btn-sm btn-wa" data-action="wa" data-id="${escapeHtml(t.id)}" title="Compartilhar no WhatsApp">
-            WA
+            WhatsApp
           </button>
           <button type="button" class="btn-sm btn-del" data-action="del" data-id="${escapeHtml(t.id)}">
-            DEL
+            Excluir
           </button>
         </div>
       </td>
@@ -480,6 +789,20 @@ function render() {
 // EVENTS
 // =====================================
 
+function persistListPrefs() {
+  localStorage.setItem(SHOW_DONE_KEY, getShowCompleted() ? "1" : "0");
+  localStorage.setItem(SORT_KEY, getSortMode());
+}
+
+function restoreListPrefs() {
+  const showDone = localStorage.getItem(SHOW_DONE_KEY) === "1";
+  const sort = localStorage.getItem(SORT_KEY) || "prazo";
+  const toggle = document.getElementById("toggle-show-done");
+  const sortEl = document.getElementById("filter-sort");
+  if (toggle) toggle.checked = showDone;
+  if (sortEl) sortEl.value = sort;
+}
+
 function setupFormEvents() {
   document
     .getElementById("task-tem-superior")
@@ -490,12 +813,10 @@ function setupFormEvents() {
     .getElementById("btn-cancel-edit")
     .addEventListener("click", cancelEdit);
 
-  document
-    .getElementById("mission-form")
-    .addEventListener("submit", (e) => {
-      e.preventDefault();
-      addTask();
-    });
+  document.getElementById("mission-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    addTask();
+  });
 }
 
 function setupListEvents() {
@@ -506,11 +827,25 @@ function setupListEvents() {
     searchDebounceTimer = setTimeout(render, 200);
   });
 
-  ["filter-status", "filter-secao", "filter-prioridade", "filter-atrasadas"].forEach(
-    (id) => {
-      document.getElementById(id).addEventListener("change", render);
-    }
-  );
+  [
+    "filter-status",
+    "filter-secao",
+    "filter-prioridade",
+    "filter-atrasadas",
+    "filter-sort",
+  ].forEach((id) => {
+    document.getElementById(id).addEventListener("change", () => {
+      persistListPrefs();
+      render();
+    });
+  });
+
+  document.getElementById("toggle-show-done").addEventListener("change", () => {
+    persistListPrefs();
+    render();
+  });
+
+  document.getElementById("btn-export-csv").addEventListener("click", exportCsv);
 
   document.getElementById("task-list").addEventListener("change", (e) => {
     const el = e.target;
@@ -539,9 +874,41 @@ function setupListEvents() {
   });
 }
 
+function setupConnectionWatchers() {
+  window.addEventListener("online", () => {
+    showNotify("Conexão restabelecida");
+    fetchTasks();
+  });
+
+  window.addEventListener("offline", () => {
+    setConnectionStatus(tasks.length ? "cached" : "offline");
+    showNotify("Você está offline");
+  });
+}
+
 // =====================================
 // PWA
 // =====================================
+
+function exitApp() {
+  if (!confirm("Deseja sair do Gestão Eficaz?")) return;
+
+  // Em modo app (PWA), tenta fechar a janela
+  window.close();
+
+  // Navegadores bloqueiam close() em abas normais
+  setTimeout(() => {
+    if (!window.closed) {
+      showNotify("Feche esta aba ou use o gerenciador de apps do celular.");
+    }
+  }, 150);
+}
+
+function setupExitButton() {
+  const btn = document.getElementById("btn-sair");
+  if (!btn) return;
+  btn.addEventListener("click", exitApp);
+}
 
 function isRunningStandalone() {
   return (
@@ -555,8 +922,8 @@ function updatePwaStatus() {
   if (!chip) return;
 
   chip.textContent = isRunningStandalone()
-    ? "✅ Aplicativo instalado"
-    : "📱 Pronto para instalar";
+    ? "Aplicativo instalado"
+    : "Pronto para instalar";
 }
 
 async function registerServiceWorker() {
@@ -619,6 +986,8 @@ function setupInstallPrompt() {
 }
 
 function setupRealtime() {
+  if (!client) return;
+
   client
     .channel("tarefas-realtime")
     .on(
@@ -652,14 +1021,32 @@ function preventIosZoom() {
 // =====================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupStandaloneMode();
-  preventIosZoom();
-  toggleFields();
-  setupFormEvents();
-  setupListEvents();
-  setupInstallPrompt();
-  updatePwaStatus();
-  registerServiceWorker();
-  setupRealtime();
-  fetchTasks();
+  try {
+    setupStandaloneMode();
+    preventIosZoom();
+    restoreListPrefs();
+    toggleFields();
+    setupFormEvents();
+    setupListEvents();
+    setupExitButton();
+    setupConnectionWatchers();
+    setupInstallPrompt();
+    updatePwaStatus();
+    registerServiceWorker();
+    setupRealtime();
+
+    const cached = loadTasksCache();
+    if (cached?.tasks?.length) {
+      tasks = cached.tasks;
+      updateStats();
+      render();
+      setConnectionStatus("loading", "atualizando…");
+    }
+
+    fetchTasks();
+  } catch (err) {
+    console.error("Falha na inicialização", err);
+    setConnectionStatus("error", "app");
+    showNotify("Erro ao iniciar o app. Atualize com Ctrl+F5.");
+  }
 });
