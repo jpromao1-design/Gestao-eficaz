@@ -134,7 +134,7 @@ function limparFormulario() {
   document.getElementById("task-tem-superior").value = "NAO";
   document.getElementById("task-category").value = "PROFISSIONAL";
   document.getElementById("task-secao").value = "NENHUMA";
-  document.getElementById("task-prioridade").value = "ALTA";
+  document.getElementById("task-prioridade").value = "BAIXA";
   document.getElementById("task-exige-feedback").value = "NAO";
   toggleFields();
 }
@@ -154,7 +154,7 @@ function editTask(id) {
 
   document.getElementById("task-category").value = t.category || "PROFISSIONAL";
   document.getElementById("task-secao").value = t.secao || "NENHUMA";
-  document.getElementById("task-prioridade").value = t.prioridade || "ALTA";
+  document.getElementById("task-prioridade").value = t.prioridade || "BAIXA";
   document.getElementById("task-tem-superior").value = t.temSuperior || "NAO";
   document.getElementById("task-superior").value = t.superior || "";
   document.getElementById("task-exige-feedback").value =
@@ -365,37 +365,6 @@ function sendWA(id) {
   openWhatsApp(msg);
 }
 
-function sendGeneralWhatsApp() {
-  const lista = getFilteredTasks();
-
-  if (lista.length === 0) {
-    showNotify(
-      tasks.length === 0
-        ? "Nenhuma missão cadastrada"
-        : "Nenhuma missão nos filtros atuais"
-    );
-    return;
-  }
-
-  let mensagem =
-    `🚨 *Gestão Eficaz*\n` + `📋 *RELATÓRIO OPERACIONAL*\n\n`;
-
-  lista.forEach((t, index) => {
-    mensagem +=
-      `----------------------------------\n` +
-      `🎯 *MISSÃO ${index + 1}*\n\n` +
-      `📌 ${t.descricao}\n` +
-      `👤 Executor: ${t.executor}\n` +
-      `🏢 Seção: ${t.secao}\n` +
-      `⚡ Prioridade: ${t.prioridade}\n` +
-      `📅 Prazo: ${formatDataBR(t.end)}\n` +
-      (t.temSuperior === "SIM" ? `👮 Superior: ${t.superior}\n` : "") +
-      `📊 Status: ${t.status}\n\n`;
-  });
-
-  openWhatsApp(mensagem);
-}
-
 // =====================================
 // RENDER
 // =====================================
@@ -568,10 +537,6 @@ function setupListEvents() {
     if (action === "wa") sendWA(id);
     if (action === "del") deleteTask(id);
   });
-
-  document
-    .getElementById("floating-wa")
-    .addEventListener("click", sendGeneralWhatsApp);
 }
 
 // =====================================
