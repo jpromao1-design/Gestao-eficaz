@@ -276,7 +276,7 @@ function updateListMeta(visibleCount) {
 
   const total = tasks.length;
   if (total === 0) {
-    meta.textContent = "Nenhuma missão na base";
+    meta.textContent = "0 missão(ões)";
     return;
   }
 
@@ -418,6 +418,9 @@ async function handleLogout() {
 function setupAuth() {
   document.getElementById("auth-form").addEventListener("submit", handleLogin);
   document.getElementById("btn-sair").addEventListener("click", handleLogout);
+  document
+    .getElementById("btn-toggle-password")
+    .addEventListener("click", togglePasswordVisibility);
 
   if (!client) {
     showAuthError("Biblioteca Supabase não carregou. Atualize com Ctrl+F5.");
@@ -433,6 +436,19 @@ function setupAuth() {
       currentSession = session;
     }
   });
+}
+
+function togglePasswordVisibility() {
+  const input = document.getElementById("auth-password");
+  const btn = document.getElementById("btn-toggle-password");
+  const icon = document.getElementById("toggle-password-icon");
+  if (!input || !btn || !icon) return;
+
+  const showing = input.type === "text";
+  input.type = showing ? "password" : "text";
+  icon.textContent = showing ? "👁" : "🙈";
+  btn.setAttribute("aria-label", showing ? "Mostrar senha" : "Ocultar senha");
+  btn.title = showing ? "Mostrar senha" : "Ocultar senha";
 }
 
 async function resolveInitialSession() {
@@ -920,40 +936,16 @@ function deadlineBadges(tone) {
 
 function render() {
   const tbody = document.getElementById("task-list");
-  const empty = document.getElementById("empty-state");
-  if (!tbody || !empty) return;
+  if (!tbody) return;
 
   const filtradas = getFilteredTasks();
   const hoje = todayISO();
-  const hiddenDoneCount = getShowCompleted()
-    ? 0
-    : tasks.filter((t) => t.status === "CONCLUIDO").length;
 
   updateListMeta(filtradas.length);
   syncQuickFilterUI();
   tbody.innerHTML = "";
 
-  if (filtradas.length === 0) {
-    empty.hidden = false;
-    empty.querySelector("strong").textContent =
-      tasks.length === 0
-        ? "Nenhuma missão cadastrada"
-        : "Nenhuma missão encontrada";
-
-    let hint =
-      tasks.length === 0
-        ? "Preencha o formulário acima para lançar a primeira missão."
-        : "Ajuste a busca ou limpe os filtros.";
-
-    if (hiddenDoneCount > 0 && !getShowCompleted()) {
-      hint += ` Há ${hiddenDoneCount} concluída(s) oculta(s).`;
-    }
-
-    empty.querySelector("span").textContent = hint;
-    return;
-  }
-
-  empty.hidden = true;
+  if (filtradas.length === 0) return;
 
   filtradas.forEach((t) => {
     const tone = getDeadlineTone(t, hoje);

@@ -45,7 +45,12 @@
         </div>
         <div>
           <label for="auth-password">Senha</label>
-          <input type="password" id="auth-password" required autocomplete="current-password" minlength="6" placeholder="••••••••" />
+          <div class="password-field">
+            <input type="password" id="auth-password" required autocomplete="current-password" minlength="6" placeholder="••••••••" />
+            <button type="button" class="btn-toggle-password" id="btn-toggle-password" aria-label="Mostrar senha" title="Mostrar senha">
+              <span id="toggle-password-icon" aria-hidden="true">👁</span>
+            </button>
+          </div>
         </div>
         <p id="auth-error" class="auth-error" role="alert" hidden></p>
         <button type="submit" class="btn-gold" id="auth-submit">Entrar</button>
@@ -282,11 +287,6 @@
             </thead>
             <tbody id="task-list"></tbody>
           </table>
-
-          <div class="empty-state" id="empty-state" hidden>
-            <strong>Nenhuma missão cadastrada</strong>
-            <span>Lance a primeira ordem de missão no formulário acima.</span>
-          </div>
         </div>
       </div>
     </div>
