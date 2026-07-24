@@ -32,60 +32,194 @@
 </head>
 
 <body>
-  <div class="topbar">
-    <button type="button" class="btn-sair" id="btn-sair" title="Sair do aplicativo" aria-label="Sair">
-      Sair
-    </button>
-    <h1>Gestão Eficaz</h1>
-    <small id="connection-status" class="status-loading">Sincronizando…</small>
-    <div class="pwa-chip" id="pwa-status-chip">Pronto para instalar</div>
+  <!-- Tela de autenticação -->
+  <div id="auth-screen" class="auth-screen" hidden>
+    <div class="auth-card">
+      <h1>Gestão Eficaz</h1>
+      <p class="auth-subtitle">Acesso restrito · entre com seu e-mail e senha</p>
+
+      <form id="auth-form" autocomplete="on">
+        <div>
+          <label for="auth-email">E-mail</label>
+          <input type="email" id="auth-email" required autocomplete="username" placeholder="seu@email.com" />
+        </div>
+        <div>
+          <label for="auth-password">Senha</label>
+          <input type="password" id="auth-password" required autocomplete="current-password" minlength="6" placeholder="••••••••" />
+        </div>
+        <p id="auth-error" class="auth-error" role="alert" hidden></p>
+        <button type="submit" class="btn-gold" id="auth-submit">Entrar</button>
+      </form>
+    </div>
   </div>
 
-  <div class="container">
-    <div class="install-banner" id="install-banner">
-      <div class="text">
-        <strong>Instalar aplicativo</strong>
-        <small>Adicione o sistema na tela inicial para abrir em tela cheia.</small>
-      </div>
-      <div class="install-actions">
-        <button type="button" class="btn-install" id="install-btn">Instalar</button>
-        <button type="button" class="btn-dismiss" id="dismiss-install-btn">Agora não</button>
-      </div>
+  <div id="app-shell" hidden>
+    <div class="topbar">
+      <button type="button" class="btn-sair" id="btn-sair" title="Encerrar sessão" aria-label="Sair">
+        Sair
+      </button>
+      <h1>Gestão Eficaz</h1>
+      <small id="connection-status" class="status-loading">Sincronizando…</small>
+      <div class="pwa-chip" id="pwa-status-chip">Pronto para instalar</div>
     </div>
 
-    <div class="dashboard">
-      <div class="stat-card">
-        <h4>Total</h4>
-        <div class="value" id="stat-total">0</div>
+    <div class="container">
+      <div class="install-banner" id="install-banner">
+        <div class="text">
+          <strong>Instalar aplicativo</strong>
+          <small>Adicione o sistema na tela inicial para abrir em tela cheia.</small>
+        </div>
+        <div class="install-actions">
+          <button type="button" class="btn-install" id="install-btn">Instalar</button>
+          <button type="button" class="btn-dismiss" id="dismiss-install-btn">Agora não</button>
+        </div>
       </div>
 
-      <div class="stat-card" style="border-left-color: var(--danger)">
-        <h4 style="color: var(--danger)">Atrasadas</h4>
-        <div class="value" id="stat-atrasada" style="color: var(--danger)">0</div>
+      <div id="offline-banner" class="offline-banner" hidden>
+        Você está offline. É possível consultar o cache; salvar/editar exige conexão.
       </div>
 
-      <div class="stat-card">
-        <h4>Feedback</h4>
-        <div class="value" id="stat-feedback" style="color: #00c3ff">0</div>
+      <div class="dashboard" role="group" aria-label="Resumo rápido">
+        <button type="button" class="stat-card stat-btn" data-quick="all" id="stat-card-total">
+          <h4>Total</h4>
+          <div class="value" id="stat-total">0</div>
+          <span class="stat-hint">Ver todas</span>
+        </button>
+
+        <button type="button" class="stat-card stat-btn" data-quick="atrasadas" id="stat-card-atrasada"
+          style="border-left-color: var(--danger)">
+          <h4 style="color: var(--danger)">Atrasadas</h4>
+          <div class="value" id="stat-atrasada" style="color: var(--danger)">0</div>
+          <span class="stat-hint">Filtrar atrasadas</span>
+        </button>
+
+        <button type="button" class="stat-card stat-btn" data-quick="feedback" id="stat-card-feedback">
+          <h4>Feedback</h4>
+          <div class="value" id="stat-feedback" style="color: #00c3ff">0</div>
+          <span class="stat-hint">Feedback pendente</span>
+        </button>
       </div>
-    </div>
 
-    <div class="card">
-      <h3>Lançar Ordem de Missão</h3>
+      <div class="card" id="form-card">
+        <div id="edit-banner" class="edit-banner" hidden>
+          Editando missão · altere os campos e clique em Atualizar
+        </div>
 
-      <form id="mission-form" autocomplete="off">
-        <div class="grid-form">
+        <h3 id="form-title">Nova missão</h3>
+
+        <form id="mission-form" autocomplete="off">
+          <div class="grid-form">
+            <div>
+              <label for="task-category">Categoria</label>
+              <select id="task-category">
+                <option value="PROFISSIONAL">BAEP</option>
+                <option value="PESSOAL">PESSOAL</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="task-secao">Seção</label>
+              <select id="task-secao">
+                <option value="NENHUMA">---</option>
+                <option value="P1">P1</option>
+                <option value="P2">P2</option>
+                <option value="P3">P3</option>
+                <option value="P4">P4</option>
+                <option value="P5">P5</option>
+                <option value="SJD">SJD</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="task-prioridade">Prioridade</label>
+              <select id="task-prioridade">
+                <option value="BAIXA" selected>Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="task-tem-superior">Demanda de superior?</label>
+              <select id="task-tem-superior">
+                <option value="NAO">Não</option>
+                <option value="SIM">Sim</option>
+              </select>
+            </div>
+
+            <div id="div-superior" class="field-hidden">
+              <label for="task-superior">Nome do Superior</label>
+              <input type="text" id="task-superior" placeholder="Ex: Ten Cel PM Senise" />
+            </div>
+
+            <div id="div-feedback" class="field-hidden">
+              <label for="task-exige-feedback">Exige retorno?</label>
+              <select id="task-exige-feedback">
+                <option value="NAO">Não</option>
+                <option value="SIM">Sim</option>
+              </select>
+            </div>
+
+            <div class="missao-full">
+              <label for="task-descricao">Missão</label>
+              <input type="text" id="task-descricao" placeholder="Descreva a missão operacional..." required />
+            </div>
+
+            <div>
+              <label for="task-executor">Executor</label>
+              <input type="text" id="task-executor" placeholder="Quem executa" />
+            </div>
+
+            <div>
+              <label for="task-deadline">Prazo final</label>
+              <input type="date" id="task-deadline" required />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-gold" id="btn-save">
+              Salvar missão
+            </button>
+            <button type="button" class="btn-gold btn-cancel" id="btn-cancel-edit" style="display: none">
+              Cancelar edição
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="list-header">
+          <h3 class="list-title">Missões</h3>
+          <p id="list-meta" class="list-meta" aria-live="polite">Carregando…</p>
+        </div>
+
+        <div class="list-toolbar">
+          <div class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" id="search-input" placeholder="Buscar missão, executor ou superior..." />
+          </div>
+          <button type="button" class="btn-export" id="btn-clear-filters" title="Limpar filtros">
+            Limpar filtros
+          </button>
+          <button type="button" class="btn-export" id="btn-export-csv" title="Exportar lista filtrada em CSV">
+            Exportar CSV
+          </button>
+        </div>
+
+        <div class="filters-row filters-row-wide">
           <div>
-            <label for="task-category">Categoria</label>
-            <select id="task-category">
-              <option value="PROFISSIONAL">BAEP</option>
-              <option value="PESSOAL">PESSOAL</option>
+            <label for="filter-status">Status</label>
+            <select id="filter-status">
+              <option value="TODOS">Todos</option>
+              <option value="PENDENTE">Pendentes</option>
+              <option value="CONCLUIDO">Concluídos</option>
             </select>
           </div>
 
           <div>
-            <label for="task-secao">Seção</label>
-            <select id="task-secao">
+            <label for="filter-secao">Seção</label>
+            <select id="filter-secao">
+              <option value="TODAS">Todas</option>
               <option value="NENHUMA">---</option>
               <option value="P1">P1</option>
               <option value="P2">P2</option>
@@ -97,152 +231,68 @@
           </div>
 
           <div>
-            <label for="task-prioridade">Prioridade</label>
-            <select id="task-prioridade">
-              <option value="BAIXA" selected>Baixa</option>
-              <option value="MEDIA">Média</option>
+            <label for="filter-prioridade">Prioridade</label>
+            <select id="filter-prioridade">
+              <option value="TODAS">Todas</option>
               <option value="ALTA">Alta</option>
+              <option value="MEDIA">Média</option>
+              <option value="BAIXA">Baixa</option>
             </select>
           </div>
 
           <div>
-            <label for="task-tem-superior">Demanda passada por superior?</label>
-            <select id="task-tem-superior">
-              <option value="NAO">Não</option>
-              <option value="SIM">Sim</option>
+            <label for="filter-atrasadas">Prazo</label>
+            <select id="filter-atrasadas">
+              <option value="TODAS">Todas</option>
+              <option value="SIM">Somente atrasadas</option>
+              <option value="NAO">Em dia</option>
             </select>
           </div>
 
-          <div id="div-superior" class="field-hidden">
-            <label for="task-superior">Nome do Superior</label>
-            <input type="text" id="task-superior" placeholder="Ex: Ten Cel PM Senise" />
-          </div>
-
-          <div id="div-feedback" class="field-hidden">
-            <label for="task-exige-feedback">Exige retorno?</label>
-            <select id="task-exige-feedback">
-              <option value="NAO">Não</option>
-              <option value="SIM">Sim</option>
+          <div>
+            <label for="filter-sort">Ordenar por</label>
+            <select id="filter-sort">
+              <option value="prazo" selected>Prazo</option>
+              <option value="prioridade">Prioridade</option>
+              <option value="criacao">Mais recentes</option>
             </select>
           </div>
+        </div>
 
-          <div class="missao-full">
-            <label for="task-descricao">Missão</label>
-            <input type="text" id="task-descricao" placeholder="Descreva a missão operacional..." required />
+        <label class="toggle-done">
+          <input type="checkbox" id="toggle-show-done" />
+          <span>Mostrar concluídas</span>
+        </label>
+
+        <div id="list-loading" class="list-loading" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <span>Carregando missões…</span>
+        </div>
+
+        <div class="table-wrap" style="overflow-x: auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Missão</th>
+                <th>Prazo</th>
+                <th>Anotações</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="task-list"></tbody>
+          </table>
+
+          <div class="empty-state" id="empty-state" hidden>
+            <strong>Nenhuma missão cadastrada</strong>
+            <span>Lance a primeira ordem de missão no formulário acima.</span>
           </div>
-
-          <div>
-            <label for="task-executor">Executor</label>
-            <input type="text" id="task-executor" />
-          </div>
-
-          <div>
-            <label for="task-deadline">Prazo Final</label>
-            <input type="date" id="task-deadline" required />
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-gold" id="btn-save">
-            SINCRONIZAR MISSÃO
-          </button>
-          <button type="button" class="btn-gold btn-cancel" id="btn-cancel-edit" style="display: none">
-            CANCELAR EDIÇÃO
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <div class="list-toolbar">
-        <div class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" id="search-input" placeholder="Buscar missão, executor ou superior..." />
-        </div>
-        <button type="button" class="btn-export" id="btn-export-csv" title="Exportar lista filtrada em CSV">
-          Exportar CSV
-        </button>
-      </div>
-
-      <div class="filters-row filters-row-wide">
-        <div>
-          <label for="filter-status">Status</label>
-          <select id="filter-status">
-            <option value="TODOS">Todos</option>
-            <option value="PENDENTE">Pendentes</option>
-            <option value="CONCLUIDO">Concluídos</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="filter-secao">Seção</label>
-          <select id="filter-secao">
-            <option value="TODAS">Todas</option>
-            <option value="NENHUMA">---</option>
-            <option value="P1">P1</option>
-            <option value="P2">P2</option>
-            <option value="P3">P3</option>
-            <option value="P4">P4</option>
-            <option value="P5">P5</option>
-            <option value="SJD">SJD</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="filter-prioridade">Prioridade</label>
-          <select id="filter-prioridade">
-            <option value="TODAS">Todas</option>
-            <option value="ALTA">Alta</option>
-            <option value="MEDIA">Média</option>
-            <option value="BAIXA">Baixa</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="filter-atrasadas">Prazo</label>
-          <select id="filter-atrasadas">
-            <option value="TODAS">Todas</option>
-            <option value="SIM">Somente atrasadas</option>
-            <option value="NAO">Em dia</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="filter-sort">Ordenar por</label>
-          <select id="filter-sort">
-            <option value="prazo" selected>Prazo</option>
-            <option value="prioridade">Prioridade</option>
-            <option value="criacao">Mais recentes</option>
-          </select>
-        </div>
-      </div>
-
-      <label class="toggle-done">
-        <input type="checkbox" id="toggle-show-done" />
-        <span>Mostrar concluídas</span>
-      </label>
-
-      <div class="table-wrap" style="overflow-x: auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Missão</th>
-              <th>Prazo</th>
-              <th>Anotações</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="task-list"></tbody>
-        </table>
-
-        <div class="empty-state" id="empty-state" hidden>
-          <strong>Nenhuma missão cadastrada</strong>
-          <span>Lance a primeira ordem de missão no formulário acima.</span>
         </div>
       </div>
     </div>
   </div>
+
+  <div id="toast-host" class="toast-host" aria-live="polite" aria-atomic="true"></div>
 
   <script src="./app.js" defer></script>
 </body>
