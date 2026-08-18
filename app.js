@@ -21,7 +21,6 @@ let realtimeTimer = null;
 
 const formState = {
   secao: "NENHUMA",
-  status: "PENDENTE",
   tipo: "PROFISSIONAL",
   feedbackFeito: false,
 };
@@ -114,7 +113,6 @@ function resetForm() {
   if (input) input.value = "";
   if (deadline) deadline.value = "";
   setChipValue("secao", "NENHUMA");
-  setChipValue("status", "PENDENTE");
   setChipValue("tipo", "PROFISSIONAL");
   setFeedbackDone(false);
   syncFeedbackVisibility();
@@ -421,14 +419,14 @@ async function addTask() {
       executor: "Não definido",
       start: todayISO(),
       end: prazo,
-      status: formState.status,
+      status: "PENDENTE",
       feedback: "",
       statusFeedbackSup: isPro && formState.feedbackFeito ? "SIM" : "NAO",
       createdAt: new Date().toISOString(),
     };
 
     if (completedAtSupported) {
-      payload.completedAt = formState.status === "CONCLUIDO" ? new Date().toISOString() : null;
+      payload.completedAt = null;
     }
 
     let { error } = await client.from("tarefas").insert([payload]);
