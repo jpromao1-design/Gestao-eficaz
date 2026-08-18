@@ -22,6 +22,8 @@ let realtimeTimer = null;
 const formState = {
   secao: "NENHUMA",
   status: "PENDENTE",
+  tipo: "PROFISSIONAL",
+  feedbackFeito: false,
 };
 
 const INSTALL_DISMISS_KEY = "gestao-eficaz-install-dismissed";
@@ -87,6 +89,23 @@ function setChipValue(group, value) {
   document.querySelectorAll(`[data-chip-group="${group}"] .chip`).forEach((chip) => {
     chip.classList.toggle("is-active", chip.dataset.value === value);
   });
+  if (group === "tipo") syncFeedbackVisibility();
+}
+
+function setFeedbackDone(done) {
+  formState.feedbackFeito = !!done;
+  const btn = document.getElementById("btn-feedback");
+  if (!btn) return;
+  btn.classList.toggle("is-on", formState.feedbackFeito);
+  btn.setAttribute("aria-pressed", formState.feedbackFeito ? "true" : "false");
+}
+
+function syncFeedbackVisibility() {
+  const wrap = document.getElementById("btn-feedback");
+  if (!wrap) return;
+  const isPro = formState.tipo === "PROFISSIONAL";
+  wrap.hidden = !isPro;
+  if (!isPro) setFeedbackDone(false);
 }
 
 function resetForm() {
@@ -96,6 +115,9 @@ function resetForm() {
   if (deadline) deadline.value = "";
   setChipValue("secao", "NENHUMA");
   setChipValue("status", "PENDENTE");
+  setChipValue("tipo", "PROFISSIONAL");
+  setFeedbackDone(false);
+  syncFeedbackVisibility();
 }
 
 function pulseSaveButton() {
@@ -386,21 +408,22 @@ async function addTask() {
 
   try {
     const prazo = document.getElementById("task-deadline").value || todayISO();
+    const isPro = formState.tipo === "PROFISSIONAL";
     const payload = {
       id: crypto.randomUUID(),
       descricao,
-      category: "PROFISSIONAL",
+      category: formState.tipo,
       secao: formState.secao,
       prioridade: "BAIXA",
-      temSuperior: "NAO",
+      temSuperior: isPro ? "SIM" : "NAO",
       superior: "",
-      exigeFeedbackSup: "NAO",
+      exigeFeedbackSup: isPro ? "SIM" : "NAO",
       executor: "Não definido",
       start: todayISO(),
       end: prazo,
       status: formState.status,
       feedback: "",
-      statusFeedbackSup: "NAO",
+      statusFeedbackSup: isPro && formState.feedbackFeito ? "SIM" : "NAO",
       createdAt: new Date().toISOString(),
     };
 
@@ -478,14 +501,19 @@ function render() {
     const li = document.createElement("li");
     li.className = "mission-item";
     li.dataset.id = t.id;
+    const isPro = t.category !== "PESSOAL";
+    const feedbackPending = isPro && t.exigeFeedbackSup === "SIM" && t.statusFeedbackSup !== "SIM";
+    li.className = `mission-item ${isPro ? "is-pro" : "is-pes"}`;
     const secaoLabel = t.secao && t.secao !== "NENHUMA" ? t.secao : "Geral";
     const prazoLabel = t.end ? formatDataBR(t.end) : "";
     li.innerHTML = `
       <div class="mission-body">
         <div class="mission-title">${escapeHtml(t.descricao)}</div>
         <div class="mission-meta">
+          <span class="meta-chip ${isPro ? "is-pro" : "is-pes"}">${isPro ? "Profissional" : "Pessoal"}</span>
           <span class="meta-chip">${escapeHtml(secaoLabel)}</span>
           ${prazoLabel ? `<span class="meta-chip">${escapeHtml(prazoLabel)}</span>` : ""}
+          ${feedbackPending ? '<span class="meta-chip is-feedback">Feedback pendente</span>' : ""}
         </div>
       </div>
       <button
@@ -518,6 +546,12 @@ function setupFormEvents() {
       setChipValue(group.dataset.chipGroup, chip.dataset.value);
     });
   });
+
+  document.getElementById("btn-feedback").addEventListener("click", () => {
+    setFeedbackDone(!formState.feedbackFeito);
+  });
+
+  syncFeedbackVisibility();
 }
 
 function setupListEvents() {

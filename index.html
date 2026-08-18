@@ -83,17 +83,26 @@
       </div>
 
       <form id="mission-form" class="capture-form" autocomplete="off">
-        <div class="capture-title-row">
-          <label for="task-descricao">Título da missão</label>
-          <input
-            type="text"
-            id="task-descricao"
-            class="capture-input"
-            placeholder="O que precisa ser feito?"
-            maxlength="240"
-            required
-            autofocus
-          />
+        <div class="capture-top">
+          <div class="field-group tipo-group">
+            <span class="field-label">Tipo de missão</span>
+            <div class="chip-row" data-chip-group="tipo" role="group" aria-label="Tipo de missão">
+              <button type="button" class="chip chip-pro is-active" data-value="PROFISSIONAL">Profissional</button>
+              <button type="button" class="chip chip-pes" data-value="PESSOAL">Pessoal</button>
+            </div>
+          </div>
+          <div class="capture-title-row">
+            <label for="task-descricao">Título da missão</label>
+            <input
+              type="text"
+              id="task-descricao"
+              class="capture-input"
+              placeholder="O que precisa ser feito?"
+              maxlength="240"
+              required
+              autofocus
+            />
+          </div>
         </div>
 
         <div class="capture-grid">
@@ -125,6 +134,14 @@
         </div>
 
         <div class="capture-actions">
+          <button
+            type="button"
+            id="btn-feedback"
+            class="btn-feedback"
+            aria-pressed="false"
+          >
+            Feedback ao superior realizado
+          </button>
           <button type="submit" class="btn-gold btn-capture" id="btn-save">Salvar</button>
         </div>
       </form>
