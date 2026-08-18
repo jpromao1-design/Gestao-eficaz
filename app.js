@@ -15,6 +15,9 @@ let deferredPrompt = null;
 let saving = false;
 let currentSession = null;
 let completedAtSupported = true;
+let fetchingTasks = false;
+let realtimeReady = false;
+let realtimeTimer = null;
 
 const formState = {
   secao: "NENHUMA",
@@ -101,11 +104,6 @@ function pulseSaveButton() {
   btn.classList.remove("is-saved");
   void btn.offsetWidth;
   btn.classList.add("is-saved");
-}
-
-function setListLoading(isLoading) {
-  const el = document.getElementById("list-loading");
-  if (el) el.hidden = !isLoading;
 }
 
 function updateOfflineBanner() {
@@ -290,32 +288,34 @@ async function resolveInitialSession() {
 }
 
 async function fetchTasks({ silent = false } = {}) {
+  if (fetchingTasks) return;
+  fetchingTasks = true;
+
   updateOfflineBanner();
   setConnectionStatus(navigator.onLine ? "loading" : "offline");
-  if (!silent) setListLoading(true);
-
-  if (!client) {
-    setConnectionStatus("error", "biblioteca");
-    showNotify("Falha ao carregar Supabase. Atualize com Ctrl+F5.", "error");
-    setListLoading(false);
-    return;
-  }
-
-  if (!navigator.onLine) {
-    const cached = loadTasksCache();
-    if (cached) {
-      tasks = cached.tasks;
-      setConnectionStatus("cached", formatDataBR(cached.savedAt));
-      render();
-    } else {
-      setConnectionStatus("offline");
-      if (!silent) showNotify("Sem conexão e sem cache local", "error");
-    }
-    setListLoading(false);
-    return;
-  }
 
   try {
+    if (!client) {
+      setConnectionStatus("error", "biblioteca");
+      showNotify("Falha ao carregar Supabase. Atualize com Ctrl+F5.", "error");
+      render();
+      return;
+    }
+
+    if (!navigator.onLine) {
+      const cached = loadTasksCache();
+      if (cached) {
+        tasks = cached.tasks;
+        setConnectionStatus("cached", formatDataBR(cached.savedAt));
+        render();
+      } else {
+        setConnectionStatus("offline");
+        if (!silent) showNotify("Sem conexão e sem cache local", "error");
+        render();
+      }
+      return;
+    }
+
     const { data, error } = await client
       .from("tarefas")
       .select("*")
@@ -328,7 +328,6 @@ async function fetchTasks({ silent = false } = {}) {
         showNotify("Sessão expirada. Entre novamente.", "error");
         await client.auth.signOut();
         setAuthUI(null);
-        setListLoading(false);
         return;
       }
 
@@ -341,8 +340,8 @@ async function fetchTasks({ silent = false } = {}) {
       } else {
         setConnectionStatus("error");
         showNotify("Erro ao carregar missões", "error");
+        render();
       }
-      setListLoading(false);
       return;
     }
 
@@ -361,9 +360,10 @@ async function fetchTasks({ silent = false } = {}) {
     } else {
       setConnectionStatus("error");
       showNotify("Erro ao carregar missões", "error");
+      render();
     }
   } finally {
-    setListLoading(false);
+    fetchingTasks = false;
   }
 }
 
@@ -601,7 +601,8 @@ function setupInstallPrompt() {
 }
 
 function setupRealtime() {
-  if (!client) return;
+  if (!client || realtimeReady) return;
+  realtimeReady = true;
 
   client
     .channel("tarefas-realtime")
@@ -609,7 +610,9 @@ function setupRealtime() {
       "postgres_changes",
       { event: "*", schema: "public", table: "tarefas" },
       () => {
-        if (currentSession) fetchTasks({ silent: true });
+        if (!currentSession) return;
+        clearTimeout(realtimeTimer);
+        realtimeTimer = setTimeout(() => fetchTasks({ silent: true }), 250);
       }
     )
     .subscribe();
