@@ -16,6 +16,11 @@ let saving = false;
 let currentSession = null;
 let completedAtSupported = true;
 
+const formState = {
+  secao: "NENHUMA",
+  status: "PENDENTE",
+};
+
 const INSTALL_DISMISS_KEY = "gestao-eficaz-install-dismissed";
 const TASKS_CACHE_KEY = "gestao-eficaz-tasks-cache";
 
@@ -63,17 +68,39 @@ function setBusy(isBusy) {
   saving = isBusy;
   const btnSave = document.getElementById("btn-save");
   const authSubmit = document.getElementById("auth-submit");
-  const capture = document.getElementById("task-descricao");
 
   if (btnSave) {
     btnSave.disabled = isBusy;
-    btnSave.textContent = isBusy ? "Salvando…" : "Adicionar";
+    btnSave.textContent = isBusy ? "Salvando…" : "Salvar";
   }
-  if (capture) capture.disabled = isBusy;
   if (authSubmit) {
     authSubmit.disabled = isBusy;
     authSubmit.textContent = isBusy ? "Entrando…" : "Entrar";
   }
+}
+
+function setChipValue(group, value) {
+  formState[group] = value;
+  document.querySelectorAll(`[data-chip-group="${group}"] .chip`).forEach((chip) => {
+    chip.classList.toggle("is-active", chip.dataset.value === value);
+  });
+}
+
+function resetForm() {
+  const input = document.getElementById("task-descricao");
+  const deadline = document.getElementById("task-deadline");
+  if (input) input.value = "";
+  if (deadline) deadline.value = "";
+  setChipValue("secao", "NENHUMA");
+  setChipValue("status", "PENDENTE");
+}
+
+function pulseSaveButton() {
+  const btn = document.getElementById("btn-save");
+  if (!btn) return;
+  btn.classList.remove("is-saved");
+  void btn.offsetWidth;
+  btn.classList.add("is-saved");
 }
 
 function setListLoading(isLoading) {
@@ -358,25 +385,28 @@ async function addTask() {
   setBusy(true);
 
   try {
+    const prazo = document.getElementById("task-deadline").value || todayISO();
     const payload = {
       id: crypto.randomUUID(),
       descricao,
       category: "PROFISSIONAL",
-      secao: "NENHUMA",
+      secao: formState.secao,
       prioridade: "BAIXA",
       temSuperior: "NAO",
       superior: "",
       exigeFeedbackSup: "NAO",
       executor: "Não definido",
       start: todayISO(),
-      end: todayISO(),
-      status: "PENDENTE",
+      end: prazo,
+      status: formState.status,
       feedback: "",
       statusFeedbackSup: "NAO",
       createdAt: new Date().toISOString(),
     };
 
-    if (completedAtSupported) payload.completedAt = null;
+    if (completedAtSupported) {
+      payload.completedAt = formState.status === "CONCLUIDO" ? new Date().toISOString() : null;
+    }
 
     let { error } = await client.from("tarefas").insert([payload]);
 
@@ -392,9 +422,10 @@ async function addTask() {
       return;
     }
 
-    input.value = "";
+    resetForm();
+    pulseSaveButton();
     input.focus();
-    showNotify("Missão adicionada", "success");
+    showNotify("Missão cadastrada", "success");
     await fetchTasks({ silent: true });
   } finally {
     setBusy(false);
@@ -447,8 +478,16 @@ function render() {
     const li = document.createElement("li");
     li.className = "mission-item";
     li.dataset.id = t.id;
+    const secaoLabel = t.secao && t.secao !== "NENHUMA" ? t.secao : "Geral";
+    const prazoLabel = t.end ? formatDataBR(t.end) : "";
     li.innerHTML = `
-      <span class="mission-title">${escapeHtml(t.descricao)}</span>
+      <div class="mission-body">
+        <div class="mission-title">${escapeHtml(t.descricao)}</div>
+        <div class="mission-meta">
+          <span class="meta-chip">${escapeHtml(secaoLabel)}</span>
+          ${prazoLabel ? `<span class="meta-chip">${escapeHtml(prazoLabel)}</span>` : ""}
+        </div>
+      </div>
       <button
         type="button"
         class="btn-done"
@@ -470,6 +509,14 @@ function setupFormEvents() {
   document.getElementById("mission-form").addEventListener("submit", (e) => {
     e.preventDefault();
     addTask();
+  });
+
+  document.querySelectorAll("[data-chip-group]").forEach((group) => {
+    group.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+      setChipValue(group.dataset.chipGroup, chip.dataset.value);
+    });
   });
 }
 

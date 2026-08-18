@@ -83,17 +83,50 @@
       </div>
 
       <form id="mission-form" class="capture-form" autocomplete="off">
-        <label class="sr-only" for="task-descricao">Nova missão</label>
-        <input
-          type="text"
-          id="task-descricao"
-          class="capture-input"
-          placeholder="O que precisa ser feito agora?"
-          maxlength="240"
-          required
-          autofocus
-        />
-        <button type="submit" class="btn-gold btn-capture" id="btn-save">Adicionar</button>
+        <div class="capture-title-row">
+          <label for="task-descricao">Título da missão</label>
+          <input
+            type="text"
+            id="task-descricao"
+            class="capture-input"
+            placeholder="O que precisa ser feito?"
+            maxlength="240"
+            required
+            autofocus
+          />
+        </div>
+
+        <div class="capture-grid">
+          <div class="field-group">
+            <span class="field-label">Seção</span>
+            <div class="chip-row" data-chip-group="secao" role="group" aria-label="Seção">
+              <button type="button" class="chip is-active" data-value="NENHUMA">---</button>
+              <button type="button" class="chip" data-value="P1">P1</button>
+              <button type="button" class="chip" data-value="P2">P2</button>
+              <button type="button" class="chip" data-value="P3">P3</button>
+              <button type="button" class="chip" data-value="P4">P4</button>
+              <button type="button" class="chip" data-value="P5">P5</button>
+              <button type="button" class="chip" data-value="SJD">SJD</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="task-deadline">Prazo</label>
+            <input type="date" id="task-deadline" class="date-input" />
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Status</span>
+            <div class="chip-row" data-chip-group="status" role="group" aria-label="Status">
+              <button type="button" class="chip is-active" data-value="PENDENTE">Pendente</button>
+              <button type="button" class="chip" data-value="CONCLUIDO">Concluído</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="capture-actions">
+          <button type="submit" class="btn-gold btn-capture" id="btn-save">Salvar</button>
+        </div>
       </form>
 
       <section class="mission-board" aria-label="Missões ativas">
