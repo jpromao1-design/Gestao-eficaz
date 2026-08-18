@@ -93,9 +93,10 @@ body.standalone-mode .topbar {
 }
 
 .container {
-  max-width: 880px;
+  width: 100%;
+  max-width: 1200px;
   margin: 28px auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 .install-banner {
@@ -189,6 +190,7 @@ input:focus {
 }
 
 .capture-form {
+  width: 100%;
   display: grid;
   gap: 16px;
   margin-bottom: 28px;
@@ -225,6 +227,14 @@ input:focus {
 
 .field-group {
   min-width: 0;
+}
+
+#field-secao {
+  min-width: 0;
+}
+
+#field-secao[hidden] {
+  display: none !important;
 }
 
 .field-label {
@@ -348,6 +358,7 @@ input:focus {
 }
 
 .mission-board {
+  width: 100%;
   background: transparent;
 }
 
@@ -376,6 +387,7 @@ input:focus {
 }
 
 .mission-list {
+  width: 100%;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -385,6 +397,7 @@ input:focus {
 }
 
 .mission-item {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -613,6 +626,11 @@ input:focus {
 }
 
 @media (min-width: 768px) {
+  .container {
+    padding: 0 32px;
+    margin: 36px auto;
+  }
+
   .capture-form {
     padding: 22px;
     gap: 18px;
@@ -622,6 +640,10 @@ input:focus {
     grid-template-columns: auto 1fr 180px;
     gap: 16px 18px;
     align-items: end;
+  }
+
+  .capture-options.is-personal {
+    grid-template-columns: 1fr 180px;
   }
 
   .chip {

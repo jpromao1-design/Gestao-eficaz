@@ -82,11 +82,39 @@ function setBusy(isBusy) {
   }
 }
 
-function setChipValue(group, value) {
-  formState[group] = value;
+function paintChipGroup(group, value) {
   document.querySelectorAll(`[data-chip-group="${group}"] .chip`).forEach((chip) => {
     chip.classList.toggle("is-active", chip.dataset.value === value);
   });
+}
+
+function setChipValue(group, value) {
+  formState[group] = value;
+  paintChipGroup(group, value);
+
+  if (group === "tipo") {
+    if (value !== "PROFISSIONAL") {
+      formState.secao = "NENHUMA";
+      paintChipGroup("secao", "NENHUMA");
+    }
+    syncSecaoVisibility();
+  }
+}
+
+function syncSecaoVisibility() {
+  const field = document.getElementById("field-secao");
+  const options = document.getElementById("capture-options");
+  const isPro = formState.tipo === "PROFISSIONAL";
+
+  if (field) {
+    field.hidden = !isPro;
+    field.setAttribute("aria-hidden", String(!isPro));
+    field.querySelectorAll(".chip").forEach((chip) => {
+      chip.tabIndex = isPro ? 0 : -1;
+      chip.disabled = !isPro;
+    });
+  }
+  if (options) options.classList.toggle("is-personal", !isPro);
 }
 
 function resetForm() {
@@ -94,8 +122,8 @@ function resetForm() {
   const deadline = document.getElementById("task-deadline");
   if (input) input.value = "";
   if (deadline) deadline.value = "";
-  setChipValue("secao", "NENHUMA");
   setChipValue("tipo", "PROFISSIONAL");
+  setChipValue("secao", "NENHUMA");
 }
 
 function pulseSaveButton() {
@@ -390,7 +418,7 @@ async function addTask() {
       id: crypto.randomUUID(),
       descricao,
       category: formState.tipo,
-      secao: formState.secao,
+      secao: formState.tipo === "PESSOAL" ? "NENHUMA" : formState.secao,
       prioridade: "BAIXA",
       temSuperior: "NAO",
       superior: "",
@@ -517,10 +545,12 @@ function setupFormEvents() {
   document.querySelectorAll("[data-chip-group]").forEach((group) => {
     group.addEventListener("click", (e) => {
       const chip = e.target.closest(".chip");
-      if (!chip) return;
+      if (!chip || chip.disabled) return;
       setChipValue(group.dataset.chipGroup, chip.dataset.value);
     });
   });
+
+  syncSecaoVisibility();
 }
 
 function setupListEvents() {
