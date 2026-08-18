@@ -178,8 +178,9 @@ input {
   border: 1px solid #2f2f2f;
   color: #fff;
   border-radius: 10px;
-  font-size: 1rem;
+  font-size: 16px;
   font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 input:focus {
@@ -189,17 +190,20 @@ input:focus {
 
 .capture-form {
   display: grid;
-  gap: 18px;
-  margin-bottom: 32px;
-  padding: 22px;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding: 18px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
+  transition: padding 0.2s ease, gap 0.2s ease;
 }
 
-.capture-title-row .capture-input {
-  padding: 16px 18px;
-  font-size: 1.08rem;
+.capture-input,
+.date-input {
+  padding: 14px 16px;
+  min-height: 48px;
+  font-size: 16px;
   background: #0c0c0c;
   border: 1px solid #2c2c2c;
   border-radius: 12px;
@@ -211,11 +215,12 @@ input:focus {
   box-shadow: 0 0 0 4px rgba(214, 179, 75, 0.08);
 }
 
-.capture-grid {
+.capture-options {
   display: grid;
-  grid-template-columns: 1.6fr 0.9fr;
-  gap: 16px 18px;
+  grid-template-columns: 1fr;
+  gap: 16px;
   align-items: start;
+  transition: grid-template-columns 0.2s ease, gap 0.2s ease;
 }
 
 .field-group {
@@ -235,7 +240,7 @@ input:focus {
 .chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .chip {
@@ -243,12 +248,13 @@ input:focus {
   background: #141414;
   color: #d7d7d7;
   border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 0.75rem;
+  padding: 10px 16px;
+  min-height: 44px;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  transition: 0.15s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, min-height 0.2s ease, padding 0.2s ease;
 }
 
 .chip:hover {
@@ -260,27 +266,6 @@ input:focus {
   background: rgba(214, 179, 75, 0.16);
   border-color: var(--primary);
   color: var(--primary-strong);
-}
-
-.chip-alta.is-active {
-  background: rgba(255, 92, 92, 0.14);
-  border-color: var(--danger);
-  color: #ffb3b3;
-}
-
-.date-input {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #2c2c2c;
-  background: #0c0c0c;
-  min-height: 42px;
-}
-
-.capture-top {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px 16px;
-  align-items: end;
 }
 
 .chip-pro.is-active {
@@ -297,37 +282,13 @@ input:focus {
 
 .capture-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+  justify-content: stretch;
 }
 
-.btn-feedback {
-  border: 1px solid #333;
-  background: #141414;
-  color: #cfcfcf;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  transition: 0.15s ease;
-}
-
-.btn-feedback:hover {
-  border-color: #6db8ff;
-  color: #fff;
-}
-
-.btn-feedback.is-on {
-  background: rgba(61, 214, 140, 0.12);
-  border-color: var(--success);
-  color: var(--success);
-}
-
-.btn-feedback[hidden] {
-  display: none !important;
+.btn-capture {
+  width: 100%;
+  min-height: 48px;
+  transition: transform 0.2s ease, width 0.2s ease;
 }
 
 .meta-chip.is-pro {
@@ -340,22 +301,12 @@ input:focus {
   border-color: rgba(109, 184, 255, 0.35);
 }
 
-.meta-chip.is-feedback {
-  color: #6db8ff;
-  border-color: rgba(109, 184, 255, 0.4);
-}
-
 .mission-item.is-pro {
   border-left: 3px solid var(--primary);
 }
 
 .mission-item.is-pes {
   border-left: 3px solid #6db8ff;
-}
-
-.btn-capture {
-  min-width: 140px;
-  min-height: 46px;
 }
 
 .btn-capture.is-saved {
@@ -661,27 +612,40 @@ input:focus {
   display: none !important;
 }
 
-@media (max-width: 900px) {
-  .capture-top,
-  .capture-grid {
-    grid-template-columns: 1fr;
+@media (min-width: 768px) {
+  .capture-form {
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .capture-options {
+    grid-template-columns: auto 1fr 180px;
+    gap: 16px 18px;
+    align-items: end;
+  }
+
+  .chip {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .date-input {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+
+  .capture-actions {
+    justify-content: flex-end;
+  }
+
+  .btn-capture {
+    width: auto;
+    min-width: 140px;
   }
 }
 
 @media (max-width: 720px) {
-  .capture-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .capture-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-feedback {
-    width: 100%;
-  }
-
   .install-banner {
     flex-direction: column;
     align-items: flex-start;
