@@ -1,7 +1,3 @@
-// =====================================
-// SUPABASE
-// =====================================
-
 const supabaseUrl = "https://oxwnbjmjpxvjtfvzkdju.supabase.co";
 const supabaseKey =
   "sb_publishable_oMN5FVGpCwdlllqynA1IpA_paDrG1fk";
@@ -14,30 +10,14 @@ const client = window.supabase
   ? window.supabase.createClient(supabaseUrl, supabaseKey)
   : null;
 
-// =====================================
-// STATE / KEYS
-// =====================================
-
 let tasks = [];
-let editingTaskId = null;
 let deferredPrompt = null;
 let saving = false;
-let listLoading = false;
-let searchDebounceTimer = null;
 let currentSession = null;
 let completedAtSupported = true;
-let quickFilter = "all"; // all | atrasadas | feedback
 
 const INSTALL_DISMISS_KEY = "gestao-eficaz-install-dismissed";
 const TASKS_CACHE_KEY = "gestao-eficaz-tasks-cache";
-const SHOW_DONE_KEY = "gestao-eficaz-show-done";
-const SORT_KEY = "gestao-eficaz-sort";
-
-const PRIORIDADE_PESO = { ALTA: 1, MEDIA: 2, BAIXA: 3 };
-
-// =====================================
-// HELPERS / UX FEEDBACK
-// =====================================
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -60,11 +40,11 @@ function showNotify(msg, type = "info") {
   setTimeout(() => {
     div.classList.add("toast-out");
     setTimeout(() => div.remove(), 220);
-  }, 3200);
+  }, 2800);
 }
 
 function formatDataBR(iso) {
-  if (!iso) return "---";
+  if (!iso) return "";
   const [a, m, d] = String(iso).split("T")[0].split("-");
   return `${d}/${m}/${a}`;
 }
@@ -73,49 +53,23 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-function addDaysISO(days) {
-  const d = new Date();
-  d.setHours(12, 0, 0, 0);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
-}
-
-function isOverdue(task, hoje = todayISO()) {
-  return task.status !== "CONCLUIDO" && !!task.end && task.end < hoje;
-}
-
-function isFeedbackPending(task) {
-  return task.exigeFeedbackSup === "SIM" && task.statusFeedbackSup === "NAO";
-}
-
-function getDeadlineTone(task, hoje = todayISO()) {
-  if (task.status === "CONCLUIDO" || !task.end) return "ok";
-  if (task.end < hoje) return "late";
-  if (task.end === hoje) return "today";
-  if (task.end === addDaysISO(1)) return "tomorrow";
-  return "ok";
-}
-
-function csvEscape(value) {
-  const text = String(value ?? "");
-  if (/[",\n;]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
-  return text;
+function activeTasks() {
+  return tasks
+    .filter((t) => t.status !== "CONCLUIDO")
+    .sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
 }
 
 function setBusy(isBusy) {
   saving = isBusy;
   const btnSave = document.getElementById("btn-save");
-  const btnCancel = document.getElementById("btn-cancel-edit");
   const authSubmit = document.getElementById("auth-submit");
+  const capture = document.getElementById("task-descricao");
+
   if (btnSave) {
     btnSave.disabled = isBusy;
-    if (!editingTaskId) {
-      btnSave.textContent = isBusy ? "Salvando…" : "Salvar missão";
-    } else {
-      btnSave.textContent = isBusy ? "Atualizando…" : "Atualizar missão";
-    }
+    btnSave.textContent = isBusy ? "Salvando…" : "Adicionar";
   }
-  if (btnCancel) btnCancel.disabled = isBusy;
+  if (capture) capture.disabled = isBusy;
   if (authSubmit) {
     authSubmit.disabled = isBusy;
     authSubmit.textContent = isBusy ? "Entrando…" : "Entrar";
@@ -123,11 +77,8 @@ function setBusy(isBusy) {
 }
 
 function setListLoading(isLoading) {
-  listLoading = isLoading;
   const el = document.getElementById("list-loading");
-  const wrap = document.querySelector(".table-wrap");
   if (el) el.hidden = !isLoading;
-  if (wrap) wrap.classList.toggle("is-dimmed", isLoading);
 }
 
 function updateOfflineBanner() {
@@ -165,10 +116,10 @@ function setConnectionStatus(state, detail = "") {
 
   const map = {
     loading: { text: "Sincronizando…", className: "status-loading" },
-    online: { text: "Online · sincronizado", className: "status-online" },
+    online: { text: "Online", className: "status-online" },
     offline: { text: "Offline", className: "status-offline" },
     error: { text: "Erro de conexão", className: "status-error" },
-    cached: { text: "Offline · cache local", className: "status-cached" },
+    cached: { text: "Cache local", className: "status-cached" },
   };
 
   const info = map[state] || map.loading;
@@ -176,166 +127,12 @@ function setConnectionStatus(state, detail = "") {
   el.className = info.className;
 }
 
-function getShowCompleted() {
-  return document.getElementById("toggle-show-done")?.checked === true;
-}
-
-function getSortMode() {
-  return document.getElementById("filter-sort")?.value || "prazo";
-}
-
-function getFilterValues() {
-  return {
-    busca: document.getElementById("search-input")?.value.trim().toLowerCase() || "",
-    status: document.getElementById("filter-status")?.value || "TODOS",
-    secao: document.getElementById("filter-secao")?.value || "TODAS",
-    prioridade: document.getElementById("filter-prioridade")?.value || "TODAS",
-    atrasadas: document.getElementById("filter-atrasadas")?.value || "TODAS",
-    sort: getSortMode(),
-    showDone: getShowCompleted(),
-  };
-}
-
-function sortTasks(list, sortMode) {
-  const copy = [...list];
-
-  copy.sort((a, b) => {
-    if (sortMode === "prioridade") {
-      const pa = PRIORIDADE_PESO[a.prioridade] ?? 99;
-      const pb = PRIORIDADE_PESO[b.prioridade] ?? 99;
-      if (pa !== pb) return pa - pb;
-      return String(a.end || "").localeCompare(String(b.end || ""));
-    }
-
-    if (sortMode === "criacao") {
-      return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
-    }
-
-    const aDone = a.status === "CONCLUIDO" ? 1 : 0;
-    const bDone = b.status === "CONCLUIDO" ? 1 : 0;
-    if (aDone !== bDone) return aDone - bDone;
-    return String(a.end || "9999-99-99").localeCompare(
-      String(b.end || "9999-99-99")
-    );
-  });
-
-  return copy;
-}
-
-function getFilteredTasks() {
-  const { busca, status, secao, prioridade, atrasadas, sort, showDone } =
-    getFilterValues();
-  const hoje = todayISO();
-
-  const filtradas = tasks.filter((t) => {
-    const matchBusca =
-      !busca ||
-      t.descricao?.toLowerCase().includes(busca) ||
-      t.executor?.toLowerCase().includes(busca) ||
-      t.superior?.toLowerCase().includes(busca);
-
-    let matchStatus = status === "TODOS" || t.status === status;
-
-    if (!showDone && status !== "CONCLUIDO" && t.status === "CONCLUIDO") {
-      matchStatus = false;
-    }
-
-    const matchSecao = secao === "TODAS" || t.secao === secao;
-    const matchPrioridade =
-      prioridade === "TODAS" || t.prioridade === prioridade;
-    const matchAtrasadas =
-      atrasadas === "TODAS" ||
-      (atrasadas === "SIM" && isOverdue(t, hoje)) ||
-      (atrasadas === "NAO" && !isOverdue(t, hoje));
-
-    let matchQuick = true;
-    if (quickFilter === "atrasadas") matchQuick = isOverdue(t, hoje);
-    if (quickFilter === "feedback") matchQuick = isFeedbackPending(t);
-
-    return (
-      matchBusca &&
-      matchStatus &&
-      matchSecao &&
-      matchPrioridade &&
-      matchAtrasadas &&
-      matchQuick
-    );
-  });
-
-  return sortTasks(filtradas, sort);
-}
-
-function updateListMeta(visibleCount) {
+function updateListMeta() {
   const meta = document.getElementById("list-meta");
   if (!meta) return;
-
-  if (listLoading) {
-    meta.textContent = "Carregando…";
-    return;
-  }
-
-  const total = tasks.length;
-  if (total === 0) {
-    meta.textContent = "0 missão(ões)";
-    return;
-  }
-
-  meta.textContent =
-    visibleCount === total
-      ? `${visibleCount} missão(ões)`
-      : `Exibindo ${visibleCount} de ${total}`;
+  const count = activeTasks().length;
+  meta.textContent = count ? `${count}` : "";
 }
-
-function syncQuickFilterUI() {
-  document.querySelectorAll(".stat-btn").forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.quick === quickFilter);
-  });
-}
-
-function applyQuickFilter(type) {
-  quickFilter = type;
-
-  if (type === "atrasadas") {
-    document.getElementById("filter-atrasadas").value = "SIM";
-    document.getElementById("filter-status").value = "PENDENTE";
-    document.getElementById("toggle-show-done").checked = false;
-  } else if (type === "feedback") {
-    document.getElementById("filter-atrasadas").value = "TODAS";
-    document.getElementById("filter-status").value = "TODOS";
-    document.getElementById("toggle-show-done").checked = true;
-  } else {
-    document.getElementById("filter-atrasadas").value = "TODAS";
-    document.getElementById("filter-status").value = "TODOS";
-  }
-
-  persistListPrefs();
-  syncQuickFilterUI();
-  render();
-
-  document.getElementById("list-meta")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
-}
-
-function clearFilters() {
-  document.getElementById("search-input").value = "";
-  document.getElementById("filter-status").value = "TODOS";
-  document.getElementById("filter-secao").value = "TODAS";
-  document.getElementById("filter-prioridade").value = "TODAS";
-  document.getElementById("filter-atrasadas").value = "TODAS";
-  document.getElementById("filter-sort").value = "prazo";
-  document.getElementById("toggle-show-done").checked = false;
-  quickFilter = "all";
-  persistListPrefs();
-  syncQuickFilterUI();
-  render();
-  showNotify("Filtros limpos", "success");
-}
-
-// =====================================
-// AUTH
-// =====================================
 
 function showAuthError(msg) {
   const el = document.getElementById("auth-error");
@@ -357,10 +154,12 @@ function setAuthUI(session) {
   if (session) {
     authScreen.hidden = true;
     appShell.hidden = false;
+    setTimeout(() => document.getElementById("task-descricao")?.focus(), 80);
   } else {
     appShell.hidden = true;
     authScreen.hidden = false;
-    document.getElementById("auth-password").value = "";
+    const password = document.getElementById("auth-password");
+    if (password) password.value = "";
   }
 }
 
@@ -410,9 +209,21 @@ async function handleLogout() {
   }
 
   tasks = [];
-  editingTaskId = null;
   setAuthUI(null);
   showNotify("Sessão encerrada", "info");
+}
+
+function togglePasswordVisibility() {
+  const input = document.getElementById("auth-password");
+  const btn = document.getElementById("btn-toggle-password");
+  const icon = document.getElementById("toggle-password-icon");
+  if (!input || !btn || !icon) return;
+
+  const showing = input.type === "text";
+  input.type = showing ? "password" : "text";
+  icon.textContent = showing ? "👁" : "🙈";
+  btn.setAttribute("aria-label", showing ? "Mostrar senha" : "Ocultar senha");
+  btn.title = showing ? "Mostrar senha" : "Ocultar senha";
 }
 
 function setupAuth() {
@@ -429,26 +240,9 @@ function setupAuth() {
   }
 
   client.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") {
-      setAuthUI(null);
-    }
-    if (event === "TOKEN_REFRESHED") {
-      currentSession = session;
-    }
+    if (event === "SIGNED_OUT") setAuthUI(null);
+    if (event === "TOKEN_REFRESHED") currentSession = session;
   });
-}
-
-function togglePasswordVisibility() {
-  const input = document.getElementById("auth-password");
-  const btn = document.getElementById("btn-toggle-password");
-  const icon = document.getElementById("toggle-password-icon");
-  if (!input || !btn || !icon) return;
-
-  const showing = input.type === "text";
-  input.type = showing ? "password" : "text";
-  icon.textContent = showing ? "👁" : "🙈";
-  btn.setAttribute("aria-label", showing ? "Mostrar senha" : "Ocultar senha");
-  btn.title = showing ? "Mostrar senha" : "Ocultar senha";
 }
 
 async function resolveInitialSession() {
@@ -468,126 +262,6 @@ async function resolveInitialSession() {
   return data.session;
 }
 
-// =====================================
-// FORM
-// =====================================
-
-function toggleFields() {
-  const superior = document.getElementById("task-tem-superior").value;
-  const divSuperior = document.getElementById("div-superior");
-  const divFeedback = document.getElementById("div-feedback");
-  const show = superior === "SIM";
-
-  divSuperior.classList.toggle("field-hidden", !show);
-  divFeedback.classList.toggle("field-hidden", !show);
-
-  if (!show) {
-    document.getElementById("task-superior").value = "";
-    document.getElementById("task-exige-feedback").value = "NAO";
-  }
-}
-
-function limparFormulario() {
-  document.getElementById("task-descricao").value = "";
-  document.getElementById("task-executor").value = "";
-  document.getElementById("task-superior").value = "";
-  document.getElementById("task-deadline").value = "";
-  document.getElementById("task-tem-superior").value = "NAO";
-  document.getElementById("task-category").value = "PROFISSIONAL";
-  document.getElementById("task-secao").value = "NENHUMA";
-  document.getElementById("task-prioridade").value = "BAIXA";
-  document.getElementById("task-exige-feedback").value = "NAO";
-  toggleFields();
-}
-
-function setEditMode(active) {
-  const banner = document.getElementById("edit-banner");
-  const title = document.getElementById("form-title");
-  const card = document.getElementById("form-card");
-  const btnCancel = document.getElementById("btn-cancel-edit");
-  const btnSave = document.getElementById("btn-save");
-
-  if (banner) banner.hidden = !active;
-  if (title) title.textContent = active ? "Editar missão" : "Nova missão";
-  if (card) card.classList.toggle("is-editing", active);
-  if (btnCancel) btnCancel.style.display = active ? "block" : "none";
-  if (btnSave && !saving) {
-    btnSave.textContent = active ? "Atualizar missão" : "Salvar missão";
-  }
-}
-
-function cancelEdit() {
-  editingTaskId = null;
-  setEditMode(false);
-  limparFormulario();
-}
-
-function editTask(id) {
-  const t = tasks.find((x) => x.id === id);
-  if (!t) return;
-
-  editingTaskId = id;
-
-  document.getElementById("task-category").value = t.category || "PROFISSIONAL";
-  document.getElementById("task-secao").value = t.secao || "NENHUMA";
-  document.getElementById("task-prioridade").value = t.prioridade || "BAIXA";
-  document.getElementById("task-tem-superior").value = t.temSuperior || "NAO";
-  document.getElementById("task-superior").value = t.superior || "";
-  document.getElementById("task-exige-feedback").value =
-    t.exigeFeedbackSup || "NAO";
-  document.getElementById("task-descricao").value = t.descricao || "";
-  document.getElementById("task-executor").value = t.executor || "";
-  document.getElementById("task-deadline").value = t.end || "";
-
-  toggleFields();
-  setEditMode(true);
-
-  document.getElementById("form-card").scrollIntoView({
-    behavior: "smooth",
-    block: "start",
-  });
-  setTimeout(() => document.getElementById("task-descricao").focus(), 280);
-}
-
-function buildPayloadFromForm() {
-  const descricao = document.getElementById("task-descricao").value.trim();
-  const prazo = document.getElementById("task-deadline").value;
-  const temSuperior = document.getElementById("task-tem-superior").value;
-  const superior = document.getElementById("task-superior").value.trim();
-  const executor = document.getElementById("task-executor").value.trim();
-
-  if (!descricao || !prazo) {
-    showNotify("Missão e prazo são obrigatórios", "error");
-    document.getElementById(!descricao ? "task-descricao" : "task-deadline").focus();
-    return null;
-  }
-
-  if (temSuperior === "SIM" && !superior) {
-    showNotify("Informe o nome do superior", "error");
-    document.getElementById("task-superior").focus();
-    return null;
-  }
-
-  return {
-    category: document.getElementById("task-category").value,
-    secao: document.getElementById("task-secao").value,
-    prioridade: document.getElementById("task-prioridade").value,
-    temSuperior,
-    superior: temSuperior === "SIM" ? superior : "",
-    exigeFeedbackSup:
-      temSuperior === "SIM"
-        ? document.getElementById("task-exige-feedback").value
-        : "NAO",
-    descricao,
-    executor: executor || "Não definido",
-    end: prazo,
-  };
-}
-
-// =====================================
-// DATA
-// =====================================
-
 async function fetchTasks({ silent = false } = {}) {
   updateOfflineBanner();
   setConnectionStatus(navigator.onLine ? "loading" : "offline");
@@ -605,9 +279,7 @@ async function fetchTasks({ silent = false } = {}) {
     if (cached) {
       tasks = cached.tasks;
       setConnectionStatus("cached", formatDataBR(cached.savedAt));
-      updateStats();
       render();
-      if (!silent) showNotify("Exibindo última lista salva (offline)", "info");
     } else {
       setConnectionStatus("offline");
       if (!silent) showNotify("Sem conexão e sem cache local", "error");
@@ -637,7 +309,6 @@ async function fetchTasks({ silent = false } = {}) {
       if (cached) {
         tasks = cached.tasks;
         setConnectionStatus("cached", "falha na nuvem");
-        updateStats();
         render();
         showNotify("Erro na nuvem · usando cache local", "error");
       } else {
@@ -650,16 +321,14 @@ async function fetchTasks({ silent = false } = {}) {
 
     tasks = data || [];
     saveTasksCache(tasks);
-    setConnectionStatus("online", `${tasks.length} missão(ões)`);
-    updateStats();
+    setConnectionStatus("online");
     render();
   } catch (err) {
     console.error(err);
     const cached = loadTasksCache();
     if (cached) {
       tasks = cached.tasks;
-      setConnectionStatus("cached", "falha na nuvem");
-      updateStats();
+      setConnectionStatus("cached");
       render();
       showNotify("Erro na nuvem · usando cache local", "error");
     } else {
@@ -671,18 +340,6 @@ async function fetchTasks({ silent = false } = {}) {
   }
 }
 
-function updateStats() {
-  const hoje = todayISO();
-
-  document.getElementById("stat-total").textContent = String(tasks.length);
-  document.getElementById("stat-atrasada").textContent = String(
-    tasks.filter((t) => isOverdue(t, hoje)).length
-  );
-  document.getElementById("stat-feedback").textContent = String(
-    tasks.filter((t) => isFeedbackPending(t)).length
-  );
-}
-
 async function addTask() {
   if (saving) return;
 
@@ -691,134 +348,74 @@ async function addTask() {
     return;
   }
 
-  const payload = buildPayloadFromForm();
-  if (!payload) return;
+  const input = document.getElementById("task-descricao");
+  const descricao = input.value.trim();
+  if (!descricao) {
+    input.focus();
+    return;
+  }
 
   setBusy(true);
 
   try {
-    if (editingTaskId) {
-      const { error } = await client
-        .from("tarefas")
-        .update(payload)
-        .eq("id", editingTaskId);
+    const payload = {
+      id: crypto.randomUUID(),
+      descricao,
+      category: "PROFISSIONAL",
+      secao: "NENHUMA",
+      prioridade: "BAIXA",
+      temSuperior: "NAO",
+      superior: "",
+      exigeFeedbackSup: "NAO",
+      executor: "Não definido",
+      start: todayISO(),
+      end: todayISO(),
+      status: "PENDENTE",
+      feedback: "",
+      statusFeedbackSup: "NAO",
+      createdAt: new Date().toISOString(),
+    };
 
-      if (error) {
-        console.error(error);
-        showNotify("Erro ao atualizar", "error");
-        return;
-      }
+    if (completedAtSupported) payload.completedAt = null;
 
-      showNotify("Missão atualizada", "success");
-      cancelEdit();
-    } else {
-      payload.id = crypto.randomUUID();
-      payload.start = todayISO();
-      payload.status = "PENDENTE";
-      payload.feedback = "";
-      payload.statusFeedbackSup = "NAO";
-      payload.createdAt = new Date().toISOString();
-      if (completedAtSupported) payload.completedAt = null;
+    let { error } = await client.from("tarefas").insert([payload]);
 
-      let { error } = await client.from("tarefas").insert([payload]);
-
-      if (
-        error &&
-        completedAtSupported &&
-        /completedAt/i.test(error.message || "")
-      ) {
-        completedAtSupported = false;
-        delete payload.completedAt;
-        ({ error } = await client.from("tarefas").insert([payload]));
-      }
-
-      if (error) {
-        console.error(error);
-        showNotify("Erro ao salvar", "error");
-        return;
-      }
-
-      showNotify("Missão salva", "success");
-      limparFormulario();
+    if (error && completedAtSupported && /completedAt/i.test(error.message || "")) {
+      completedAtSupported = false;
+      delete payload.completedAt;
+      ({ error } = await client.from("tarefas").insert([payload]));
     }
-
-    await fetchTasks({ silent: true });
-  } finally {
-    setBusy(false);
-  }
-}
-
-async function deleteTask(id) {
-  if (saving) return;
-
-  if (!navigator.onLine) {
-    showNotify("Sem conexão · não é possível excluir agora", "error");
-    return;
-  }
-
-  const task = tasks.find((t) => t.id === id);
-  const label = task?.descricao ? `"${task.descricao}"` : "esta missão";
-  const prazo = task?.end ? formatDataBR(task.end) : "sem prazo";
-
-  if (
-    !confirm(
-      `Excluir permanentemente a missão ${label}?\nPrazo: ${prazo}\n\nEsta ação não pode ser desfeita.`
-    )
-  ) {
-    return;
-  }
-
-  setBusy(true);
-
-  try {
-    const { error } = await client.from("tarefas").delete().eq("id", id);
 
     if (error) {
       console.error(error);
-      showNotify("Erro ao excluir", "error");
+      showNotify("Erro ao salvar", "error");
       return;
     }
 
-    if (editingTaskId === id) cancelEdit();
-
-    showNotify("Missão excluída", "success");
+    input.value = "";
+    input.focus();
+    showNotify("Missão adicionada", "success");
     await fetchTasks({ silent: true });
   } finally {
     setBusy(false);
   }
 }
 
-async function updateField(id, field, value) {
+async function completeTask(id) {
   if (!navigator.onLine) {
-    showNotify("Sem conexão · alteração não sincronizada", "error");
-    await fetchTasks({ silent: true });
+    showNotify("Sem conexão · não é possível concluir agora", "error");
     return;
   }
 
-  let patch = { [field]: value };
+  const item = document.querySelector(`.mission-item[data-id="${id}"]`);
+  if (item) item.classList.add("is-done");
 
-  if (field === "status") {
-    if (value === "CONCLUIDO") {
-      patch.completedAt = new Date().toISOString();
-    } else if (value === "PENDENTE") {
-      patch.completedAt = null;
-    }
-  }
-
-  // Otimista: aplica na UI já
-  const local = tasks.find((t) => t.id === id);
-  const previous = local ? { ...local } : null;
-  if (local) Object.assign(local, patch);
-  updateStats();
-  render();
+  const patch = { status: "CONCLUIDO" };
+  if (completedAtSupported) patch.completedAt = new Date().toISOString();
 
   let { error } = await client.from("tarefas").update(patch).eq("id", id);
 
-  if (
-    error &&
-    patch.completedAt !== undefined &&
-    /completedAt/i.test(error.message || "")
-  ) {
+  if (error && /completedAt/i.test(error.message || "")) {
     completedAtSupported = false;
     delete patch.completedAt;
     ({ error } = await client.from("tarefas").update(patch).eq("id", id));
@@ -826,287 +423,61 @@ async function updateField(id, field, value) {
 
   if (error) {
     console.error(error);
-    if (local && previous) Object.assign(local, previous);
-    updateStats();
-    render();
-    showNotify("Erro ao atualizar", "error");
+    if (item) item.classList.remove("is-done");
+    showNotify("Erro ao concluir", "error");
     return;
   }
 
+  await new Promise((resolve) => setTimeout(resolve, 260));
+  tasks = tasks.filter((t) => t.id !== id);
   saveTasksCache(tasks);
-  if (field === "status" && value === "CONCLUIDO") {
-    showNotify("Missão concluída", "success");
-  }
-}
-
-// =====================================
-// EXPORT / WHATSAPP
-// =====================================
-
-function exportCsv() {
-  const lista = getFilteredTasks();
-
-  if (lista.length === 0) {
-    showNotify("Nada para exportar com os filtros atuais", "info");
-    return;
-  }
-
-  const headers = [
-    "id",
-    "descricao",
-    "executor",
-    "secao",
-    "prioridade",
-    "status",
-    "prazo",
-    "superior",
-    "exigeFeedback",
-    "statusFeedback",
-    "anotacoes",
-    "criadoEm",
-    "concluidoEm",
-  ];
-
-  const rows = lista.map((t) =>
-    [
-      t.id,
-      t.descricao,
-      t.executor,
-      t.secao,
-      t.prioridade,
-      t.status,
-      t.end,
-      t.superior,
-      t.exigeFeedbackSup,
-      t.statusFeedbackSup,
-      t.feedback,
-      t.createdAt,
-      t.completedAt || "",
-    ]
-      .map(csvEscape)
-      .join(";")
-  );
-
-  const csv = `\uFEFF${headers.join(";")}\n${rows.join("\n")}`;
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `gestao-eficaz-${todayISO()}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-
-  showNotify(`Exportadas ${lista.length} missão(ões)`, "success");
-}
-
-function openWhatsApp(mensagem) {
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensagem)}`, "_blank");
-}
-
-function sendWA(id) {
-  const t = tasks.find((x) => x.id === id);
-  if (!t) return;
-
-  const msg =
-    `ORDEM DE MISSÃO - 8º BAEP\n\n` +
-    `Missão: ${t.descricao}\n` +
-    `Executor: ${t.executor}\n` +
-    `Seção: ${t.secao}\n` +
-    `Prioridade: ${t.prioridade}\n` +
-    `Prazo: ${formatDataBR(t.end)}\n` +
-    (t.temSuperior === "SIM" ? `Superior: ${t.superior}\n` : "") +
-    `Status: ${t.status}`;
-
-  openWhatsApp(msg);
-}
-
-// =====================================
-// RENDER
-// =====================================
-
-function deadlineBadges(tone) {
-  if (tone === "late") return '<span class="badge badge-danger">Atrasada</span>';
-  if (tone === "today") return '<span class="badge badge-today">Vence hoje</span>';
-  if (tone === "tomorrow")
-    return '<span class="badge badge-tomorrow">Vence amanhã</span>';
-  return "";
+  render();
+  showNotify("Missão cumprida", "success");
 }
 
 function render() {
-  const tbody = document.getElementById("task-list");
-  if (!tbody) return;
+  const list = document.getElementById("task-list");
+  if (!list) return;
 
-  const filtradas = getFilteredTasks();
-  const hoje = todayISO();
+  const items = activeTasks();
+  updateListMeta();
+  list.innerHTML = "";
 
-  updateListMeta(filtradas.length);
-  syncQuickFilterUI();
-  tbody.innerHTML = "";
-
-  if (filtradas.length === 0) return;
-
-  filtradas.forEach((t) => {
-    const tone = getDeadlineTone(t, hoje);
-    const tr = document.createElement("tr");
-    tr.dataset.id = t.id;
-
-    const feedbackBlock =
-      t.temSuperior === "SIM" && t.exigeFeedbackSup === "SIM"
-        ? `
-          <div class="feedback-box">
-            <label for="feedback-sup-${escapeHtml(t.id)}">Feedback ao superior</label>
-            <select id="feedback-sup-${escapeHtml(t.id)}" data-action="feedback-sup" data-id="${escapeHtml(t.id)}">
-              <option value="NAO" ${t.statusFeedbackSup === "NAO" ? "selected" : ""}>Pendente</option>
-              <option value="SIM" ${t.statusFeedbackSup === "SIM" ? "selected" : ""}>Enviado / respondido</option>
-            </select>
-          </div>`
-        : "";
-
-    const completedInfo =
-      t.status === "CONCLUIDO" && t.completedAt
-        ? `<div class="mission-completed">Concluída em ${escapeHtml(
-            formatDataBR(t.completedAt)
-          )}</div>`
-        : "";
-
-    tr.innerHTML = `
-      <td>
-        <select data-action="status" data-id="${escapeHtml(t.id)}" aria-label="Status da missão">
-          <option value="PENDENTE" ${t.status === "PENDENTE" ? "selected" : ""}>Pendente</option>
-          <option value="CONCLUIDO" ${t.status === "CONCLUIDO" ? "selected" : ""}>Concluído</option>
-        </select>
-      </td>
-      <td>
-        <span class="badge">${escapeHtml(t.secao)}</span>
-        <span class="badge">${escapeHtml(t.prioridade)}</span>
-        ${deadlineBadges(tone)}
-        ${
-          isFeedbackPending(t)
-            ? '<span class="badge badge-info">Feedback pendente</span>'
-            : ""
-        }
-        <div class="mission-title">${escapeHtml(t.descricao)}</div>
-        <div class="mission-meta">Responsável: ${escapeHtml(t.executor)}</div>
-        ${
-          t.temSuperior === "SIM"
-            ? `<div class="mission-superior">Superior: ${escapeHtml(t.superior)}</div>`
-            : ""
-        }
-        ${completedInfo}
-        ${feedbackBlock}
-      </td>
-      <td class="deadline-${tone}">${escapeHtml(formatDataBR(t.end))}</td>
-      <td>
-        <textarea data-action="feedback" data-id="${escapeHtml(t.id)}" rows="3" aria-label="Anotações">${escapeHtml(
-          t.feedback || ""
-        )}</textarea>
-      </td>
-      <td>
-        <div class="action-row">
-          <button type="button" class="btn-sm btn-edit" data-action="edit" data-id="${escapeHtml(t.id)}">Editar</button>
-          <button type="button" class="btn-sm btn-wa" data-action="wa" data-id="${escapeHtml(t.id)}" title="Compartilhar no WhatsApp">WhatsApp</button>
-          <button type="button" class="btn-sm btn-del" data-action="del" data-id="${escapeHtml(t.id)}">Excluir</button>
-        </div>
-      </td>
+  items.forEach((t) => {
+    const li = document.createElement("li");
+    li.className = "mission-item";
+    li.dataset.id = t.id;
+    li.innerHTML = `
+      <span class="mission-title">${escapeHtml(t.descricao)}</span>
+      <button
+        type="button"
+        class="btn-done"
+        data-action="done"
+        data-id="${escapeHtml(t.id)}"
+        title="Concluir e remover"
+        aria-label="Concluir missão"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </button>
     `;
-
-    tbody.appendChild(tr);
+    list.appendChild(li);
   });
 }
 
-// =====================================
-// EVENTS / PWA
-// =====================================
-
-function persistListPrefs() {
-  localStorage.setItem(SHOW_DONE_KEY, getShowCompleted() ? "1" : "0");
-  localStorage.setItem(SORT_KEY, getSortMode());
-}
-
-function restoreListPrefs() {
-  const showDone = localStorage.getItem(SHOW_DONE_KEY) === "1";
-  const sort = localStorage.getItem(SORT_KEY) || "prazo";
-  const toggle = document.getElementById("toggle-show-done");
-  const sortEl = document.getElementById("filter-sort");
-  if (toggle) toggle.checked = showDone;
-  if (sortEl) sortEl.value = sort;
-}
-
 function setupFormEvents() {
-  document
-    .getElementById("task-tem-superior")
-    .addEventListener("change", toggleFields);
-
   document.getElementById("mission-form").addEventListener("submit", (e) => {
     e.preventDefault();
     addTask();
   });
-
-  document
-    .getElementById("btn-cancel-edit")
-    .addEventListener("click", cancelEdit);
 }
 
 function setupListEvents() {
-  document.getElementById("search-input").addEventListener("input", () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(render, 200);
-  });
-
-  [
-    "filter-status",
-    "filter-secao",
-    "filter-prioridade",
-    "filter-atrasadas",
-    "filter-sort",
-  ].forEach((id) => {
-    document.getElementById(id).addEventListener("change", () => {
-      if (id !== "filter-sort") quickFilter = "all";
-      persistListPrefs();
-      syncQuickFilterUI();
-      render();
-    });
-  });
-
-  document.getElementById("toggle-show-done").addEventListener("change", () => {
-    persistListPrefs();
-    render();
-  });
-
-  document
-    .getElementById("btn-export-csv")
-    .addEventListener("click", exportCsv);
-  document
-    .getElementById("btn-clear-filters")
-    .addEventListener("click", clearFilters);
-
-  document.querySelectorAll(".stat-btn").forEach((btn) => {
-    btn.addEventListener("click", () => applyQuickFilter(btn.dataset.quick));
-  });
-
-  document.getElementById("task-list").addEventListener("change", (e) => {
-    const el = e.target;
-    const action = el.dataset.action;
-    const id = el.dataset.id;
-    if (!action || !id) return;
-
-    if (action === "status") updateField(id, "status", el.value);
-    if (action === "feedback") updateField(id, "feedback", el.value);
-    if (action === "feedback-sup") updateField(id, "statusFeedbackSup", el.value);
-  });
-
   document.getElementById("task-list").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-action]");
-    if (!btn || btn.tagName === "SELECT" || btn.tagName === "TEXTAREA") return;
-
-    const { action, id } = btn.dataset;
-    if (!action || !id) return;
-
-    if (action === "edit") editTask(id);
-    if (action === "wa") sendWA(id);
-    if (action === "del") deleteTask(id);
+    const btn = e.target.closest("[data-action='done']");
+    if (!btn) return;
+    completeTask(btn.dataset.id);
   });
 }
 
@@ -1129,14 +500,6 @@ function isRunningStandalone() {
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true
   );
-}
-
-function updatePwaStatus() {
-  const chip = document.getElementById("pwa-status-chip");
-  if (!chip) return;
-  chip.textContent = isRunningStandalone()
-    ? "Aplicativo instalado"
-    : "Pronto para instalar";
 }
 
 async function registerServiceWorker() {
@@ -1164,10 +527,7 @@ function setupInstallPrompt() {
 
   installBtn.addEventListener("click", async () => {
     if (!deferredPrompt) {
-      showNotify(
-        "No iPhone: Compartilhar > Adicionar à Tela de Início",
-        "info"
-      );
+      showNotify("No iPhone: Compartilhar > Adicionar à Tela de Início", "info");
       return;
     }
 
@@ -1190,7 +550,6 @@ function setupInstallPrompt() {
     banner.classList.remove("show");
     deferredPrompt = null;
     localStorage.removeItem(INSTALL_DISMISS_KEY);
-    updatePwaStatus();
   });
 }
 
@@ -1210,9 +569,7 @@ function setupRealtime() {
 }
 
 function setupStandaloneMode() {
-  if (isRunningStandalone()) {
-    document.body.classList.add("standalone-mode");
-  }
+  if (isRunningStandalone()) document.body.classList.add("standalone-mode");
 }
 
 function preventIosZoom() {
@@ -1220,26 +577,18 @@ function preventIosZoom() {
 }
 
 async function bootAuthenticatedApp() {
-  restoreListPrefs();
-  toggleFields();
-  setEditMode(false);
   updateOfflineBanner();
   setupRealtime();
 
   const cached = loadTasksCache();
   if (cached?.tasks?.length) {
     tasks = cached.tasks;
-    updateStats();
     render();
     setConnectionStatus("loading", "atualizando…");
   }
 
   await fetchTasks();
 }
-
-// =====================================
-// BOOT
-// =====================================
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -1250,13 +599,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupListEvents();
     setupConnectionWatchers();
     setupInstallPrompt();
-    updatePwaStatus();
     registerServiceWorker();
 
     const session = await resolveInitialSession();
-    if (session) {
-      await bootAuthenticatedApp();
-    }
+    if (session) await bootAuthenticatedApp();
   } catch (err) {
     console.error("Falha na inicialização", err);
     showNotify("Erro ao iniciar o app. Atualize com Ctrl+F5.", "error");
