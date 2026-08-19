@@ -117,10 +117,18 @@ function syncSecaoVisibility() {
   if (options) options.classList.toggle("is-personal", !isPro);
 }
 
+function autoResizeTextarea(el) {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+}
+
 function resetForm() {
   const input = document.getElementById("task-descricao");
   const deadline = document.getElementById("task-deadline");
-  if (input) input.value = "";
+  if (input) {
+    input.value = "";
+    input.style.height = "auto";
+  }
   if (deadline) deadline.value = "";
   setChipValue("tipo", "PROFISSIONAL");
   setChipValue("secao", "NENHUMA");
@@ -541,6 +549,11 @@ function setupFormEvents() {
     e.preventDefault();
     addTask();
   });
+
+  const textarea = document.getElementById("task-descricao");
+  if (textarea) {
+    textarea.addEventListener("input", () => autoResizeTextarea(textarea));
+  }
 
   document.querySelectorAll("[data-chip-group]").forEach((group) => {
     group.addEventListener("click", (e) => {

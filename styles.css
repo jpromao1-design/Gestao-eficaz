@@ -217,6 +217,18 @@ input:focus {
   box-shadow: 0 0 0 4px rgba(214, 179, 75, 0.08);
 }
 
+.capture-textarea {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.5;
+  font-family: inherit;
+  color: var(--text-main);
+  display: block;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 .capture-options {
   display: grid;
   grid-template-columns: 1fr;

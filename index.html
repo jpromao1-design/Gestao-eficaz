@@ -84,16 +84,16 @@
 
       <form id="mission-form" class="capture-form" autocomplete="off">
         <div class="field-group capture-title-row">
-          <label for="task-descricao">Título da missão</label>
-          <input
-            type="text"
+          <label for="task-descricao">Descrição da missão</label>
+          <textarea
             id="task-descricao"
-            class="capture-input"
+            class="capture-input capture-textarea"
             placeholder="O que precisa ser feito?"
-            maxlength="240"
+            maxlength="500"
+            rows="2"
             required
             autofocus
-          />
+          ></textarea>
         </div>
 
         <div class="capture-options" id="capture-options">

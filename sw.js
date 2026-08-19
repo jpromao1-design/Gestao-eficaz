@@ -1,4 +1,4 @@
-const CACHE_NAME = "gestao-eficaz-v24";
+const CACHE_NAME = "gestao-eficaz-v25";
 
 const PRECACHE_URLS = [
   "./",
