@@ -245,8 +245,13 @@ input:focus {
   min-width: 0;
 }
 
-#field-secao[hidden] {
+#field-secao[hidden],
+#field-executor[hidden] {
   display: none !important;
+}
+
+#field-executor {
+  min-width: 0;
 }
 
 .field-label {
@@ -362,6 +367,25 @@ input:focus {
 .meta-chip.is-alta {
   color: #ffb3b3;
   border-color: rgba(255, 92, 92, 0.35);
+}
+
+.meta-chip-executor {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #c8c8c8;
+  border-color: #333;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  max-width: 100%;
+}
+
+.meta-chip-executor svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .mission-body {

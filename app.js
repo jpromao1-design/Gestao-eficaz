@@ -99,6 +99,19 @@ function setChipValue(group, value) {
     }
     syncSecaoVisibility();
   }
+
+  if (group === "secao" || group === "tipo") {
+    syncExecutorVisibility();
+  }
+}
+
+function hasSecaoSelecionada() {
+  return formState.tipo === "PROFISSIONAL" && formState.secao && formState.secao !== "NENHUMA";
+}
+
+function clearExecutorField() {
+  const input = document.getElementById("task-executor");
+  if (input) input.value = "";
 }
 
 function syncSecaoVisibility() {
@@ -115,6 +128,32 @@ function syncSecaoVisibility() {
     });
   }
   if (options) options.classList.toggle("is-personal", !isPro);
+  syncExecutorVisibility();
+}
+
+function syncExecutorVisibility() {
+  const field = document.getElementById("field-executor");
+  const input = document.getElementById("task-executor");
+  const show = hasSecaoSelecionada();
+
+  if (!show) clearExecutorField();
+
+  if (field) {
+    field.hidden = !show;
+    field.setAttribute("aria-hidden", String(!show));
+  }
+  if (input) input.disabled = !show;
+}
+
+function getExecutorValue() {
+  if (!hasSecaoSelecionada()) return "";
+  const input = document.getElementById("task-executor");
+  return input ? input.value.trim() : "";
+}
+
+function hasExecutor(value) {
+  const name = String(value || "").trim();
+  return Boolean(name) && name.toLowerCase() !== "não definido" && name.toLowerCase() !== "nao definido";
 }
 
 function autoResizeTextarea(el) {
@@ -130,6 +169,7 @@ function resetForm() {
     input.style.height = "auto";
   }
   if (deadline) deadline.value = "";
+  clearExecutorField();
   setChipValue("tipo", "PROFISSIONAL");
   setChipValue("secao", "NENHUMA");
 }
@@ -431,7 +471,7 @@ async function addTask() {
       temSuperior: "NAO",
       superior: "",
       exigeFeedbackSup: "NAO",
-      executor: "Não definido",
+      executor: getExecutorValue(),
       start: todayISO(),
       end: prazo,
       status: "PENDENTE",
@@ -518,12 +558,24 @@ function render() {
     li.className = `mission-item ${isPro ? "is-pro" : "is-pes"}`;
     const secaoLabel = t.secao && t.secao !== "NENHUMA" ? t.secao : "Geral";
     const prazoLabel = t.end ? formatDataBR(t.end) : "";
+    const executorLabel = hasExecutor(t.executor) ? t.executor.trim() : "";
     li.innerHTML = `
       <div class="mission-body">
         <div class="mission-title">${escapeHtml(t.descricao)}</div>
         <div class="mission-meta">
           <span class="meta-chip ${isPro ? "is-pro" : "is-pes"}">${isPro ? "Profissional" : "Pessoal"}</span>
           <span class="meta-chip">${escapeHtml(secaoLabel)}</span>
+          ${
+            executorLabel
+              ? `<span class="meta-chip meta-chip-executor" title="Auxiliar responsável">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  ${escapeHtml(executorLabel)}
+                </span>`
+              : ""
+          }
           ${prazoLabel ? `<span class="meta-chip">${escapeHtml(prazoLabel)}</span>` : ""}
         </div>
       </div>
@@ -564,6 +616,7 @@ function setupFormEvents() {
   });
 
   syncSecaoVisibility();
+  syncExecutorVisibility();
 }
 
 function setupListEvents() {
