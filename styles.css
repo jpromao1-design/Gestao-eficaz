@@ -198,7 +198,12 @@ input:focus {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  transition: padding 0.2s ease, gap 0.2s ease;
+  transition: padding 0.2s ease, gap 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.capture-form.is-editing {
+  border-color: rgba(214, 179, 75, 0.45);
+  box-shadow: 0 0 0 1px rgba(214, 179, 75, 0.12);
 }
 
 .capture-input,
@@ -310,6 +315,33 @@ input:focus {
 .capture-actions {
   display: flex;
   justify-content: stretch;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-cancel-edit {
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: transparent;
+  color: #bdbdbd;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.btn-cancel-edit:hover {
+  border-color: #555;
+  color: #fff;
+  background: #151515;
+}
+
+.btn-cancel-edit[hidden] {
+  display: none !important;
 }
 
 .btn-capture {
@@ -452,6 +484,10 @@ input:focus {
   border-color: #3a3a3a;
 }
 
+.mission-item.is-editing {
+  border-color: rgba(214, 179, 75, 0.4);
+}
+
 .mission-item.is-done {
   opacity: 0;
   transform: translateX(18px) scale(0.98);
@@ -474,6 +510,38 @@ input:focus {
   font-weight: 600;
   line-height: 1.4;
   word-break: break-word;
+}
+
+.btn-edit {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #9a9a9a;
+  opacity: 0.28;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.btn-edit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-edit:hover,
+.btn-edit:focus-visible,
+.mission-item.is-editing .btn-edit {
+  opacity: 0.95;
+  color: var(--primary-strong);
+  background: rgba(214, 179, 75, 0.08);
+  outline: none;
 }
 
 .btn-done {
@@ -695,6 +763,10 @@ input:focus {
 
   .capture-actions {
     justify-content: flex-end;
+  }
+
+  .btn-cancel-edit {
+    min-height: 40px;
   }
 
   .btn-capture {

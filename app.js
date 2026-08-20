@@ -18,6 +18,7 @@ let completedAtSupported = true;
 let fetchingTasks = false;
 let realtimeReady = false;
 let realtimeTimer = null;
+let editingTaskId = null;
 
 const formState = {
   secao: "NENHUMA",
@@ -71,15 +72,34 @@ function setBusy(isBusy) {
   saving = isBusy;
   const btnSave = document.getElementById("btn-save");
   const authSubmit = document.getElementById("auth-submit");
+  const cancelEdit = document.getElementById("btn-cancel-edit");
 
   if (btnSave) {
     btnSave.disabled = isBusy;
-    btnSave.textContent = isBusy ? "Salvando…" : "Salvar";
+    btnSave.textContent = isBusy
+      ? editingTaskId
+        ? "Atualizando…"
+        : "Salvando…"
+      : editingTaskId
+        ? "Atualizar Missão"
+        : "Salvar";
   }
+  if (cancelEdit) cancelEdit.disabled = isBusy;
   if (authSubmit) {
     authSubmit.disabled = isBusy;
     authSubmit.textContent = isBusy ? "Entrando…" : "Entrar";
   }
+}
+
+function syncFormModeUI() {
+  const form = document.getElementById("mission-form");
+  const btnSave = document.getElementById("btn-save");
+  const cancelEdit = document.getElementById("btn-cancel-edit");
+  const isEditing = Boolean(editingTaskId);
+
+  if (form) form.classList.toggle("is-editing", isEditing);
+  if (btnSave && !saving) btnSave.textContent = isEditing ? "Atualizar Missão" : "Salvar";
+  if (cancelEdit) cancelEdit.hidden = !isEditing;
 }
 
 function paintChipGroup(group, value) {
@@ -161,7 +181,13 @@ function autoResizeTextarea(el) {
   el.style.height = el.scrollHeight + "px";
 }
 
+function toDateInputValue(iso) {
+  if (!iso) return "";
+  return String(iso).split("T")[0];
+}
+
 function resetForm() {
+  editingTaskId = null;
   const input = document.getElementById("task-descricao");
   const deadline = document.getElementById("task-deadline");
   if (input) {
@@ -172,6 +198,46 @@ function resetForm() {
   clearExecutorField();
   setChipValue("tipo", "PROFISSIONAL");
   setChipValue("secao", "NENHUMA");
+  syncFormModeUI();
+}
+
+function startEditTask(id) {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) {
+    showNotify("Missão não encontrada", "error");
+    return;
+  }
+
+  editingTaskId = task.id;
+
+  const input = document.getElementById("task-descricao");
+  const deadline = document.getElementById("task-deadline");
+  const executor = document.getElementById("task-executor");
+  const tipo = task.category === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
+  const secao = tipo === "PROFISSIONAL" && task.secao ? task.secao : "NENHUMA";
+
+  if (input) {
+    input.value = task.descricao || "";
+    autoResizeTextarea(input);
+  }
+  if (deadline) deadline.value = toDateInputValue(task.end);
+
+  setChipValue("tipo", tipo);
+  setChipValue("secao", secao);
+
+  if (executor && hasSecaoSelecionada() && hasExecutor(task.executor)) {
+    executor.value = task.executor.trim();
+  } else {
+    clearExecutorField();
+  }
+
+  syncFormModeUI();
+  render();
+
+  const form = document.getElementById("mission-form");
+  form?.scrollIntoView({ behavior: "smooth", block: "start" });
+  input?.focus();
+  input?.setSelectionRange?.(input.value.length, input.value.length);
 }
 
 function pulseSaveButton() {
@@ -443,7 +509,7 @@ async function fetchTasks({ silent = false } = {}) {
   }
 }
 
-async function addTask() {
+async function saveTask() {
   if (saving) return;
 
   if (!navigator.onLine) {
@@ -458,20 +524,49 @@ async function addTask() {
     return;
   }
 
+  const isEditing = Boolean(editingTaskId);
+  const prazo = document.getElementById("task-deadline").value || todayISO();
+  const secao = formState.tipo === "PESSOAL" ? "NENHUMA" : formState.secao;
+  const executor = getExecutorValue();
+
   setBusy(true);
 
   try {
-    const prazo = document.getElementById("task-deadline").value || todayISO();
+    if (isEditing) {
+      const patch = {
+        descricao,
+        category: formState.tipo,
+        secao,
+        executor,
+        end: prazo,
+      };
+
+      const { error } = await client.from("tarefas").update(patch).eq("id", editingTaskId);
+
+      if (error) {
+        console.error(error);
+        showNotify("Erro ao atualizar", "error");
+        return;
+      }
+
+      resetForm();
+      pulseSaveButton();
+      input.focus();
+      showNotify("Missão atualizada", "success");
+      await fetchTasks({ silent: true });
+      return;
+    }
+
     const payload = {
       id: crypto.randomUUID(),
       descricao,
       category: formState.tipo,
-      secao: formState.tipo === "PESSOAL" ? "NENHUMA" : formState.secao,
+      secao,
       prioridade: "BAIXA",
       temSuperior: "NAO",
       superior: "",
       exigeFeedbackSup: "NAO",
-      executor: getExecutorValue(),
+      executor,
       start: todayISO(),
       end: prazo,
       status: "PENDENTE",
@@ -536,6 +631,7 @@ async function completeTask(id) {
   }
 
   await new Promise((resolve) => setTimeout(resolve, 260));
+  if (editingTaskId === id) resetForm();
   tasks = tasks.filter((t) => t.id !== id);
   saveTasksCache(tasks);
   render();
@@ -555,11 +651,25 @@ function render() {
     li.className = "mission-item";
     li.dataset.id = t.id;
     const isPro = t.category !== "PESSOAL";
-    li.className = `mission-item ${isPro ? "is-pro" : "is-pes"}`;
+    const isEditing = editingTaskId === t.id;
+    li.className = `mission-item ${isPro ? "is-pro" : "is-pes"}${isEditing ? " is-editing" : ""}`;
     const secaoLabel = t.secao && t.secao !== "NENHUMA" ? t.secao : "Geral";
     const prazoLabel = t.end ? formatDataBR(t.end) : "";
     const executorLabel = hasExecutor(t.executor) ? t.executor.trim() : "";
     li.innerHTML = `
+      <button
+        type="button"
+        class="btn-edit"
+        data-action="edit"
+        data-id="${escapeHtml(t.id)}"
+        title="Editar missão"
+        aria-label="Editar missão"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+      </button>
       <div class="mission-body">
         <div class="mission-title">${escapeHtml(t.descricao)}</div>
         <div class="mission-meta">
@@ -599,7 +709,13 @@ function render() {
 function setupFormEvents() {
   document.getElementById("mission-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    addTask();
+    saveTask();
+  });
+
+  document.getElementById("btn-cancel-edit")?.addEventListener("click", () => {
+    resetForm();
+    render();
+    document.getElementById("task-descricao")?.focus();
   });
 
   const textarea = document.getElementById("task-descricao");
@@ -617,13 +733,20 @@ function setupFormEvents() {
 
   syncSecaoVisibility();
   syncExecutorVisibility();
+  syncFormModeUI();
 }
 
 function setupListEvents() {
   document.getElementById("task-list").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-action='done']");
-    if (!btn) return;
-    completeTask(btn.dataset.id);
+    const editBtn = e.target.closest("[data-action='edit']");
+    if (editBtn) {
+      startEditTask(editBtn.dataset.id);
+      return;
+    }
+
+    const doneBtn = e.target.closest("[data-action='done']");
+    if (!doneBtn) return;
+    completeTask(doneBtn.dataset.id);
   });
 }
 
