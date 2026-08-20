@@ -657,19 +657,6 @@ function render() {
     const prazoLabel = t.end ? formatDataBR(t.end) : "";
     const executorLabel = hasExecutor(t.executor) ? t.executor.trim() : "";
     li.innerHTML = `
-      <button
-        type="button"
-        class="btn-edit"
-        data-action="edit"
-        data-id="${escapeHtml(t.id)}"
-        title="Editar missão"
-        aria-label="Editar missão"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-        </svg>
-      </button>
       <div class="mission-body">
         <div class="mission-title">${escapeHtml(t.descricao)}</div>
         <div class="mission-meta">
@@ -689,18 +676,33 @@ function render() {
           ${prazoLabel ? `<span class="meta-chip">${escapeHtml(prazoLabel)}</span>` : ""}
         </div>
       </div>
-      <button
-        type="button"
-        class="btn-done"
-        data-action="done"
-        data-id="${escapeHtml(t.id)}"
-        title="Concluir e remover"
-        aria-label="Concluir missão"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M20 6L9 17l-5-5" />
-        </svg>
-      </button>
+      <div class="mission-actions">
+        <button
+          type="button"
+          class="btn-edit"
+          data-action="edit"
+          data-id="${escapeHtml(t.id)}"
+          title="Editar missão"
+          aria-label="Editar missão"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="btn-done"
+          data-action="done"
+          data-id="${escapeHtml(t.id)}"
+          title="Concluir e remover"
+          aria-label="Concluir missão"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </button>
+      </div>
     `;
     list.appendChild(li);
   });
