@@ -401,6 +401,11 @@ input:focus {
   border-color: rgba(255, 92, 92, 0.35);
 }
 
+.meta-chip.is-overdue {
+  color: #ffb3b3;
+  border-color: rgba(255, 92, 92, 0.4);
+}
+
 .meta-chip-executor {
   display: inline-flex;
   align-items: center;
@@ -462,6 +467,19 @@ input:focus {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.list-empty {
+  margin: 0;
+  padding: 28px 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+  background: rgba(16, 16, 16, 0.55);
+  border: 1px dashed #2c2c2c;
+  border-radius: 14px;
 }
 
 .mission-item {

@@ -19,6 +19,8 @@ let fetchingTasks = false;
 let realtimeReady = false;
 let realtimeTimer = null;
 let editingTaskId = null;
+let completingIds = new Set();
+let appBooted = false;
 
 const formState = {
   secao: "NENHUMA",
@@ -59,7 +61,55 @@ function formatDataBR(iso) {
 }
 
 function todayISO() {
-  return new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function isOverdue(endIso) {
+  if (!endIso) return false;
+  return String(endIso).split("T")[0] < todayISO();
+}
+
+function isAuthFailure(error) {
+  if (!error) return false;
+  const msg = String(error.message || "");
+  return error.code === "PGRST301" || /JWT|auth|session|not authenticated/i.test(msg);
+}
+
+async function forceSignOut(message) {
+  try {
+    if (client) await client.auth.signOut();
+  } catch (err) {
+    console.warn("Falha ao encerrar sessão", err);
+  }
+  clearSessionData();
+  setAuthUI(null);
+  if (message) showNotify(message, "error");
+}
+
+function clearSessionData() {
+  tasks = [];
+  editingTaskId = null;
+  completingIds.clear();
+  appBooted = false;
+  try {
+    localStorage.removeItem(TASKS_CACHE_KEY);
+  } catch (err) {
+    console.warn("Falha ao limpar cache local", err);
+  }
+  const list = document.getElementById("task-list");
+  if (list) list.innerHTML = "";
+  updateListMeta();
+  if (document.getElementById("mission-form")) {
+    try {
+      resetForm();
+    } catch (err) {
+      console.warn("Falha ao resetar formulário", err);
+    }
+  }
 }
 
 function activeTasks() {
@@ -202,7 +252,10 @@ function shareTaskOnWhatsApp(id) {
   }
 
   const text = encodeURIComponent(buildWhatsAppMessage(task));
-  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+  const win = window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+  if (!win) {
+    showNotify("Permita pop-ups para abrir o WhatsApp", "info");
+  }
 }
 
 function autoResizeTextarea(el) {
@@ -404,7 +457,7 @@ async function handleLogout() {
     await client.auth.signOut();
   }
 
-  tasks = [];
+  clearSessionData();
   setAuthUI(null);
   showNotify("Sessão encerrada", "info");
 }
@@ -436,8 +489,12 @@ function setupAuth() {
   }
 
   client.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") setAuthUI(null);
+    if (event === "SIGNED_OUT") {
+      clearSessionData();
+      setAuthUI(null);
+    }
     if (event === "TOKEN_REFRESHED") currentSession = session;
+    if (event === "SIGNED_IN" && session) currentSession = session;
   });
 }
 
@@ -495,10 +552,8 @@ async function fetchTasks({ silent = false } = {}) {
     if (error) {
       console.error(error);
 
-      if (error.code === "PGRST301" || /JWT|auth/i.test(error.message || "")) {
-        showNotify("Sessão expirada. Entre novamente.", "error");
-        await client.auth.signOut();
-        setAuthUI(null);
+      if (isAuthFailure(error)) {
+        await forceSignOut("Sessão expirada. Entre novamente.");
         return;
       }
 
@@ -541,8 +596,18 @@ async function fetchTasks({ silent = false } = {}) {
 async function saveTask() {
   if (saving) return;
 
+  if (!client) {
+    showNotify("Supabase indisponível. Atualize com Ctrl+F5.", "error");
+    return;
+  }
+
   if (!navigator.onLine) {
     showNotify("Sem conexão · não é possível salvar agora", "error");
+    return;
+  }
+
+  if (!currentSession) {
+    await forceSignOut("Sessão expirada. Entre novamente.");
     return;
   }
 
@@ -574,6 +639,10 @@ async function saveTask() {
 
       if (error) {
         console.error(error);
+        if (isAuthFailure(error)) {
+          await forceSignOut("Sessão expirada. Entre novamente.");
+          return;
+        }
         showNotify("Erro ao atualizar", "error");
         return;
       }
@@ -618,6 +687,10 @@ async function saveTask() {
 
     if (error) {
       console.error(error);
+      if (isAuthFailure(error)) {
+        await forceSignOut("Sessão expirada. Entre novamente.");
+        return;
+      }
       showNotify("Erro ao salvar", "error");
       return;
     }
@@ -633,38 +706,59 @@ async function saveTask() {
 }
 
 async function completeTask(id) {
+  if (!id || completingIds.has(id)) return;
+
+  if (!client) {
+    showNotify("Supabase indisponível. Atualize com Ctrl+F5.", "error");
+    return;
+  }
+
   if (!navigator.onLine) {
     showNotify("Sem conexão · não é possível concluir agora", "error");
     return;
   }
 
+  if (!currentSession) {
+    await forceSignOut("Sessão expirada. Entre novamente.");
+    return;
+  }
+
+  completingIds.add(id);
   const item = document.querySelector(`.mission-item[data-id="${id}"]`);
   if (item) item.classList.add("is-done");
 
   const patch = { status: "CONCLUIDO" };
   if (completedAtSupported) patch.completedAt = new Date().toISOString();
 
-  let { error } = await client.from("tarefas").update(patch).eq("id", id);
+  try {
+    let { error } = await client.from("tarefas").update(patch).eq("id", id);
 
-  if (error && /completedAt/i.test(error.message || "")) {
-    completedAtSupported = false;
-    delete patch.completedAt;
-    ({ error } = await client.from("tarefas").update(patch).eq("id", id));
+    if (error && /completedAt/i.test(error.message || "")) {
+      completedAtSupported = false;
+      delete patch.completedAt;
+      ({ error } = await client.from("tarefas").update(patch).eq("id", id));
+    }
+
+    if (error) {
+      console.error(error);
+      if (item) item.classList.remove("is-done");
+      if (isAuthFailure(error)) {
+        await forceSignOut("Sessão expirada. Entre novamente.");
+        return;
+      }
+      showNotify("Erro ao concluir", "error");
+      return;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 260));
+    if (editingTaskId === id) resetForm();
+    tasks = tasks.filter((t) => t.id !== id);
+    saveTasksCache(tasks);
+    render();
+    showNotify("Missão cumprida", "success");
+  } finally {
+    completingIds.delete(id);
   }
-
-  if (error) {
-    console.error(error);
-    if (item) item.classList.remove("is-done");
-    showNotify("Erro ao concluir", "error");
-    return;
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 260));
-  if (editingTaskId === id) resetForm();
-  tasks = tasks.filter((t) => t.id !== id);
-  saveTasksCache(tasks);
-  render();
-  showNotify("Missão cumprida", "success");
 }
 
 function render() {
@@ -675,15 +769,23 @@ function render() {
   updateListMeta();
   list.innerHTML = "";
 
+  if (!items.length) {
+    const empty = document.createElement("li");
+    empty.className = "list-empty";
+    empty.textContent = "Nenhuma missão pendente. Cadastre acima para começar o foco.";
+    list.appendChild(empty);
+    return;
+  }
+
   items.forEach((t) => {
     const li = document.createElement("li");
-    li.className = "mission-item";
     li.dataset.id = t.id;
     const isPro = t.category !== "PESSOAL";
     const isEditing = editingTaskId === t.id;
     li.className = `mission-item ${isPro ? "is-pro" : "is-pes"}${isEditing ? " is-editing" : ""}`;
     const secaoLabel = t.secao && t.secao !== "NENHUMA" ? t.secao : "Geral";
     const prazoLabel = t.end ? formatDataBR(t.end) : "";
+    const overdue = isOverdue(t.end);
     const executorLabel = hasExecutor(t.executor) ? t.executor.trim() : "";
     li.innerHTML = `
       <div class="mission-body">
@@ -702,7 +804,11 @@ function render() {
                 </span>`
               : ""
           }
-          ${prazoLabel ? `<span class="meta-chip">${escapeHtml(prazoLabel)}</span>` : ""}
+          ${
+            prazoLabel
+              ? `<span class="meta-chip${overdue ? " is-overdue" : ""}" title="${overdue ? "Prazo vencido" : "Prazo"}">${escapeHtml(prazoLabel)}</span>`
+              : ""
+          }
         </div>
       </div>
       <div class="mission-actions">
@@ -898,6 +1004,12 @@ function preventIosZoom() {
 }
 
 async function bootAuthenticatedApp() {
+  if (appBooted) {
+    await fetchTasks({ silent: true });
+    return;
+  }
+  appBooted = true;
+
   updateOfflineBanner();
   setupRealtime();
 

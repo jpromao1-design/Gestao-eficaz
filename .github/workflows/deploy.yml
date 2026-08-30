@@ -27,10 +27,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare publish directory
+        run: |
+          mkdir -p publish
+          cp index.html styles.css app.js sw.js manifest.json supabase-auth-rls.sql publish/
+          cp -r assets publish/assets
+          touch publish/.nojekyll
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: publish
 
       - name: Deploy to GitHub Pages
         id: deployment
